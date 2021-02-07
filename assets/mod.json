@@ -1,11 +1,9 @@
 {
-  "name": "modtemplate",
-  "displayName": "Template",
-  "author": "[#8738ff[]]Sonnicon[[]]",
-  "description": "Gradle jar Mindustry mod template",
-  "version": "0",
-  "main": "sonnicon.modtemplate.ModTemplate",
-  "minGameVersion": "105",
-  "dependencies": [],
-  "hidden": false
+  "name": "shar",
+  "displayName": "Sharustry",
+  "author": "Sharlotte",
+  "main": "Sharustry.core.Main",
+  "description": "my first jar mod",
+  "version": 0.1,
+  "minGameVersion": 123
 }
