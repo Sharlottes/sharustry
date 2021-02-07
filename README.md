@@ -1,11 +1,11 @@
 # Sharustry
-[![Java CI with Gradle](https://github.com/sharlotte-mobile/Sharustry/workflows/Java%20CI%20with%20Gradle/badge.svg)](https://github.com/sharlotte-mobile/Sharustry/actions) 
+[![Java CI with Gradle](https://github.com/sharlottes/Sharustry/workflows/Java%20CI%20with%20Gradle/badge.svg)](https://github.com/sharlottes/Sharustry/actions) 
 [![Discord](https://img.shields.io/discord/704355237246402721.svg?logo=discord&logoColor=white&logoWidth=20&labelColor=7289DA&label=Discord)](https://discord.gg/RCCVQFW)
 [![GitHub all releases](https://img.shields.io/github/downloads/anuken/mindustry/total?label=Made%20on%20Mindustry&style=flat-square)](https://github.com/Anuken/Mindustry/)
-[![GitHub Repo stars](https://img.shields.io/github/stars/sharlotte-mobile/Sharustry?label=Please%20star%20me%21&style=social)](https://github.com/sharlotte-mobile/Sharustry/stargazers)
+[![GitHub Repo stars](https://img.shields.io/github/stars/sharlottes/Sharustry?label=Please%20star%20me%21&style=social)](https://github.com/sharlottes/Sharustry/stargazers)
 
 
-[![Download](https://img.shields.io/github/v/release/sharlotte-mobile/Sharustry?color=green&include_prereleases&label=DOWNLOAD%20LATEST%20RELEASE&logo=github&logoColor=green&style=for-the-badge)](https://github.com/sharlotte-mobile/Sharustry/releases)
+[![Download](https://img.shields.io/github/v/release/sharlottes/Sharustry?color=green&include_prereleases&label=DOWNLOAD%20LATEST%20RELEASE&logo=github&logoColor=green&style=for-the-badge)](https://github.com/sharlottes/Sharustry/releases)
 
 ## Releases   
 Go to the releases, the latest release will have a `Sharustry.jar` attached to it that you can download. If it does not have it, follow the steps below(recommended) or bother me with a new issue so I can attach the compiled mod.   
