@@ -6,7 +6,6 @@ import mindustry.mod.Mod;
 
 import Sharustry.content.ModLoader;
 
-@SuppressWarnings("unused")
 public class Main extends Mod {
     public Main(){
         Events.on(ClientLoadEvent.class, e -> {

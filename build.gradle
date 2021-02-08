@@ -8,13 +8,16 @@ sourceSets.main {
     java.srcDir("src/")
     resources.srcDir("assets/")
 }
-
-repositories {
-    mavenCentral()
-    maven { url "https://jitpack.io" }
+allprojects {
+    repositories {
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+    }
 }
 
 dependencies {
+    implementation 'com.github.younggam:multi-lib:java-v1.1.0'
+
     compileOnly "com.github.Anuken.Arc:arc-core:$pMindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$pMindustryVersion"
     compileOnly files('libs/annotations-122.jar')

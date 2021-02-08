@@ -1,5 +1,7 @@
 package Sharustry.content;
 
+import multilib.*;
+import multilib.Recipe.*;
 import Sharustry.world.blocks.defense.*;
 import Sharustry.world.blocks.production.*;
 import arc.graphics.Color;
@@ -13,7 +15,7 @@ import mindustry.world.meta.*;
 import static mindustry.type.ItemStack.with;
 
 public class SBlocks implements ContentList{
-    public static Block balkan, adaptDrill, multiDrill, shieldWall;
+    public static Block balkan, adaptDrill, multiDrill, shieldWall, multi;
 
     @Override
     public void load(){
@@ -75,6 +77,25 @@ public class SBlocks implements ContentList{
         shieldWall = new ShieldWall("shield-wall"){{
                 requirements(Category.defense, with(Items.titanium, 6));
                 health = 150 * 4;
+        }};
+
+        multi = new MultiCrafter("multi-test-2", 4){{
+            requirements(Category.crafting, with(Items.copper, 10));
+            size = 3;
+            addRecipe(
+                    new InputContents(with(Items.sand, 1, Items.lead, 1)),
+                    new OutputContents(), 12f, true
+            );
+            addRecipe(
+                    new InputContents(with(Items.coal, 1, Items.sand, 1), new LiquidStack[]{new LiquidStack(Liquids.water, 5)}, 1),
+                    new OutputContents(new LiquidStack[]{new LiquidStack(Liquids.slag, 5)}), 60f
+            );
+            addRecipe(
+                    new InputContents(with(Items.pyratite, 1, Items.blastCompound, 1)),
+                    new OutputContents(with(Items.scrap, 1, Items.plastanium, 2, Items.sporePod, 2)), 72f);
+            addRecipe(
+                    new InputContents(with(Items.sand, 1), 15),
+                    new OutputContents(with(Items.silicon, 1), 10), 30f, true);
         }};
         /* //fuck
         warehouseBattle = new BattleCoreBlock("warehouse-battle"){{
