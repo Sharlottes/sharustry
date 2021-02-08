@@ -6,6 +6,6 @@
   "description": "my first jar mod",
   "version": 0.1,
   "minGameVersion": 123,
-  "hasJava": true,
+  "java": true,
   "repo": "Sharlottes/sharustry"
 }
