@@ -5,5 +5,7 @@
   "main": "Sharustry.core.Main",
   "description": "my first jar mod",
   "version": 0.1,
-  "minGameVersion": 123
+  "minGameVersion": 123,
+  "hasJava": true,
+  "repo": "Sharlottes/sharustry"
 }
