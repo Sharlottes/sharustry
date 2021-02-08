@@ -4,17 +4,30 @@
 [![GitHub all releases](https://img.shields.io/github/downloads/anuken/mindustry/total?label=Made%20on%20Mindustry&style=flat-square)](https://github.com/Anuken/Mindustry/)
 [![GitHub Repo stars](https://img.shields.io/github/stars/sharlottes/Sharustry?label=Please%20star%20me%21&style=social)](https://github.com/sharlottes/Sharustry/stargazers)
 
-## Releases  
+## Mod Browser / 모드 브라우저로 다운로드하기
+**Only possible with 124 or higher**
+**124 버전 이상에서만 가능함** 
 
+![image](https://user-images.githubusercontent.com/60801210/107173928-58fc1780-6a0c-11eb-895a-41a645a26b13.png)
+![image](https://user-images.githubusercontent.com/60801210/107176108-d1190c00-6a11-11eb-9683-529624a209e5.png)
+![image](https://user-images.githubusercontent.com/60801210/107176120-daa27400-6a11-11eb-92ad-e2f89d98327a.png)
+![image](https://user-images.githubusercontent.com/60801210/107176138-e2faaf00-6a11-11eb-912a-68d7f161b9b2.png)
+
+
+## Releases  / 깃허브 릴리즈로 다운로드하기
 [![Download](https://img.shields.io/github/v/release/sharlottes/Sharustry?color=green&include_prereleases&label=DOWNLOAD%20LATEST%20RELEASE&logo=github&logoColor=green&style=for-the-badge)](https://github.com/sharlottes/Sharustry/releases)
- 
+
+There isn't actually difference between downloading through Releases and downloading Mod Browser. I'm just grateful to you for coming all the way here.   
+Releases를 통해 다운로드하는 방법과 Mod Browser를 다운로드하는 방법은 사실 별 차이가 없습니다. 그냥 여기까지 온 당신에게 감사하다구요.   
+
+
 Go to the releases, the latest release will have a `dexed-Sharustry.jar` attached to it that you can download. If it does not have it, follow the steps below(recommended) or bother me with a new issue so I can attach the compiled mod.   
 After you have the `dexed-Sharustry.jar`, paste it into your mod folder(locate your mod folder in the "open mod folder" of Mindustry).   
 
 Releases를 클릭하고, 최신 버전에 달린 `dexed-Sharustry.jar`를 다운로드하세요. 원하는 버전에 `dexed-Sharustry.jar`가 첨부되어 있지 않다면, 아래의 과정을 따르거나 새로운 Issue로 `.jar`를 달아달라고 저를 괴롭히세요.   
 `dexed-Sharustry.jar`를 다운로드 한 후, 모드 디렉토리(민더스트리에서 모드 파일 열기로 확인 가능)에 옮기세요.   
 
-### Actions
+### Actions / 깃허브 엑션으로 다운로드하기 
 [![Java CI with Gradle](https://github.com/sharlottes/Sharustry/workflows/Java%20CI%20with%20Gradle/badge.svg)](https://github.com/sharlottes/Sharustry/actions)   
 Unlike the release, Actions can enjoy the mode of **most recent versions** that have recently built commitments. But it's very unstable, and there can be bugs.   
 Actions 는 릴리즈와는 달리 최근 커밋을 빌드한 **가장 최신 버전**의 모드를 즐기실 수 있습니다. 하지만 매우 불안정적이고, 버그가 있을 수 있습니다.   
@@ -31,9 +44,16 @@ Actions 는 릴리즈와는 달리 최근 커밋을 빌드한 **가장 최신 �
 * "dexed"이라는 이름의 Artifact(상자 모양 아이콘)을 클릭하면, 압축 파일이 다운로드됩니다. 
 
 3.
+![image](https://user-images.githubusercontent.com/60801210/107173528-4fbe7b00-6a0b-11eb-8817-f98b5a201d3d.png)
+![image](https://user-images.githubusercontent.com/60801210/107173516-48976d00-6a0b-11eb-9c70-ff342092b52e.png)
+![image](https://user-images.githubusercontent.com/60801210/107173551-5d740080-6a0b-11eb-8ec5-1f8c66ca9475.png)
+* Unzip `dexed-Sharustry.zip` to obtain `dexed-Sharustry.jar`, then follow the procedure above to import the file.
+* `dexed-Sharustry.zip`를 압축해제하여 `dexed-Sharustry.jar`를 얻은 후, 위의 절차를 따라서 파일을 불러오세요.
+
+![image](https://user-images.githubusercontent.com/60801210/107173390-05d59500-6a0b-11eb-9538-443e1d35058e.png)
 ![image](https://user-images.githubusercontent.com/60801210/107147244-53f98280-6990-11eb-8b48-fda0cd51f80b.png)
-* Unzip and paste the `dexed-Sharustry.jar` into your mod folder(locate your mod folder in the "open mod folder" of Mindustry).
-* 압축 해제 후 `dexed-Sharustry.jar`를 모드 디렉토리(민더스트리에서 모드 파일 열기로 확인 가능)에 옮기세요.
+* Or paste into your mod folder(locate your mod folder in the "open mod folder" of Mindustry).
+* 또는 모드 디렉토리(민더스트리에서 모드 파일 열기로 확인 가능)에 옮기세요.
 
 4.
 * Enjoy!
