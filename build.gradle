@@ -15,8 +15,6 @@ repositories {
 }
 
 dependencies {
-    implementation "com.github.Anuken.Mindustry:core:$pMindustryVersion"
-
     compileOnly "com.github.Anuken.Arc:arc-core:$pMindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$pMindustryVersion"
     compileOnly files('libs/annotations-122.jar')
