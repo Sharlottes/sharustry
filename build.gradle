@@ -4,28 +4,39 @@ plugins {
 
 group pGroup
 
+version '1.0'
+
+sourceCompatibility = 8
+
+
 sourceSets.main {
     java.srcDir("src/")
     resources.srcDir("assets/")
 }
-allprojects {
-    repositories {
-        mavenCentral()
-        maven { url "https://jitpack.io" }
+
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+}
+
+jar {
+    archiveFileName.set pArtifactFilename
+
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
     }
 }
 
+
 dependencies {
-    implementation 'com.github.younggam:multi-lib:java-v1.1.0'
+    implementation  'com.github.younggam:multi-lib:java-v1.1.0'
 
     compileOnly "com.github.Anuken.Arc:arc-core:$pMindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$pMindustryVersion"
     compileOnly files('libs/annotations-122.jar')
 
-}
-
-jar {
-    archiveFileName.set pArtifactFilename
 }
 
 task dexify(type: Jar) {

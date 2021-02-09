@@ -10,6 +10,7 @@ public class ModLoader implements ContentList{
         new SLiquids(),
         new SStatusEffects(),
         new SBullets(),
+        new STurretMounts(),
         new SBlocks()
     };
 

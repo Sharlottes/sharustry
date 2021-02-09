@@ -1,5 +1,6 @@
 package Sharustry.content;
 
+import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import mindustry.entities.*;
@@ -62,5 +63,54 @@ public class SFx {
         color(Pal.shield, e.fout());
         stroke(e.fout());
         Lines.circle(e.x, e.y, radius);
+    }),
+
+    basicHit = new ScaledEffect(14, 50, 0.75f, e -> {
+        Draw.color(Color.white, Pal.lightOrange, e.fin());
+
+        e.scaled(7, s -> {
+                Lines.stroke((0.5f + s.fout()) * scl);
+        Lines.circle(e.x, e.y, s.fin() * 5 * scl);
+      });
+
+        Lines.stroke((0.5f + e.fout()) * scl);
+
+        Angles.randLenVectors(e.id, 5, e.fin() * 15 * scl, (x, y) -> {
+            Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), (e.fout() * 3 + 1) * scl);
+        });
+    }),
+
+    basicDespawn = new ScaledEffect(14, 50, 0.6f, e -> {
+        Draw.color(Color.white, Pal.lightOrange, e.fin());
+
+        e.scaled(7, s -> {
+            Lines.stroke((0.5f + s.fout()) * scl);
+            Lines.circle(e.x, e.y, s.fin() * 5 * scl);
+        });
+
+        Lines.stroke((0.5f + e.fout()) * scl);
+
+        Angles.randLenVectors(e.id, 5, e.fin() * 15 * scl, (x, y) -> {
+            Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), (e.fout() * 3 + 1) * scl);
+        });
+    }),
+
+    smallBlastHit = new ScaledEffect(20, 50, 0.75f, e -> {
+        Draw.color(Pal.bulletYellow);
+
+        e.scaled(6, s -> {
+            Lines.stroke(3 * s.fout() * scl);
+            Lines.circle(e.x, e.y, (3 + s.fin() * 10) * scl);
+        });
+
+        Draw.color(Color.gray);
+
+        Angles.randLenVectors(e.id, 5, (2 + 23 * e.finpow()) * scl, (x, y) -> Fill.circle(e.x + x, e.y + y, (e.fout() * 3 + 0.5f) * scl));
+
+        Draw.color(Pal.lighterOrange);
+        Lines.stroke(e.fout() * scl);
+
+        Angles.randLenVectors(e.id + 1, 4, (1 + 23 * e.finpow()) * scl, (x, y) -> Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), (1 + e.fout() * 3) * scl));
     });
+
 }

@@ -38,7 +38,7 @@ public class SItemImage extends Stack{
 
         add(new Table(t -> {
             t.left().bottom();
-            t.add(amount > 1000 ? UI.formatAmount(amount) : amount + "%");
+            t.add(amount > 1000 ? UI.formatAmount(amount) : amount + "");
             t.pack();
         }));
     }
@@ -60,7 +60,7 @@ public class SItemImage extends Stack{
         if(stack.amount != 0){
             add(new Table(t -> {
                 t.left().bottom();
-                t.add(stack.amount > 1000 ? UI.formatAmount(stack.amount) : stack.amount + "%").style(Styles.outlineLabel);
+                t.add(stack.amount > 1000 ? UI.formatAmount(stack.amount) : stack.amount + "").style(Styles.outlineLabel);
                 t.pack();
             }));
         }

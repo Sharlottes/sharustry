@@ -1,6 +1,5 @@
 package Sharustry.content;
 
-import multilib.*;
 import multilib.Recipe.*;
 import Sharustry.world.blocks.defense.*;
 import Sharustry.world.blocks.production.*;
@@ -12,17 +11,28 @@ import mindustry.content.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
 
-import static mindustry.type.ItemStack.with;
+import static Sharustry.content.SBullets.mainBullet;
+import static Sharustry.content.STurretMounts.*;
+import static mindustry.type.ItemStack.*;
 
 public class SBlocks implements ContentList{
-    public static Block balkan, adaptDrill, multiDrill, shieldWall, multi;
+    public static Block
+            //defense
+            balkan, jumble,
+            //wall
+            shieldWall,
+            //drill
+            adaptDrill, multiDrill,
+            //crafterator
+            multi;
 
     @Override
     public void load(){
         balkan = new SharTurret("balkan"){{
-            ammo(Items.titanium, SBullets.accelMissile,
-                 Items.pyratite, SBullets.testLaser
-                );
+            ammo(
+                Items.titanium, SBullets.accelMissile,
+                Items.pyratite, SBullets.testLaser
+            );
             range = 45*8f;
             chargeTime = 40f;
             chargeMaxDelay = 30f;
@@ -43,6 +53,17 @@ public class SBlocks implements ContentList{
 
             acceptCoolant = false;
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
+        }};
+
+        jumble = new MultiTurret("multi-i", Items.graphite, mainBullet, 80, 20, "Aggregate", 3, unoMount, waveMount, hailMount){{
+            requirements(Category.turret, ItemStack.with(Items.copper, 135, Items.lead, 75, Items.metaglass, 40, Items.graphite, 80, Items.silicon, 50));
+            size = 2;
+            range = 15 * 8;
+            maxAmmo = 225;
+            ammoPerShot = 12;
+            recoilAmount = 2;
+            reloadTime = 21;
+
         }};
 
         adaptDrill = new AttributeDrill("adapt-drill"){{
@@ -79,9 +100,11 @@ public class SBlocks implements ContentList{
                 health = 150 * 4;
         }};
 
-        multi = new MultiCrafter("multi-test-2", 4){{
+        multi = new MultiCrafterator("multi-crafterator", 4){{
             requirements(Category.crafting, with(Items.copper, 10));
             size = 3;
+            isSmelter = true;
+
             addRecipe(
                     new InputContents(with(Items.sand, 1, Items.lead, 1)),
                     new OutputContents(), 12f, true
@@ -92,10 +115,12 @@ public class SBlocks implements ContentList{
             );
             addRecipe(
                     new InputContents(with(Items.pyratite, 1, Items.blastCompound, 1)),
-                    new OutputContents(with(Items.scrap, 1, Items.plastanium, 2, Items.sporePod, 2)), 72f);
+                    new OutputContents(with(Items.scrap, 1, Items.plastanium, 2, Items.sporePod, 2)), 72f
+            );
             addRecipe(
                     new InputContents(with(Items.sand, 1), 15),
-                    new OutputContents(with(Items.silicon, 1), 10), 30f, true);
+                    new OutputContents(with(Items.silicon, 1), 10), 30f, true
+            );
         }};
         /* //fuck
         warehouseBattle = new BattleCoreBlock("warehouse-battle"){{
