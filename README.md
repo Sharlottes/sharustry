@@ -5,8 +5,8 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/sharlottes/Sharustry?label=Please%20star%20me%21&style=social)](https://github.com/sharlottes/Sharustry/stargazers)
 
 ## Mod Browser / 모드 브라우저로 다운로드하기
-**Only possible with 124 or higher**
-**124 버전 이상에서만 가능함** 
+**Only possible with 124 or higher, only can download "latest" release**
+**124 버전 이상에서만 가능하고, 오직 가장 최근의 정식 릴리즈만 다운로드 가능** 
 
 ![image](https://user-images.githubusercontent.com/60801210/107173928-58fc1780-6a0c-11eb-895a-41a645a26b13.png)
 ![image](https://user-images.githubusercontent.com/60801210/107176108-d1190c00-6a11-11eb-9683-529624a209e5.png)
