@@ -1,11 +1,11 @@
 package Sharustry.world.blocks.defense;
 
-import arc.Core;
-import arc.Events;
+import arc.*;
 import arc.graphics.Blending;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.Vec2;
+import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
@@ -24,29 +24,27 @@ import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
 public class MultiTurret extends ItemTurret {
-    public float rangeTime;
-    public float fadeTime;
+    public float rangeTime = 80;
+    public float fadeTime = 20;
     public String title;
     public Seq<MultiTurretMount> mounts = new Seq<>();
     public int amount;
-    public float totalRangeTime = rangeTime * mounts.size;
+    public float totalRangeTime;
     public Item ammoItem;
-    public BulletType mainBullet;
+    public BulletType bullet;
     public Seq<SoundLoop> loopSounds = new Seq<>();
 
     public TextureRegion outline, baseTurret;
     public Seq<TextureRegion[]> turrets = new Seq<>();
 
-    public @Annotations.Load(value = "@", length = 4) TextureRegion[] sprites;
-
-    public MultiTurret(String name, Item ammoItem, BulletType mainBullet, float rangeTime, float fadeTime, String title, int amount, MultiTurretMount... mounts){
+    public MultiTurret(String name, Item ammoItem, BulletType mainBullet, String title, MultiTurretMount... mounts){
         this(name);
-        this.rangeTime = rangeTime;
+
         for(MultiTurretMount mount : mounts) this.mounts.add(mount);
-        this.amount = amount;
+        this.amount = this.mounts.size;
+        this.totalRangeTime = rangeTime * this.mounts.size;
         this.ammoItem = ammoItem;
-        this.mainBullet = mainBullet;
-        this.fadeTime = fadeTime;
+        this.bullet = mainBullet;
         this.title = title;
         ammo(ammoItem, mainBullet);
     }
@@ -109,6 +107,51 @@ public class MultiTurret extends ItemTurret {
         };
     }
 
+    void rowAdd(Table h, String str){
+        h.row();
+        h.add(str);
+    }
+    void addStatS(Table w, boolean main){
+        addStatS(w, main, 0);
+    }
+
+    void addStatS(Table w, boolean main, int i){
+        w.row();
+        w.add((main?title:mounts.get(i).title)).padRight(10).right().top();
+        w.row();
+        w.image(main?baseTurret:Core.atlas.find("shar-"+mounts.get(i).name + "-full")).size(60).scaling(Scaling.bounded).right().top();
+
+        w.table(Tex.underline, h -> {
+            h.left().defaults().padRight(3).left();
+
+            if(this.inaccuracy > 0) h.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (main?this.inaccuracy:mounts.get(i).inaccuracy) + " " + StatUnit.degrees.localized());
+            if(this.range > 0) rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((main?this.range:mounts.get(i).range) / Vars.tilesize, 1) + " " + StatUnit.blocks);
+
+            rowAdd(h, "[lightgray]" + Core.bundle.get("stat.prog-mats.ammo-shot") + ": [white]" + (main?this.ammoPerShot:mounts.get(i).ammoPerShot));
+            rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (main?this.reloadTime:mounts.get(i).reloadTime) * (main?this.shots:mounts.get(i).shots), 1));
+            rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(main?this.targetAir:mounts.get(i).targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+            rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(main?this.targetGround:mounts.get(i).targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+
+            BulletType type = (main?this.bullet:mounts.get(i).bullet);
+
+            if(type.damage > 0 && (type.collides || type.splashDamage <= 0)) rowAdd(h, Core.bundle.format("bullet.damage", type.damage));
+            if(type.splashDamage > 0) rowAdd(h, Core.bundle.format("bullet.splashdamage", type.splashDamage, Strings.fixed(type.splashDamageRadius / Vars.tilesize, 1)));
+            if(type.knockback > 0) rowAdd(h, Core.bundle.format("bullet.knockback", Strings.fixed(type.knockback, 1)));
+            if(type.healPercent > 0) rowAdd(h, Core.bundle.format("bullet.healpercent", type.healPercent));
+            if(type.pierce || type.pierceCap != -1) rowAdd(h, type.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", type.pierceCap));
+            if(type.status == StatusEffects.burning || type.status == StatusEffects.melting || type.incendAmount > 0) rowAdd(h, "@bullet.incendiary");
+            if(type.status == StatusEffects.freezing) rowAdd(h, "@bullet.freezing");
+            if(type.status == StatusEffects.tarred) rowAdd(h, "@bullet.tarred");
+            if(type.status == StatusEffects.sapped) rowAdd(h, "@bullet.sapping");
+            if(type.homingPower > 0.01) rowAdd(h, "@bullet.homing");
+            if(type.lightning > 0) rowAdd(h, "@bullet.shock");
+            if(type.fragBullet != null) rowAdd(h, "@bullet.frag");
+
+            h.row();
+        }).padTop(-15).left();
+        w.row();
+    }
+
     @Override
     public void setStats(){
         super.setStats();
@@ -116,24 +159,23 @@ public class MultiTurret extends ItemTurret {
         stats.remove(Stat.shootRange);
         stats.remove(Stat.inaccuracy);
         stats.remove(Stat.reload);
-
         stats.remove(Stat.ammo);
+        stats.remove(Stat.targetsAir);
+        stats.remove(Stat.targetsGround);
+
         StatValue ammoStat = table -> {
             table.row();
-            table.image(ammoItem.icon(Cicon.medium)).size(8 * 4).padRight(4).right().top();
+            table.image(ammoItem.f(Cicon.medium)).size(8 * 4).padRight(4).right().top();
             table.add(ammoItem.localizedName).padRight(10).left().top();
             table.table(Tex.underline, b -> {
                 b.left().defaults().padRight(3).left();
 
-                b.add(Core.bundle.format("bullet.multiplier", mainBullet.ammoMultiplier));
+                b.add(Core.bundle.format("bullet.multiplier", bullet.ammoMultiplier));
             }).padTop(-9).left();
             table.row();
         };
 
         stats.add(Stat.ammo, ammoStat);
-
-        stats.remove(Stat.targetsAir);
-        stats.remove(Stat.targetsGround);
 
         StatValue wT = table -> {
             table.add();
@@ -144,110 +186,8 @@ public class MultiTurret extends ItemTurret {
 
             //Base Turret
             table.table(null, w -> {
-                w.row();
-
-                w.add(title).padRight(10).right().top();
-                w.row();
-                w.image(baseTurret).size(60).scaling(Scaling.bounded).right().top();
-
-                w.table(Tex.underline, h -> {
-                    h.left().defaults().padRight(3).left();
-
-                    if(inaccuracy > 0)
-                        h.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + inaccuracy + " " + StatUnit.degrees.localized());
-
-                    if(range > 0){
-                        h.row();
-                        h.add("[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed(range / Vars.tilesize, 1) + " " + StatUnit.blocks);
-                    }
-
-                    h.row();
-                    h.add("[lightgray]" + Core.bundle.get("stat.prog-mats.ammo-shot") + ": [white]" + ammoPerShot);
-                    h.row();
-                    h.add("[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reloadTime * shots, 1));
-
-                    h.row();
-                    h.add("[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!targetAir ? Core.bundle.get("no") : Core.bundle.get("yes")));
-                    h.row();
-                    h.add("[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!targetGround ? Core.bundle.get("no") : Core.bundle.get("yes")));
-
-                    BulletType type = mainBullet;
-
-                    if(type.damage > 0 && (type.collides || type.splashDamage <= 0)){
-                        // this.sep(table, Core.bundle.format("bullet.damage", type.damage));
-                        h.row();
-                        h.add(Core.bundle.format("bullet.damage", type.damage));
-                    }
-
-                    if(type.splashDamage > 0){
-                        // this.sep(table, Core.bundle.format("bullet.splashdamage", type.splashDamage, Strings.fixed(type.splashDamageRadius / Vars.tilesize, 1)));
-                        h.row();
-                        h.add(Core.bundle.format("bullet.splashdamage", type.splashDamage, Strings.fixed(type.splashDamageRadius / Vars.tilesize, 1)));
-                    }
-
-                    if(type.knockback > 0){
-                        // this.sep(table, Core.bundle.format("bullet.knockback", Strings.fixed(type.knockback, 1)));
-                        h.row();
-                        h.add(Core.bundle.format("bullet.knockback", Strings.fixed(type.knockback, 1)));
-                    }
-
-                    if(type.healPercent > 0){
-                        // this.sep(table, Core.bundle.format("bullet.healpercent", type.healPercent));
-                        h.row();
-                        h.add(Core.bundle.format("bullet.healpercent", type.healPercent));
-                    }
-
-                    if(type.pierce || type.pierceCap != -1){
-                        // this.sep(table, type.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", type.pierceCap));
-                        h.row();
-                        h.add(type.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", type.pierceCap));
-                    }
-
-                    if(type.status == StatusEffects.burning || type.status == StatusEffects.melting || type.incendAmount > 0){
-                        // this.sep(table, "@bullet.incendiary");
-                        h.row();
-                        h.add("@bullet.incendiary");
-                    }
-
-                    if(type.status == StatusEffects.freezing){
-                        // this.sep(table, "@bullet.freezing");
-                        h.row();
-                        h.add("@bullet.freezing");
-                    }
-
-                    if(type.status == StatusEffects.tarred){
-                        // this.sep(table, "@bullet.tarred");
-                        h.row();
-                        h.add("@bullet.tarred");
-                    }
-
-                    if(type.status == StatusEffects.sapped){
-                        // this.sep(table, "@bullet.sapping");
-                        h.row();
-                        h.add("@bullet.sapping");
-                    }
-
-                    if(type.homingPower > 0.01){
-                        // this.sep(table, "@bullet.homing");
-                        h.row();
-                        h.add("@bullet.homing");
-                    }
-
-                    if(type.lightning > 0){
-                        // this.sep(table, "@bullet.shock");
-                        h.row();
-                        h.add("@bullet.shock");
-                    }
-
-                    if(type.fragBullet != null){
-                        // this.sep(table, "@bullet.frag");
-                        h.row();
-                        h.add("@bullet.frag");
-                    }
-                    h.row();
-                }).padTop(-15).left();
-                w.row();
-
+                addStatS(w, true);
+                table.row();
             });
 
             table.row();
@@ -257,116 +197,13 @@ public class MultiTurret extends ItemTurret {
             //Mounts
             table.table(null, w -> {
                 for(int i = 0; i < mounts.size; i++){
-                    MultiTurretMount mount = mounts.get(i);
-                    w.row();
-
-                    w.add(mount.title).padRight(10).right().top();
-                    w.row();
-                    w.image(Core.atlas.find(mount.name + "-full")).size(60).scaling(Scaling.bounded).right().top();
-
-                    w.table(Tex.underline, h -> {
-                        h.left().defaults().padRight(3).left();
-
-                        if(mount.inaccuracy > 0)
-                            h.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + mount.inaccuracy + " " + StatUnit.degrees.localized());
-
-                        if(mount.range > 0){
-                            h.row();
-                            h.add("[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed(mount.range / Vars.tilesize, 1) + " " + StatUnit.blocks);
-                        }
-
-                        h.row();
-                        h.add("[lightgray]" + Core.bundle.get("stat.prog-mats.ammo-shot") + ": [white]" + mount.ammoPerShot);
-                        h.row();
-                        h.add("[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / mount.reloadTime * mount.shots, 1));
-
-                        h.row();
-                        h.add("[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!mount.targetAir ? Core.bundle.get("no") : Core.bundle.get("yes")));
-                        h.row();
-                        h.add("[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!mount.targetGround ? Core.bundle.get("no") : Core.bundle.get("yes")));
-
-                        BulletType type = mount.bullet;
-
-                        if(type.damage > 0 && (type.collides || type.splashDamage <= 0)){
-                            // this.sep(table, Core.bundle.format("bullet.damage", type.damage));
-                            h.row();
-                            h.add(Core.bundle.format("bullet.damage", type.damage));
-                        }
-
-                        if(type.splashDamage > 0){
-                            // this.sep(table, Core.bundle.format("bullet.splashdamage", type.splashDamage, Strings.fixed(type.splashDamageRadius / Vars.tilesize, 1)));
-                            h.row();
-                            h.add(Core.bundle.format("bullet.splashdamage", type.splashDamage, Strings.fixed(type.splashDamageRadius / Vars.tilesize, 1)));
-                        }
-
-                        if(type.knockback > 0){
-                            // this.sep(table, Core.bundle.format("bullet.knockback", Strings.fixed(type.knockback, 1)));
-                            h.row();
-                            h.add(Core.bundle.format("bullet.knockback", Strings.fixed(type.knockback, 1)));
-                        }
-
-                        if(type.healPercent > 0){
-                            // this.sep(table, Core.bundle.format("bullet.healpercent", type.healPercent));
-                            h.row();
-                            h.add(Core.bundle.format("bullet.healpercent", type.healPercent));
-                        }
-
-                        if(type.pierce || type.pierceCap != -1){
-                            // this.sep(table, type.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", type.pierceCap));
-                            h.row();
-                            h.add(type.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", type.pierceCap));
-                        }
-
-                        if(type.status == StatusEffects.burning || type.status == StatusEffects.melting || type.incendAmount > 0){
-                            // this.sep(table, "@bullet.incendiary");
-                            h.row();
-                            h.add("@bullet.incendiary");
-                        }
-
-                        if(type.status == StatusEffects.freezing){
-                            // this.sep(table, "@bullet.freezing");
-                            h.row();
-                            h.add("@bullet.freezing");
-                        }
-
-                        if(type.status == StatusEffects.tarred){
-                            // this.sep(table, "@bullet.tarred");
-                            h.row();
-                            h.add("@bullet.tarred");
-                        }
-
-                        if(type.status == StatusEffects.sapped){
-                            // this.sep(table, "@bullet.sapping");
-                            h.row();
-                            h.add("@bullet.sapping");
-                        }
-
-                        if(type.homingPower > 0.01){
-                            // this.sep(table, "@bullet.homing");
-                            h.row();
-                            h.add("@bullet.homing");
-                        }
-
-                        if(type.lightning > 0){
-                            // this.sep(table, "@bullet.shock");
-                            h.row();
-                            h.add("@bullet.shock");
-                        }
-
-                        if(type.fragBullet != null){
-                            // this.sep(table, "@bullet.frag");
-                            h.row();
-                            h.add("@bullet.frag");
-                        }
-
-                        table.row();
-                    }).padTop(-15).left();
+                    addStatS(w, false, i);
                     table.row();
                 }
             });
         };
 
-        this.stats.add(Stat.weapons, wT);
+        stats.add(Stat.weapons, wT);
     }
 
     public class MultiTurretBuild extends ItemTurretBuild {
@@ -518,17 +355,14 @@ public class MultiTurret extends ItemTurret {
                 for(int i = 0; i < mounts.size; i++){
                     float[] loc = this.mountLocations(i);
 
-                    if(this.validateMountTarget(i)){
-                        boolean canShoot = true;
+                    if(this.validateMountTarget(i)){ boolean canShoot = true;
 
                         if(isControlled()){ //player behavior
                             _targetPoss.get(i).set(unit().aimX, unit().aimY);
                             canShoot = unit().isShooting;
-
                         }else if(this.logicControlled()){ //logic behavior
                             _targetPoss.set(i, targetPos);
                             canShoot = logicShooting;
-
                         }else{ //default AI behavior
                             mountTargetPosition(i, _targets.get(i), loc[0], loc[1]);
                             if(Float.isNaN(_rotations.get(i))) _rotations.set(i, 0f);
@@ -536,7 +370,7 @@ public class MultiTurret extends ItemTurret {
 
                         float targetRot = Angles.angle(loc[0], loc[1], _targetPoss.get(i).x, _targetPoss.get(i).y);
 
-                        this.mountTurnToTarget(i, targetRot);
+                        mountTurnToTarget(i, targetRot);
 
                         if(Angles.angleDist(_rotations.get(i), targetRot) < mounts.get(i).shootCone && canShoot){
                             wasShooting = true;
@@ -559,13 +393,11 @@ public class MultiTurret extends ItemTurret {
 
             float angle = Mathf.mod(rotation, 360);
             float to = Mathf.mod(target, 360);
-
             float allRot = speed;
-            if((angle > to && Angles.backwardDistance(angle, to) > Angles.forwardDistance(angle, to)) || (angle < to && Angles.backwardDistance(angle, to) < Angles.forwardDistance(angle, to)))
-                allRot = -speed;
 
-            for(int i = 0; i < mounts.size; i++)
-                _rotations.set(i, (_rotations.get(i) + allRot) % 360);
+            if((angle > to && Angles.backwardDistance(angle, to) > Angles.forwardDistance(angle, to)) || (angle < to && Angles.backwardDistance(angle, to) < Angles.forwardDistance(angle, to))) allRot = -speed;
+
+            for(int i = 0; i < mounts.size; i++) _rotations.set(i, (_rotations.get(i) + allRot) % 360);
         }
 
         public void mountTurnToTarget(int mount, float target){
@@ -578,7 +410,6 @@ public class MultiTurret extends ItemTurret {
             if(mounts.get(mount).targetAir && !mounts.get(mount).targetGround)
                  return Units.bestEnemy(this.team, loc[0], loc[1], mounts.get(mount).range, e -> !e.dead && !e.isGrounded(), mounts.get(mount).unitSort);
             else return Units.bestTarget(this.team, loc[0], loc[1], mounts.get(mount).range, e -> !e.dead && (e.isGrounded() || mounts.get(mount).targetAir) && (!e.isGrounded() || mounts.get(mount).targetGround), b -> true, mounts.get(mount).unitSort);
-
         }
 
         public boolean validateMountTarget(int mount){
@@ -598,19 +429,13 @@ public class MultiTurret extends ItemTurret {
             _targetPoss.get(mount).set(Predict.intercept(Tmp.v4.set(x, y), pos, speed));
 
             if(_targetPoss.get(mount).isZero()) _targetPoss.get(mount).set(_targets.get(mount));
-
         }
 
         public void updateMountShooting(int mount){
             if(_reloads.get(mount) >= mounts.get(mount).reloadTime){
-            BulletType type = mounts.get(mount).bullet;
-
-                mountShoot(mount, type);
-
-                _reloads.set(mount, 0f);
-            }else
-                _reloads.set(mount,_reloads.get(mount) + delta() * mounts.get(mount).bullet.reloadMultiplier * baseReloadSpeed());
-
+                  mountShoot(mount, mounts.get(mount).bullet);
+                  _reloads.set(mount, 0f);
+            }else _reloads.set(mount,_reloads.get(mount) + delta() * mounts.get(mount).bullet.reloadMultiplier * baseReloadSpeed());
         }
 
         @Override
@@ -633,45 +458,71 @@ public class MultiTurret extends ItemTurret {
             }
         }
 
+        public void mountEffect(int mount, BulletType type){
+            float[] loc = mountLocations(mount);
+
+            (mounts.get(mount).shootEffect == Fx.none ? type.shootEffect : mounts.get(mount).shootEffect).at(loc[4], loc[5], _rotations.get(mount));
+            (mounts.get(mount).smokeEffect == Fx.none ? type.smokeEffect : mounts.get(mount).smokeEffect).at(loc[4], loc[5], _rotations.get(mount));
+            mounts.get(mount).shootSound.at(loc[4], loc[5], Mathf.random(0.9f, 1.1f));
+            if(mounts.get(mount).shootShake > 0) Effect.shake(mounts.get(mount).shootShake, mounts.get(mount).shootShake, loc[4], loc[(int) y]);
+            _recoils.set(mount ,mounts.get(mount).recoilAmount);
+        }
+
+        public void mountBullet(int mount, BulletType type, float spreadAmount){
+            float[] loc = mountLocations(mount);
+
+            float velScl = 1 + Mathf.range(mounts.get(mount).velocityInaccuracy);
+            float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(loc[4], loc[5], _targetPoss.get(mount).x, _targetPoss.get(mount).y) / type.range(), mounts.get(mount).minRange / type.range(), mounts.get(mount).range / type.range()) : 1;
+            float angle = _rotations.get(mount) + Mathf.range(mounts.get(mount).inaccuracy + type.inaccuracy) + (spreadAmount - (mounts.get(mount).shots / 2f)) * mounts.get(mount).spread;
+            type.create(this, this.team, loc[4], loc[5], angle, velScl, lifeScl);
+
+        }
         public void mountShoot(int mount, BulletType type){
-            for(int j = 0; j < mounts.get(mount).shots; j++){
+            float[] loc = mountLocations(mount);
+            mountUseAmmo(mount);
+
+            tr.trns(_rotations.get(mount), shootLength);
+            chargeBeginEffect.at(loc[4] + tr.x, loc[5] + tr.y, _rotations.get(mount));
+            chargeSound.at(loc[4] + tr.x, loc[5] + tr.y, 1);
+
+            for(int i = 0; i < chargeEffects; i++){
+                Time.run(Mathf.random(chargeMaxDelay), () -> {
+                    if(!isValid()) return;
+                    tr.trns(_rotations.get(mount), mounts.get(mount).shootLength);
+                    chargeEffect.at(loc[4] + tr.x, loc[5] + tr.y, _rotations.get(mount));
+                });
+            }
+
+            _chargings.set(mount, true);
+
+            Time.run(mounts.get(mount).chargeTime, () -> {
+                if(!isValid()) return;
+                tr.trns(_rotations.get(mount), mounts.get(mount).shootLength);
+                _recoils.set(mount ,mounts.get(mount).recoilAmount);
+                _heats.set(mount ,1f);
+                mountBullet(mount, type,_rotations.get(mount) + Mathf.range(mounts.get(mount).inaccuracy));
+                mountEffect(mount, type);
+                _chargings.set(mount, false);
+            });
+
+            for(int j = 0; j < mounts.get(mount).shots; j++){ //burst pattern.
                 int spreadAmount = j;
-
+                float[] loc = mountLocations(mount);
                 Time.run(mounts.get(mount).burstSpacing * j, () -> {
-                    if(!this.isValid() || !this.hasAmmo()) return;
+                    if(!isValid() || !hasAmmo()) return;
 
-                    float[] loc = this.mountLocations(mount);
+                    if(mounts.get(mount).loopSound != Sounds.none) loopSounds.get(mount).update(loc[4], loc[5], true);
+                    if(mounts.get(mount).sequential) _shotCounters.set(mount, _shotCounters.get(mount)+1);
 
-                    if(mounts.get(mount).shootShake > 0) Effect.shake(mounts.get(mount).shootShake, mounts.get(mount).shootShake, loc[4], loc[(int) y]);
-
-
-                    Effect fsHootEffect = mounts.get(mount).shootEffect == Fx.none ? type.shootEffect : mounts.get(mount).shootEffect;
-                    Effect fsMockedEffect = mounts.get(mount).smokeEffect == Fx.none ? type.smokeEffect : mounts.get(mount).smokeEffect;
-
-                    fsHootEffect.at(loc[4], loc[5], _rotations.get(mount));
-                    fsMockedEffect.at(loc[4], loc[5], _rotations.get(mount));
-
-                    mounts.get(mount).shootSound.at(loc[4], loc[5], Mathf.random(0.9f, 1.1f));
-
+                    mountBullet(mount, type, spreadAmount);
+                    mountEffect(mount, type);
+                    mountUseAmmo(mount);
                     _recoils.set(mount ,mounts.get(mount).recoilAmount);
                     _heats.set(mount ,1f);
-
-                    mountUseAmmo(mount);
-                    if(mounts.get(mount).loopSound != Sounds.none)
-                        loopSounds.get(mount).update(loc[4], loc[5], true);
-
-                    float velScl = 1 + Mathf.range(mounts.get(mount).velocityInaccuracy);
-                    float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(loc[4], loc[5], _targetPoss.get(mount).x, _targetPoss.get(mount).y) / type.range(), mounts.get(mount).minRange / type.range(), mounts.get(mount).range / type.range()) : 1;
-                    float angle = _rotations.get(mount) + Mathf.range(mounts.get(mount).inaccuracy + type.inaccuracy) + (spreadAmount - (mounts.get(mount).shots / 2f)) * mounts.get(mount).spread;
-
-                    type.create(this, this.team, loc[4], loc[5], angle, velScl, lifeScl);
-
-                    if(mounts.get(mount).sequential) _shotCounters.set(mount, _shotCounters.get(mount)+1);
                 });
             }
 
             if(!mounts.get(mount).sequential) _shotCounters.set(mount, _shotCounters.get(mount)+1);
-
         }
         public BulletType mountUseAmmo(int mount){
             if(cheating()) return peekAmmo();
@@ -682,6 +533,7 @@ public class MultiTurret extends ItemTurret {
             totalAmmo -= mounts.get(mount).ammoPerShot;
             totalAmmo = (int) Mathf.maxZero(totalAmmo);
             mountEjectEffects(mount);
+
             return entry.type();
         }
 

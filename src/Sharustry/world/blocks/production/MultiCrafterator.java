@@ -2,13 +2,20 @@ package Sharustry.world.blocks.production;
 
 import arc.Core;
 import arc.graphics.g2d.Draw;
+import arc.util.*;
+import arc.scene.*;
 import arc.scene.ui.layout.*;
+import arc.math.geom.*;
 import mindustry.gen.*;
 import mindustry.type.*;
-import multilib.MultiCrafter;
-import multilib.Recipe;
 import multilib.Recipe.*;
 import mindustry.ui.*;
+import mindustry.ui.fragments.BlockInventoryFragment;
+
+import static arc.Core.*;
+import static mindustry.Vars.*;
+import multilib.MultiCrafter;
+import multilib.Recipe;
 
 public class MultiCrafterator extends MultiCrafter {
 
