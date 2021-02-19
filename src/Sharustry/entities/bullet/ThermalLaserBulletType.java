@@ -13,7 +13,6 @@ public class ThermalLaserBulletType extends ContinuousLaserBulletType {
     public class ThermalLaserBullet extends Bullet {
         @Override
         public void update() {
-            Log.info("h");
             super.update();
         }
     }

@@ -3,11 +3,9 @@ package Sharustry.world.blocks.defense;
 import arc.audio.Sound;
 import arc.graphics.Color;
 import mindustry.content.Fx;
-import mindustry.entities.Effect;
-import mindustry.entities.Units;
+import mindustry.entities.*;
 import mindustry.entities.bullet.BulletType;
-import mindustry.gen.Sounds;
-import mindustry.gen.Unit;
+import mindustry.gen.*;
 import mindustry.graphics.Pal;
 
 public class MultiTurretMount {
@@ -61,6 +59,14 @@ public class MultiTurretMount {
     public boolean sequential = false;
     public float spread = 0;
     public float burstSpacing = 0;
+
+    public float chargeTime = -1;
+    public float shootLength = 8;
+    public float chargeEffects = 5;
+    public float chargeMaxDelay = 48;
+    public Effect chargeEffect = Fx.none, chargeBeginEffect = Fx.none;
+
+    public Sound chargeSound = Sounds.none;
 
     public Units.Sortf unitSort = Unit::dst2;
 

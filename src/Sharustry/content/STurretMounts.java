@@ -1,8 +1,12 @@
 package Sharustry.content;
 
+import arc.graphics.Color;
+import mindustry.content.Fx;
 import mindustry.ctype.ContentList;
+import mindustry.entities.bullet.LaserBulletType;
 import mindustry.gen.Sounds;
 import Sharustry.world.blocks.defense.MultiTurretMount;
+import mindustry.graphics.Pal;
 
 import static Sharustry.content.SBullets.*;
 
@@ -12,16 +16,40 @@ public class STurretMounts implements ContentList {
 
     @Override
     public void load() {
-        unoMount = new MultiTurretMount("unoM", unoBullet){{
-           reloadTime = 15;
+
+        unoMount = new MultiTurretMount("unoM",
+            new LaserBulletType(140){{
+                colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
+                hitEffect = Fx.hitLancer;
+                despawnEffect = Fx.none;
+                hitSize = 4;
+                lifetime = 16f;
+                drawSize = 400f;
+                collidesAir = false;
+                length = 173f;
+            }}
+        ){{
            ammoPerShot = 5;
            x = 2.75f;
            y = 2.75f;
            shootY = 13/4f;
-           recoilAmount = 1;
            range = 9 * 8;
            title = "Uno";
+
+            recoilAmount = 2f;
+            reloadTime = 80f;
+            cooldown = 0.03f;
+            shootEffect = Fx.lancerLaserShoot;
+            smokeEffect = Fx.none;
+            chargeEffect = Fx.lancerLaserCharge;
+            chargeBeginEffect = Fx.lancerLaserChargeBegin;
+            chargeTime = 40f;
+            chargeMaxDelay = 30f;
+            chargeEffects = 7;
+            targetAir = false;
+            shootSound = Sounds.laser;
         }};
+
 
         hailMount = new MultiTurretMount("hailM", hailBullet){{
             targetAir = false;
