@@ -57,20 +57,21 @@ public class SBlocks implements ContentList{
 
         jumble = new MultiTurret("multi-i", Items.graphite, mainBullet, "Aggregate", unoMount, waveMount, hailMount){{
             requirements(Category.turret, ItemStack.with(Items.copper, 135, Items.lead, 75, Items.metaglass, 40, Items.graphite, 80, Items.silicon, 50));
-            ammos(0,
+            ammos(MultiTurretMount.MountAmmoType.power,
                 Items.copper, Bullets.standardCopper,
                 Items.graphite, Bullets.standardDense,
                 Items.pyratite, Bullets.standardIncendiary,
                 Items.silicon, Bullets.standardHoming
             );
 
-            ammos(1,
-                Items.graphite, Bullets.artilleryDense,
-                Items.silicon, Bullets.artilleryHoming,
-                Items.pyratite, Bullets.artilleryIncendiary
+            ammos(MultiTurretMount.MountAmmoType.liquid,
+                Liquids.water, SBullets.miniWater,
+                Liquids.slag, SBullets.miniSlag,
+                Liquids.cryofluid, SBullets.miniCryo,
+                Liquids.oil, SBullets.miniOil
             );
 
-            ammos(2,
+            ammos(MultiTurretMount.MountAmmoType.item,
                 Items.graphite, Bullets.artilleryDense,
                 Items.silicon, Bullets.artilleryHoming,
                 Items.pyratite, Bullets.artilleryIncendiary
@@ -81,6 +82,7 @@ public class SBlocks implements ContentList{
             ammoPerShot = 12;
             recoilAmount = 2;
             reloadTime = 21;
+            hasPower = true;
         }};
 
         adaptDrill = new AttributeDrill("adapt-drill"){{

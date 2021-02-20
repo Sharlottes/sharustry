@@ -12,7 +12,7 @@ import mindustry.graphics.Pal;
 import static Sharustry.content.SFx.*;
 
 public class SBullets implements ContentList{
-    public static BulletType mainBullet, unoBullet, hailBullet, miniSlag, accelMissile, testLaser;
+    public static BulletType mainBullet, unoBullet, hailBullet, miniSlag, miniWater, miniCryo, miniOil, accelMissile, testLaser;
 
     @Override
     public void load(){
@@ -26,6 +26,7 @@ public class SBullets implements ContentList{
            shootEffect = Fx.shootSmall;
            smokeEffect = Fx.shootSmallSmoke;
         }};
+
         unoBullet = new BasicBulletType(){{
             speed = 2;
             damage = 7;
@@ -57,6 +58,32 @@ public class SBullets implements ContentList{
             puddleSize = 2;
             orbSize = 1;
         }};
+
+        miniWater = new LiquidBulletType(){{
+            collidesAir = false;
+            liquid = Liquids.water;
+            knockback = 0.25f;
+            drag = 0.03f;
+            puddleSize = 2;
+            orbSize = 1;
+        }};
+
+        miniCryo = new LiquidBulletType(){{
+            collidesAir = false;
+            liquid = Liquids.cryofluid;
+            drag = 0.03f;
+            puddleSize = 2;
+            orbSize = 1;
+        }};
+
+        miniOil = new LiquidBulletType(){{
+            collidesAir = false;
+            liquid = Liquids.oil;
+            drag = 0.03f;
+            puddleSize = 2;
+            orbSize = 1;
+        }};
+
 
         accelMissile = new AccelBulletType(2.5f, 30){{
             backColor = SPal.cryoium.cpy().mul(Items.titanium.color);

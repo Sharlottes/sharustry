@@ -195,15 +195,7 @@ public class MultipleDrill extends Drill {
 
         @Override
         public void displayBars(Table table){
-            for(Func<Building, Bar> bar : block.bars.list()){
-                //TODO fix conclusively
-                try{
-                    table.add(bar.get(self())).growX();
-                    table.row();
-                }catch(ClassCastException e){
-                    break;
-                }
-            }
+            super.displayBars(table);
 
             Tile tile = world.tile((int) x / 8, (int) y / 8);
             itemS.clear();

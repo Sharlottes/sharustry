@@ -48,13 +48,17 @@ public class STurretMounts implements ContentList {
             chargeEffects = 7;
             targetAir = false;
             shootSound = Sounds.laser;
+            powerUse = 6f;
+            maxAmmo = 30;
+
+            ammoType = MountAmmoType.power;
         }};
 
 
         hailMount = new MultiTurretMount("hailM", hailBullet){{
             targetAir = false;
             reloadTime = 60;
-            ammoPerShot = 20;
+            ammoPerShot = 5;
             x = -3.75f;
             y = -4f;
             shootY = 18/4f;
@@ -62,19 +66,27 @@ public class STurretMounts implements ContentList {
             range = 18 * 8;
             title = "Mini Hail";
             shootSound = Sounds.bang;
+
+            maxAmmo = 50;
+
+            ammoType = MountAmmoType.item;
         }};
 
         waveMount = new MultiTurretMount("waveM", miniSlag){{
-           targetAir = false;
-           reloadTime = 3;
-           x = 4.25f;
-           y = -3.5f;
-           shootY = 16/4f;
-           recoilAmount = 1;
-           range = 13 * 8;
-           title = "Mini Wave";
-           shootSound = Sounds.none;
-           loopSound = Sounds.spray;
+            targetAir = false;
+            reloadTime = 3;
+            x = 4.25f;
+            y = -3.5f;
+            shootY = 16/4f;
+            recoilAmount = 1;
+            range = 13 * 8;
+            title = "Mini Wave";
+            shootSound = Sounds.none;
+            loopSound = Sounds.spray;
+            ammoPerShot = 5;
+            maxAmmo = 100;
+            extinguish = true;
+            ammoType = MountAmmoType.liquid;
         }};
     }
 }

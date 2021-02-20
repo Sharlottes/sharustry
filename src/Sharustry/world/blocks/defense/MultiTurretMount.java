@@ -21,7 +21,8 @@ public class MultiTurretMount {
 
     public float reloadTime = 30;
     public BulletType bullet;
-    public float ammoPerShot = 1;
+    public int ammoPerShot = 1;
+    public float maxAmmo = 20;
     public float range = 80;
     public float rotateSpeed = 5;
     public float inaccuracy = 0;
@@ -66,12 +67,20 @@ public class MultiTurretMount {
     public float chargeMaxDelay = 48;
     public Effect chargeEffect = Fx.none, chargeBeginEffect = Fx.none;
 
+    public boolean extinguish = false;
+    public MountAmmoType ammoType;
     public Sound chargeSound = Sounds.none;
+
+    public float powerUse = 0f;
 
     public Units.Sortf unitSort = Unit::dst2;
 
     public MultiTurretMount(String name, BulletType bullet){
         this.name = name;
         this.bullet = bullet;
+    }
+
+    public enum MountAmmoType {
+        item, liquid, power
     }
 }
