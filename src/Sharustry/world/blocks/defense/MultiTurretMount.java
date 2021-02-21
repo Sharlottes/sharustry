@@ -21,7 +21,7 @@ public class MultiTurretMount {
 
     public float reloadTime = 30;
     public BulletType bullet;
-    public int ammoPerShot = 1;
+    public int ammoPerShot = 2;
     public float maxAmmo = 20;
     public float range = 80;
     public float rotateSpeed = 5;

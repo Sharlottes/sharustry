@@ -78,10 +78,10 @@ public class SBlocks implements ContentList{
             );
             size = 2;
             range = 15 * 8;
-            maxAmmo = 225;
-            ammoPerShot = 12;
+            maxAmmo = 30;
             recoilAmount = 2;
             reloadTime = 21;
+            ammoPerShot = 2;
             hasPower = true;
         }};
 

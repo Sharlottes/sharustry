@@ -17,7 +17,7 @@ public class SBullets implements ContentList{
     @Override
     public void load(){
         mainBullet = new BasicBulletType(){{
-           ammoMultiplier = 45;
+           ammoMultiplier = 3;
            speed = 2.5f;
            damage = 9;
            width = 5.5f;
