@@ -9,10 +9,8 @@ import mindustry.content.*;
 import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
-import static Sharustry.content.SFx.*;
-
 public class SBullets implements ContentList{
-    public static BulletType mainBullet, unoBullet, hailBullet, miniSlag, miniWater, miniCryo, miniOil, accelMissile, testLaser;
+    public static BulletType mainBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, accelMissile, testLaser;
 
     @Override
     public void load(){
@@ -27,28 +25,6 @@ public class SBullets implements ContentList{
            smokeEffect = Fx.shootSmallSmoke;
         }};
 
-        unoBullet = new BasicBulletType(){{
-            speed = 2;
-            damage = 7;
-            width = 3.5f;
-            height = 4.5f;
-            homingPower = 0.02f;
-            lifetime = 50;
-            hitEffect = basicHit;
-            despawnEffect = basicDespawn;
-        }};
-
-        hailBullet = new ArtilleryBulletType(){{
-           speed = 1.5f;
-           damage = 5;
-           hitEffect = smallBlastHit;
-           knockback = 0.5f;
-           lifetime = 105;
-           width = 5.5f;
-           height = 5.5f;
-           splashDamage = 18;
-           splashDamageRadius = 14;
-        }};
 
         miniSlag = new LiquidBulletType(){{
             collidesAir = false;
@@ -84,6 +60,21 @@ public class SBullets implements ContentList{
             orbSize = 1;
         }};
 
+        miniAccelMissile = new AccelBulletType(2f, 10){{
+            backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
+            frontColor = trailColor = SPal.cryoium;
+            shrinkY = 0f;
+            width = 1.5f;
+            height = 3.5f;
+            hitSound = Sounds.explosion;
+            trailChance = 0.45f;
+            lifetime = 25f;
+            sprite = "bullet";
+            accelScl = 0.15f;
+            pierceBuilding = true;
+            pierceCap = 3;
+            maxDamage = damage*4f;
+        }};
 
         accelMissile = new AccelBulletType(2.5f, 30){{
             backColor = SPal.cryoium.cpy().mul(Items.titanium.color);

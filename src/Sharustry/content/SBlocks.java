@@ -1,5 +1,7 @@
 package Sharustry.content;
 
+import mindustry.entities.bullet.LaserBulletType;
+import mindustry.graphics.Pal;
 import multilib.Recipe.*;
 import Sharustry.world.blocks.defense.*;
 import Sharustry.world.blocks.production.*;
@@ -18,7 +20,7 @@ import static mindustry.type.ItemStack.*;
 public class SBlocks implements ContentList{
     public static Block
             //defense
-            balkan, jumble,
+            balkan, jumble, conductron,
             //wall
             shieldWall,
             //drill
@@ -55,14 +57,47 @@ public class SBlocks implements ContentList{
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
 
+        conductron = new MultiTurret("conductron", Items.titanium, new LaserBulletType(140){{
+            colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
+            hitEffect = Fx.hitLancer;
+            despawnEffect = Fx.none;
+            hitSize = 4;
+            lifetime = 16f;
+            drawSize = 400f;
+            collidesAir = false;
+            length = 173f;
+        }}, "Conductron", arcMount, arcMount, laserMount){{
+            requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
+            ammos(MultiTurretMount.MountAmmoType.power, Liquids.water, SBullets.miniWater);
+            ammos(MultiTurretMount.MountAmmoType.power, Liquids.water, SBullets.miniWater);
+            ammos(MultiTurretMount.MountAmmoType.power, Liquids.water, SBullets.miniWater);
+            addCustomMountLocation(new Float[]{-6.5f, -4.25f, 6.5f, -4.25f, 0f, 1.5f});
+            size = 3;
+            maxAmmo = 30;
+            ammoPerShot = 3;
+            hasPower = true;
+            customMountLocation = true;
+            range = 165f;
+            chargeTime = 40f;
+            chargeMaxDelay = 30f;
+            chargeEffects = 7;
+            recoilAmount = 2f;
+            reloadTime = 80f;
+            cooldown = 0.03f;
+            shootShake = 2f;
+            shootEffect = Fx.lancerLaserShoot;
+            smokeEffect = Fx.none;
+            chargeEffect = Fx.lancerLaserCharge;
+            chargeBeginEffect = Fx.lancerLaserChargeBegin;
+            heatColor = Color.red;
+
+            health = 280 * size * size;
+            shootSound = Sounds.laser;
+        }};
+
         jumble = new MultiTurret("multi-i", Items.graphite, mainBullet, "Aggregate", unoMount, waveMount, hailMount){{
             requirements(Category.turret, ItemStack.with(Items.copper, 135, Items.lead, 75, Items.metaglass, 40, Items.graphite, 80, Items.silicon, 50));
-            ammos(MultiTurretMount.MountAmmoType.power,
-                Items.copper, Bullets.standardCopper,
-                Items.graphite, Bullets.standardDense,
-                Items.pyratite, Bullets.standardIncendiary,
-                Items.silicon, Bullets.standardHoming
-            );
+            ammos(MultiTurretMount.MountAmmoType.power, Liquids.water, SBullets.miniWater);
 
             ammos(MultiTurretMount.MountAmmoType.liquid,
                 Liquids.water, SBullets.miniWater,
@@ -76,6 +111,7 @@ public class SBlocks implements ContentList{
                 Items.silicon, Bullets.artilleryHoming,
                 Items.pyratite, Bullets.artilleryIncendiary
             );
+
             size = 2;
             range = 15 * 8;
             maxAmmo = 30;

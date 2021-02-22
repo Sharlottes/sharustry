@@ -74,7 +74,9 @@ public class MultiTurretMount {
     public float powerUse = 0f;
 
     public Units.Sortf unitSort = Unit::dst2;
-
+    public MultiTurretMount(String name) {
+        this.name = name;
+    }
     public MultiTurretMount(String name, BulletType bullet){
         this.name = name;
         this.bullet = bullet;

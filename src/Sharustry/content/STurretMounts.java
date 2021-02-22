@@ -4,18 +4,59 @@ import arc.graphics.Color;
 import mindustry.content.Fx;
 import mindustry.ctype.ContentList;
 import mindustry.entities.bullet.LaserBulletType;
+import mindustry.entities.bullet.LightningBulletType;
 import mindustry.gen.Sounds;
 import Sharustry.world.blocks.defense.MultiTurretMount;
 import mindustry.graphics.Pal;
+import mindustry.io.JsonIO;
 
 import static Sharustry.content.SBullets.*;
 
 public class STurretMounts implements ContentList {
-    public static MultiTurretMount unoMount, hailMount, waveMount;
+    public static MultiTurretMount laserMount, arcMount, unoMount, hailMount, waveMount;
 
 
     @Override
     public void load() {
+        laserMount = new MultiTurretMount("laserM", miniAccelMissile){{
+            title = "Laser";
+            barrels = 2;
+            spread = 4f;
+            shots = 2;
+            reloadTime = 20f;
+            restitution = 0.03f;
+            range = 100;
+            shootCone = 15f;
+            inaccuracy = 2f;
+            rotateSpeed = 10f;
+            powerUse = 6.3f;
+            ammoType = MountAmmoType.power;
+        }};
+
+        arcMount = new MultiTurretMount("arcM",
+            new LightningBulletType(){{
+                damage = 20;
+                lightningLength = 25;
+                collidesAir = false;
+            }}
+        ){{
+            title = "Arc";
+            x = -4f;
+            y = -4.75f;
+            reloadTime = 35f;
+            shootCone = 40f;
+            rotateSpeed = 8f;
+            powerUse = 3.3f;
+            targetAir = false;
+            range = 90f;
+            shootEffect = Fx.lightningShoot;
+            heatColor = Color.red;
+            recoilAmount = 1f;
+            shootSound = Sounds.spark;
+
+            ammoType = MountAmmoType.power;
+        }};
+
 
         unoMount = new MultiTurretMount("unoM",
             new LaserBulletType(140){{
@@ -55,7 +96,7 @@ public class STurretMounts implements ContentList {
         }};
 
 
-        hailMount = new MultiTurretMount("hailM", hailBullet){{
+        hailMount = new MultiTurretMount("hailM"){{
             targetAir = false;
             reloadTime = 60;
             ammoPerShot = 5;
@@ -72,7 +113,7 @@ public class STurretMounts implements ContentList {
             ammoType = MountAmmoType.item;
         }};
 
-        waveMount = new MultiTurretMount("waveM", miniSlag){{
+        waveMount = new MultiTurretMount("waveM"){{
             targetAir = false;
             reloadTime = 3;
             x = 4.25f;

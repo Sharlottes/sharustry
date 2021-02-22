@@ -31,6 +31,9 @@ import static arc.struct.ObjectMap.*;
 import static mindustry.Vars.*;
 
 public class MultiTurret extends ItemTurret {
+    public boolean customMountLocation = false;
+    public Seq<Float> customMountLocationsX = new Seq<>();
+    public Seq<Float> customMountLocationsY = new Seq<>();
     public float rangeTime = 80;
     public float fadeTime = 20;
     public String title;
@@ -81,6 +84,12 @@ public class MultiTurret extends ItemTurret {
         this.bullet = mainBullet;
         this.title = title;
         ammo(ammoItem, mainBullet);
+    }
+
+    public void addCustomMountLocation(Float[] xy){
+        customMountLocation = true;
+        for(int ix = 0; ix < amount * 2; ix += 2) customMountLocationsX.add(xy[ix]);
+        for(int iy = 1; iy < amount * 2; iy += 2) customMountLocationsY.add(xy[iy]);
     }
 
     public void ammos(MultiTurretMount.MountAmmoType ammotype, Object... objects){
@@ -183,8 +192,8 @@ public class MultiTurret extends ItemTurret {
         super.drawPlace(x, y, rotation, valid);
         for(int i = 0; i < mounts.size; i++){
             float fade = Mathf.curve(Time.time % totalRangeTime, rangeTime * i, rangeTime * i + fadeTime) - Mathf.curve(Time.time % totalRangeTime, rangeTime * (i + 1) - fadeTime, rangeTime * (i + 1));
-            float tX = x * tilesize + this.offset + mounts.get(i).x;
-            float tY = y * tilesize + this.offset + mounts.get(i).y;
+            float tX = x * tilesize + this.offset + (customMountLocation ? customMountLocationsX.get(i) : mounts.get(i).x);
+            float tY = y * tilesize + this.offset + (customMountLocation ? customMountLocationsY.get(i) : mounts.get(i).y);
 
             Lines.stroke(3, Pal.gray);
             Draw.alpha(fade);
@@ -459,7 +468,6 @@ public class MultiTurret extends ItemTurret {
         @Override
         public void displayBars(Table bars){
             for(Func<Building, Bar> bar : block.bars.list()){
-                //TODO fix conclusively
                 try{
                     bars.add(bar.get(self())).growX();
                     bars.row();
@@ -554,7 +562,7 @@ public class MultiTurret extends ItemTurret {
         }
 
         public float[] mountLocations(int mount){
-            Tmp.v1.trns(this.rotation - 90, mounts.get(mount).x, mounts.get(mount).y - recoil);
+            Tmp.v1.trns(this.rotation - 90, (customMountLocation ? customMountLocationsX.get(mount) : mounts.get(mount).x), (customMountLocation ? customMountLocationsY.get(mount) : mounts.get(mount).y) - recoil);
             Tmp.v1.add(x, y);
             Tmp.v2.trns(_rotations.get(mount), -_recoils.get(mount));
             float i = (_shotCounters.get(mount) % mounts.get(mount).barrels) - (mounts.get(mount).barrels - 1) / 2;
@@ -737,7 +745,7 @@ public class MultiTurret extends ItemTurret {
         public void mountTargetPosition(int mount, Posc pos, float x, float y){
             if(!mountHasAmmo(mount)) return;
 
-            BulletType bullet = mounts.get(mount).bullet;
+            BulletType bullet = mountPeekAmmo(mount);
             float speed = bullet.speed;
 
             if(speed < 0.1) speed = 9999999;
@@ -752,7 +760,7 @@ public class MultiTurret extends ItemTurret {
                   mountShoot(mount, mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.liquid ? liquidMountAmmoTypes.get(mount).get(liquids.current()) : mountPeekAmmo(mount));
                   _reloads.set(mount, 0f);
             }else {
-                float speed = delta() * mounts.get(mount).bullet.reloadMultiplier;
+                float speed = delta() * mountPeekAmmo(mount).reloadMultiplier;
                 if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.power || mounts.get(mount).powerUse > 0.001f) speed *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(mount).powerUse, 0, 1);
                 else speed *= baseReloadSpeed();
                 if(speed >= 0.001f) _reloads.set(mount, _reloads.get(mount) + speed);
