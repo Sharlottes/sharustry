@@ -1,5 +1,6 @@
 package Sharustry.content;
 
+import Sharustry.world.blocks.defense.ShieldWall;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.*;
@@ -46,8 +47,8 @@ public class SFx {
     balkanCharge = new MultiEffect(boost, balkanChargeCircles),
 
     blockShieldBreak = new Effect(35, e -> {
-        if(!(e.data instanceof Buildingc)) return;
-        Building build = e.data();
+        if(!(e.data instanceof ShieldWall.ShieldWallBuild)) return;
+        ShieldWall.ShieldWallBuild build = e.data();
 
         float radius = build.block.size * build.block.size * 1.3f;
 
@@ -55,9 +56,7 @@ public class SFx {
             color(Pal.shield);
             stroke(c.fout() * 2f + 0.1f);
 
-            randLenVectors(e.id, (int)(radius * 1.2f), radius/2f + c.finpow() * radius*1.25f, (x, y) -> {
-                lineAngle(c.x + x, c.y + y, Mathf.angle(x, y), c.fout() * 5 + 1f);
-            });
+            randLenVectors(e.id, (int)(radius * 1.2f), radius / 2f + c.finpow() * radius * 1.25f, (x, y) -> lineAngle(c.x + x, c.y + y, Mathf.angle(x, y), c.fout() * 5 + 1f));
         });
 
         color(Pal.shield, e.fout());

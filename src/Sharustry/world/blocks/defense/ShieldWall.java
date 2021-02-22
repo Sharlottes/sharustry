@@ -3,18 +3,13 @@ package Sharustry.world.blocks.defense;
 import Sharustry.content.SFx;
 import arc.Core;
 import arc.graphics.Color;
-import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.Fill;
-import arc.graphics.g2d.Lines;
+import arc.graphics.g2d.*;
 import arc.math.Mathf;
 import arc.util.Log;
-import arc.util.Time;
 import arc.util.Tmp;
-import arc.util.io.Reads;
-import arc.util.io.Writes;
+import arc.util.io.*;
 import mindustry.Vars;
-import mindustry.graphics.Layer;
-import mindustry.graphics.Pal;
+import mindustry.graphics.*;
 import mindustry.ui.Bar;
 import mindustry.world.blocks.defense.Wall;
 import mindustry.annotations.Annotations.*;
@@ -24,8 +19,15 @@ import static mindustry.Vars.minArmorDamage;
 @Component
 public class ShieldWall extends Wall {
     public boolean drawShields = true;
+    public float armor = 0;
+    public float maxShield = health;
+    public float regenCooldown = 2 * 60f;
+    public float regenAmount = 1;
+
     public ShieldWall(String name){
         super(name);
+        update = true;
+        sync = true;
     }
 
     @Override
@@ -37,22 +39,20 @@ public class ShieldWall extends Wall {
 
     public class ShieldWallBuild extends WallBuild {
         float shield;
-        float armor;
         float shieldAlpha;
+        float heat = 0f;
 
         @Override
         public void created() {
             super.created();
-            shield=block.health;
+            shield = maxShield = health;
         }
 
         @Override
         public void draw(){
             super.draw();
 
-            if(this.shieldAlpha > 0 && drawShields){
-                drawShield();
-            }
+            if(this.shieldAlpha > 0 && drawShields) drawShield();
         }
         public void drawShield(){
             float alpha = shieldAlpha;
@@ -78,14 +78,16 @@ public class ShieldWall extends Wall {
 
         private void rawDamage(float amount){
             boolean hadShields = shield > 0.0001f;
+
             if(hadShields) shieldAlpha = 1f;
+            heat = regenCooldown;
 
             float shieldDamage = Math.min(Math.max(shield, 0), amount);
             shield -= shieldDamage;
             hitTime = 1f;
             amount -= shieldDamage;
+
             if(amount > 0){
-                Log.info(hadShields);
                 health -= amount;
                 if(health <= 0 && !dead()) kill();
 
@@ -95,13 +97,15 @@ public class ShieldWall extends Wall {
 
         @Override
         public void updateTile(){
-            super.update();
+            super.updateTile();
+            shieldAlpha -= delta() / 15f;
+            if(shieldAlpha < 0) shieldAlpha = 0f;
 
-            Log.info(shield);
-            shieldAlpha -= Time.delta / 15f;
-            if(shieldAlpha < 0 || shield <= 0.0001) shieldAlpha = 0f;
+            Log.info(regenAmount * delta());
+            heat -= delta();
+            if(heat <= 0f && shield < maxShield) shield += regenAmount * delta();
         }
-        /*
+
         @Override
         public void write(Writes write){
             super.write(write);
@@ -113,6 +117,6 @@ public class ShieldWall extends Wall {
             super.read(read, revision);
             shield = read.f();
         }
-        */
+
     }
 }

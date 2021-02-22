@@ -153,6 +153,8 @@ public class SBlocks implements ContentList{
         shieldWall = new ShieldWall("shield-wall"){{
                 requirements(Category.defense, with(Items.titanium, 6));
                 health = 150 * 4;
+                armor = 3;
+
         }};
 
         multi = new MultiCrafterator("multi-crafterator", 4){{
