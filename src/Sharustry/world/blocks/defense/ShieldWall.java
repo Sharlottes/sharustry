@@ -52,7 +52,7 @@ public class ShieldWall extends Wall {
         public void draw(){
             super.draw();
 
-            if(this.shieldAlpha > 0 && drawShields) drawShield();
+            if(shieldAlpha > 0 && drawShields) drawShield();
         }
         public void drawShield(){
             float alpha = shieldAlpha;
@@ -101,7 +101,6 @@ public class ShieldWall extends Wall {
             shieldAlpha -= delta() / 15f;
             if(shieldAlpha < 0) shieldAlpha = 0f;
 
-            Log.info(regenAmount * delta());
             heat -= delta();
             if(heat <= 0f && shield < maxShield) shield += regenAmount * delta();
         }
