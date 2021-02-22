@@ -125,22 +125,34 @@ public class SBlocks implements ContentList{
             isSmelter = true;
 
             addRecipe(
-                    new InputContents(with(Items.sand, 1, Items.lead, 1)),
-                    new OutputContents(), 12f, true
+                new InputContents(with(Items.sand, 1, Items.lead, 1)),
+                new OutputContents(), 12f, true
             );
             addRecipe(
-                    new InputContents(with(Items.coal, 1, Items.sand, 1), new LiquidStack[]{new LiquidStack(Liquids.water, 5)}, 1),
-                    new OutputContents(new LiquidStack[]{new LiquidStack(Liquids.slag, 5)}), 60f
+                new InputContents(with(Items.coal, 1, Items.sand, 1), new LiquidStack[]{new LiquidStack(Liquids.water, 5)}, 1),
+                new OutputContents(new LiquidStack[]{new LiquidStack(Liquids.slag, 5)}), 60f
             );
             addRecipe(
-                    new InputContents(with(Items.pyratite, 1, Items.blastCompound, 1)),
-                    new OutputContents(with(Items.scrap, 1, Items.plastanium, 2, Items.sporePod, 2)), 72f
+                new InputContents(with(Items.pyratite, 1, Items.blastCompound, 1)),
+                new OutputContents(with(Items.scrap, 1, Items.plastanium, 2, Items.sporePod, 2)), 72f
             );
             addRecipe(
-                    new InputContents(with(Items.sand, 1), 15),
-                    new OutputContents(with(Items.silicon, 1), 10), 30f, true
+                new InputContents(with(Items.sand, 1), 15),
+                new OutputContents(with(Items.silicon, 1), 10), 30f, true
             );
         }};
+
+
+
+
+
+
+
+
+
+
+
+
         /* //fuck
         warehouseBattle = new BattleCoreBlock("warehouse-battle"){{
 
