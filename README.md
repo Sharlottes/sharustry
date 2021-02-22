@@ -21,11 +21,11 @@ There isn't actually difference between downloading through Releases and downloa
 Releases를 통해 다운로드하는 방법과 Mod Browser를 다운로드하는 방법은 사실 별 차이가 없습니다. 그냥 여기까지 온 당신에게 감사하다구요.   
 
 
-Go to the releases, the latest release will have a `dexed-Sharustry.jar` attached to it that you can download. If it does not have it, follow the steps below(recommended) or bother me with a new issue so I can attach the compiled mod.   
-After you have the `dexed-Sharustry.jar`, paste it into your mod folder(locate your mod folder in the "open mod folder" of Mindustry).   
+Go to the releases, the latest release will have a `Sharustry.jar` attached to it that you can download. If it does not have it, follow the steps below(recommended) or bother me with a new issue so I can attach the compiled mod.   
+After you have the `Sharustry.jar`, paste it into your mod folder(locate your mod folder in the "open mod folder" of Mindustry).   
 
-Releases를 클릭하고, 최신 버전에 달린 `dexed-Sharustry.jar`를 다운로드하세요. 원하는 버전에 `dexed-Sharustry.jar`가 첨부되어 있지 않다면, 아래의 과정을 따르거나 새로운 Issue로 `.jar`를 달아달라고 저를 괴롭히세요.   
-`dexed-Sharustry.jar`를 다운로드 한 후, 모드 디렉토리(민더스트리에서 모드 파일 열기로 확인 가능)에 옮기세요.   
+Releases를 클릭하고, 최신 버전에 달린 `Sharustry.jar`를 다운로드하세요. 원하는 버전에 `Sharustry.jar`가 첨부되어 있지 않다면, 아래의 과정을 따르거나 새로운 Issue로 `.jar`를 달아달라고 저를 괴롭히세요.   
+`Sharustry.jar`를 다운로드 한 후, 모드 디렉토리(민더스트리에서 모드 파일 열기로 확인 가능)에 옮기세요.   
 
 ### Actions / 깃허브 엑션으로 다운로드하기 
 [![Java CI with Gradle](https://github.com/sharlottes/Sharustry/workflows/Java%20CI%20with%20Gradle/badge.svg)](https://github.com/sharlottes/Sharustry/actions)   
