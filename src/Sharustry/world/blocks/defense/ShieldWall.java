@@ -5,7 +5,6 @@ import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.Mathf;
-import arc.util.Log;
 import arc.util.Tmp;
 import arc.util.io.*;
 import mindustry.Vars;
@@ -76,7 +75,7 @@ public class ShieldWall extends Wall {
             if(!withEffect) hitTime = pre;
         }
 
-        private void rawDamage(float amount){
+        protected void rawDamage(float amount){
             boolean hadShields = shield > 0.0001f;
 
             if(hadShields) shieldAlpha = 1f;

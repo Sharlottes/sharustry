@@ -5,7 +5,6 @@ import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import mindustry.entities.*;
-import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.entities.effect.*;
 import Sharustry.graphics.*;
@@ -16,6 +15,21 @@ import static arc.math.Angles.*;
 
 public class SFx {
     public static final Effect
+    skill = new Effect(40f, e -> {
+        Draw.color(e.color);
+        Fill.circle(e.x, e.y, 4 * e.fout());
+
+        if(e.fout() <= 0.5) {
+            e.scaled(60, e1 -> {
+                Lines.stroke(e.fout(0.5f) * 4);
+                Lines.circle(e1.x, e1.y, -1 + (1 - e.fout(0.5f)) * 4);
+
+                Angles.randLenVectors(e1.id, 8, 2 + 10 * (1 - e.fout(0.5f)), (x, y) -> {
+                    Lines.lineAngle(e1.x + x, e1.y + y, Mathf.angle(x, y), ((0.5f - Math.abs((1 - e.fout(0.5f)) - 0.5f)) * 2) * 4 + 1);
+                });
+             });
+        }
+    }),
     boost = new Effect(50f, e -> {
         color(SPal.cryoium(e));
 

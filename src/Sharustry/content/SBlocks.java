@@ -1,7 +1,11 @@
 package Sharustry.content;
 
+import arc.math.Mathf;
+import arc.util.Time;
+import mindustry.Vars;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.graphics.Pal;
+import mindustry.world.blocks.defense.turrets.ItemTurret;
 import multilib.Recipe.*;
 import Sharustry.world.blocks.defense.*;
 import Sharustry.world.blocks.production.*;
@@ -20,7 +24,7 @@ import static mindustry.type.ItemStack.*;
 public class SBlocks implements ContentList{
     public static Block
             //defense
-            balkan, jumble, conductron,
+            balkan, jumble, conductron, technicus,
             //wall
             shieldWall,
             //drill
@@ -30,7 +34,23 @@ public class SBlocks implements ContentList{
 
     @Override
     public void load(){
-        balkan = new SharTurret("balkan"){{
+        balkan = new SkillTurret("balkan"){{
+            addSkills(entity -> () -> {
+                for(int i = 0; i < 8; i++){
+                    Time.run(0.1f * 60 * i, () -> {
+                        final float ex = entity.x + Mathf.range(16f);
+                        final float ey = entity.y + Mathf.range(16f);
+                        SFx.skill.at(ex, ey, ammoTypes.findKey(((TemplatedTurretBuild)entity).peekAmmo(), true).color);
+                        for(int ii = 0; ii < 3; ii++) Time.run(15 * ii, () -> {
+                            Sounds.missile.at(ex, ey);
+                            SBullets.miniAccelMissile.create(entity, ex, ey, ((BaseTurretBuild) entity).rotation);
+                        });
+                    });
+                }
+            });
+
+            ammoType = "item";
+            skillDelay = 5;
             ammo(
                 Items.titanium, SBullets.accelMissile,
                 Items.pyratite, SBullets.testLaser
@@ -93,6 +113,43 @@ public class SBlocks implements ContentList{
 
             health = 280 * size * size;
             shootSound = Sounds.laser;
+        }};
+
+        technicus = new SkillTurret("technicus"){{
+            requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
+            addSkills(entity -> () -> {
+                for(int i = 0; i < 8; i++){
+                    Time.run(0.1f * 60 * i,
+                        () -> {
+                            float ex = entity.x + Mathf.range(16f);
+                            float ey = entity.y + Mathf.range(16f);
+                            SFx.skill.at(ex, ey);
+                            Bullets.artilleryPlastic.create(entity, ex, ey, ((BaseTurretBuild)entity).rotation);
+                        }
+                    );
+                }
+            });
+
+            ammoType = "item";
+
+            ammo(
+                Items.copper, Bullets.standardCopper,
+                Items.graphite, Bullets.standardDense,
+                Items.pyratite, Bullets.standardIncendiary,
+                Items.silicon, Bullets.standardHoming
+            );
+
+            spread = 4f;
+            shots = 2;
+            alternate = true;
+            reloadTime = 20f;
+            restitution = 0.03f;
+            range = 100;
+            shootCone = 15f;
+            ammoUseEffect = Fx.casing1;
+            health = 250;
+            inaccuracy = 2f;
+            rotateSpeed = 10f;
         }};
 
         jumble = new MultiTurret("multi-i", Items.graphite, mainBullet, "Aggregate", unoMount, waveMount, hailMount){{
