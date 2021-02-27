@@ -4,6 +4,7 @@ import Sharustry.world.blocks.defense.ShieldWall;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import mindustry.content.Items;
 import mindustry.entities.*;
 import mindustry.graphics.*;
 import mindustry.entities.effect.*;
@@ -15,6 +16,13 @@ import static arc.math.Angles.*;
 
 public class SFx {
     public static final Effect
+
+    distSplashFx = new Effect(80, e -> {
+        Draw.color(Pal.lightOrange, Items.pyratite.color, e.fin());
+        Lines.stroke(2 * e.fout());
+        Lines.circle(e.x, e.y, 85*e.fin());
+    }),
+
     skill = new Effect(40f, e -> {
         Draw.color(e.color);
         Fill.circle(e.x, e.y, 4 * e.fout());
@@ -31,20 +39,23 @@ public class SFx {
         }
     }),
     boost = new Effect(50f, e -> {
-        color(SPal.cryoium(e));
+        if(e.color == null) color(SPal.cryoium(e));
+        else color(e.color);
 
         Fill.square(e.x, e.y, e.fslope() * 4f, 45f);
     }),
 
     balkanShoot = new Effect(21f, e -> {
-        color(SPal.cryoium(e));
+        if(e.color == null) color(SPal.cryoium(e));
+        else color(e.color);
 
         for(int i : Mathf.signs){
             Drawf.tri(e.x, e.y, 4f * e.fout(), 29*1.5f, e.rotation + 90f * i);
         }
     }),
     balkanChargeBegin = new Effect(60f, 100f, e -> {
-        color(SPal.cryoium(e));
+        if(e.color == null) color(SPal.cryoium(e));
+        else color(e.color);
         stroke(e.fin());
         Lines.circle(e.x, e.y, 4f + e.fout() * 6f);
 
@@ -54,7 +65,8 @@ public class SFx {
         Fill.circle(e.x, e.y, e.fin() * 2f);
     }),
     balkanChargeCircles = new Effect(38, e -> {
-        color(SPal.cryoium(e));
+        if(e.color == null) color(SPal.cryoium(e));
+        else color(e.color);
         stroke(e.fin());
         randLenVectors(e.id, 2, 1 +20f * e.fout(), (x, y) -> Fill.circle(e.x + x, e.y + y,  e.fslope() * 2f + 0.5f));
     }),

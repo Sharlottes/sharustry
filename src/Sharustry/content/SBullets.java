@@ -10,7 +10,7 @@ import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
 public class SBullets implements ContentList{
-    public static BulletType mainBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, accelMissile, testLaser;
+    public static BulletType mainBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
 
     @Override
     public void load(){
@@ -63,6 +63,23 @@ public class SBullets implements ContentList{
         miniAccelMissile = new AccelBulletType(2f, 10){{
             backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
             frontColor = trailColor = SPal.cryoium;
+            shrinkY = 0f;
+            width = 1.5f;
+            height = 3.5f;
+            hitSound = Sounds.explosion;
+            trailChance = 0.45f;
+            lifetime = 25f;
+            sprite = "bullet";
+            accelScl = 0.15f;
+            pierceBuilding = true;
+            pierceCap = 3;
+            maxDamage = damage*4f;
+        }};
+
+        miniAccelMissilePyra = new AccelBulletType(2f, 10){{
+            backColor = Pal.lighterOrange.cpy().mul(Items.pyratite.color);
+            frontColor = trailColor = Pal.lightOrange;
+            trailColors = Pal.lightOrange;
             shrinkY = 0f;
             width = 1.5f;
             height = 3.5f;

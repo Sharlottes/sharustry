@@ -1,5 +1,6 @@
 package Sharustry.content;
 
+import Sharustry.entities.bullet.FieldBulletType;
 import arc.math.Mathf;
 import arc.util.Time;
 import mindustry.Vars;
@@ -36,6 +37,9 @@ public class SBlocks implements ContentList{
     public void load(){
         balkan = new SkillTurret("balkan"){{
             addSkills(entity -> () -> {
+                final Color data;
+                if(((TemplatedTurretBuild)entity).hasAmmo() && ((TemplatedTurretBuild)entity).peekAmmo() == SBullets.testLaser) data = Items.pyratite.color;
+                else data = null;
                 for(int i = 0; i < 8; i++){
                     Time.run(0.1f * 60 * i, () -> {
                         final float ex = entity.x + Mathf.range(16f);
@@ -43,14 +47,18 @@ public class SBlocks implements ContentList{
                         SFx.skill.at(ex, ey, ammoTypes.findKey(((TemplatedTurretBuild)entity).peekAmmo(), true).color);
                         for(int ii = 0; ii < 3; ii++) Time.run(15 * ii, () -> {
                             Sounds.missile.at(ex, ey);
-                            SBullets.miniAccelMissile.create(entity, ex, ey, ((BaseTurretBuild) entity).rotation);
+                            (data == null ? SBullets.miniAccelMissile : SBullets.miniAccelMissilePyra).create(entity, ex, ey, ((BaseTurretBuild) entity).rotation);
                         });
                     });
                 }
-            });
+            }, 5);
+
+            addSkills(entity -> () -> {
+                Sounds.unlock.at(entity.x, entity.y, 0.75f);
+                new FieldBulletType(0, -1, 897, 85).create(entity, entity.x, entity.y, 0);
+            }, 20);
 
             ammoType = "item";
-            skillDelay = 5;
             ammo(
                 Items.titanium, SBullets.accelMissile,
                 Items.pyratite, SBullets.testLaser
@@ -128,7 +136,7 @@ public class SBlocks implements ContentList{
                         }
                     );
                 }
-            });
+            }, 20);
 
             ammoType = "item";
 
