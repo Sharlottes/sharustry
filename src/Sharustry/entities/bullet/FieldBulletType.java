@@ -18,6 +18,7 @@ import mindustry.graphics.Pal;
 public class FieldBulletType extends BasicBulletType {
     public float distDamage = 1;
     public float radius;
+    public Color mainColor = Items.pyratite.color, subColor = Pal.lightOrange;
 
     public FieldBulletType(float speed, float damage, float duration, float radius){
         super(speed, damage);
@@ -47,11 +48,11 @@ public class FieldBulletType extends BasicBulletType {
 
     @Override
     public void draw(Bullet b){
-        Draw.color(Items.pyratite.color);
+        Draw.color(mainColor);
         Lines.stroke(1);
         Lines.circle(b.x, b.y, Mathf.clamp((1 - b.fin()) * 20) * radius);
 
-        fillLight(b.x, b.y, Lines.circleVertices(85), Mathf.clamp((1 - b.fin()) * 20) * 85, Items.pyratite.color.cpy().a(0), Pal.lightOrange.cpy().a(0.7f + 0.25f * Mathf.sin(b.time() * 0.05f)));
+        fillLight(b.x, b.y, Lines.circleVertices(85), Mathf.clamp((1 - b.fin()) * 20) * 85, mainColor.cpy().a(0), subColor.cpy().a(0.7f + 0.25f * Mathf.sin(b.time() * 0.05f)));
 
         Draw.color();
     }
@@ -68,7 +69,7 @@ public class FieldBulletType extends BasicBulletType {
 
     @Override
     public void update(Bullet b){
-        if(b.time() % 80 <= 1 && b.lifetime() - b.time() > 100) SFx.distSplashFx.at(b.x, b.y, 0);
+        if(b.time() % 80 <= 1 && b.lifetime() - b.time() > 100) SFx.distSplashFx.at(b.x, b.y, 0, mainColor, subColor);
 
         Units.nearbyEnemies(b.team, b.x - radius, b.y - radius, b.x + radius, b.y + radius, e -> {
             e.apply(StatusEffects.burning, 2);
@@ -80,6 +81,6 @@ public class FieldBulletType extends BasicBulletType {
     public void init(Bullet b){
         if(b == null) return;
 
-        new Effect(45, e -> fillLight(e.x, e.y, Lines.circleVertices(85), 85, Color.clear, Pal.lancerLaser.cpy().a(e.fout()))).at(b.x, b.y, 0);
+        new Effect(45, e -> fillLight(e.x, e.y, Lines.circleVertices(85), 85, Color.clear, mainColor.cpy().a(e.fout()))).at(b.x, b.y, 0);
     }
 }

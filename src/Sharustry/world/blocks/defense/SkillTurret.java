@@ -1,6 +1,7 @@
 package Sharustry.world.blocks.defense;
 
 import Sharustry.content.SBullets;
+import Sharustry.graphics.SPal;
 import arc.func.Func;
 import arc.graphics.Color;
 import arc.math.Mathf;
@@ -38,14 +39,16 @@ public class SkillTurret extends TemplatedTurret {
                 if(useAmmo() == SBullets.testLaser) data = Items.pyratite.color;
                 else data = null;
                 tr.trns(rotation, shootLength);
-                chargeBeginEffect.at(x + tr.x, y + tr.y, rotation, data);
+                if(data == null) chargeBeginEffect.at(x + tr.x, y + tr.y, rotation, SPal.cryoium); //i want to die
+                else chargeBeginEffect.at(x + tr.x, y + tr.y, rotation, data);
                 chargeSound.at(x + tr.x, y + tr.y, 1);
 
                 for(int i = 0; i < chargeEffects; i++){
                     Time.run(Mathf.random(chargeMaxDelay), () -> {
                         if(!isValid()) return;
                         tr.trns(rotation, shootLength);
-                        chargeEffect.at(x + tr.x, y + tr.y, rotation, data);
+                        if(data == null) chargeEffect.at(x + tr.x, y + tr.y, rotation, SPal.cryoium);
+                        else chargeEffect.at(x + tr.x, y + tr.y, rotation, data);
                     });
                 }
 
@@ -119,7 +122,8 @@ public class SkillTurret extends TemplatedTurret {
             Effect fshootEffect = shootEffect == Fx.none ? peekAmmo().shootEffect : shootEffect;
             Effect fsmokeEffect = smokeEffect == Fx.none ? peekAmmo().smokeEffect : smokeEffect;
 
-            fshootEffect.at(x + tr.x, y + tr.y, rotation, data);
+            if(data == null) fshootEffect.at(x + tr.x, y + tr.y, rotation, SPal.cryoium);
+            else fshootEffect.at(x + tr.x, y + tr.y, rotation, data);
             fsmokeEffect.at(x + tr.x, y + tr.y, rotation);
             shootSound.at(x + tr.x, y + tr.y, Mathf.random(0.9f, 1.1f));
 

@@ -1,6 +1,7 @@
 package Sharustry.content;
 
 import Sharustry.entities.bullet.FieldBulletType;
+import Sharustry.graphics.SPal;
 import arc.math.Mathf;
 import arc.util.Time;
 import mindustry.Vars;
@@ -55,7 +56,11 @@ public class SBlocks implements ContentList{
 
             addSkills(entity -> () -> {
                 Sounds.unlock.at(entity.x, entity.y, 0.75f);
-                new FieldBulletType(0, -1, 897, 85).create(entity, entity.x, entity.y, 0);
+                if(((TemplatedTurretBuild)entity).hasAmmo() && ((TemplatedTurretBuild)entity).peekAmmo() == SBullets.testLaser) new FieldBulletType(0, -1, 897, 85).create(entity, entity.x, entity.y, 0);
+                else new FieldBulletType(0, -1, 897, 85){{
+                    mainColor = SPal.cryoium;
+                    subColor = Items.titanium.color;
+                }}.create(entity, entity.x, entity.y, 0);
             }, 20);
 
             ammoType = "item";
