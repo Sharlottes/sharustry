@@ -8,7 +8,6 @@ import mindustry.entities.bullet.LightningBulletType;
 import mindustry.gen.Sounds;
 import Sharustry.world.blocks.defense.MultiTurretMount;
 import mindustry.graphics.Pal;
-import mindustry.io.JsonIO;
 
 import static Sharustry.content.SBullets.*;
 
@@ -30,7 +29,7 @@ public class STurretMounts implements ContentList {
             inaccuracy = 2f;
             rotateSpeed = 10f;
             powerUse = 6.3f;
-            ammoType = MountAmmoType.power;
+            mountType = MultiTurretMountType.power;
         }};
 
         arcMount = new MultiTurretMount("arcM",
@@ -54,7 +53,7 @@ public class STurretMounts implements ContentList {
             recoilAmount = 1f;
             shootSound = Sounds.spark;
 
-            ammoType = MountAmmoType.power;
+            mountType = MultiTurretMountType.power;
         }};
 
 
@@ -92,7 +91,7 @@ public class STurretMounts implements ContentList {
             powerUse = 6f;
             maxAmmo = 30;
 
-            ammoType = MountAmmoType.power;
+            mountType = MultiTurretMountType.power;
         }};
 
 
@@ -110,7 +109,7 @@ public class STurretMounts implements ContentList {
 
             maxAmmo = 50;
 
-            ammoType = MountAmmoType.item;
+            mountType = MultiTurretMountType.item;
         }};
 
         waveMount = new MultiTurretMount("waveM"){{
@@ -127,7 +126,7 @@ public class STurretMounts implements ContentList {
             ammoPerShot = 5;
             maxAmmo = 100;
             extinguish = true;
-            ammoType = MountAmmoType.liquid;
+            mountType = MultiTurretMountType.liquid;
         }};
     }
 }

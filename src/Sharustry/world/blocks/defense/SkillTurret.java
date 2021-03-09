@@ -17,7 +17,6 @@ public class SkillTurret extends TemplatedTurret {
     public Seq<Integer> skillDelays = new Seq<>();
     public Seq<Func<Building, Runnable>> skillSeq = new Seq<>();
 
-
     public SkillTurret(String name){
         super(name);
     }
@@ -105,12 +104,10 @@ public class SkillTurret extends TemplatedTurret {
                 useAmmo();
             }
 
-            shotCounter++;
-            for(int i = 0; i < skillDelays.size; i++){
-                if(shotCounter % skillDelays.get(i) == 0) {
-                    shotcounter = 0;
-                    skillSeq.get(i).get(this).run();
-                }
+            shotcounter++;
+            for(int i = 0; i < skillDelays.size; i++) if(shotcounter % skillDelays.get(i) == 0) {
+                shotcounter = 0;
+                skillSeq.get(i).get(this).run();
             }
         }
 

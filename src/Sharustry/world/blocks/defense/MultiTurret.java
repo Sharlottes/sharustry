@@ -23,14 +23,13 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.Tile;
-import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
 import static arc.struct.ObjectMap.*;
 import static mindustry.Vars.*;
 
-public class MultiTurret extends ItemTurret {
+public class MultiTurret extends TemplatedTurret {
     public boolean customMountLocation = false;
     public Seq<Float> customMountLocationsX = new Seq<>();
     public Seq<Float> customMountLocationsY = new Seq<>();
@@ -40,7 +39,7 @@ public class MultiTurret extends ItemTurret {
     public Seq<MultiTurretMount> mounts = new Seq<>();
     public int amount;
     public float totalRangeTime;
-    public Item ammoItem;
+    public Object mainAmmo;
     public BulletType bullet;
     public Seq<SoundLoop> loopSounds = new Seq<>();
 
@@ -50,25 +49,12 @@ public class MultiTurret extends ItemTurret {
     public Seq<ObjectMap<Liquid, BulletType>> liquidMountAmmoTypes = new Seq<>();
     public Seq<ObjectMap<Item, BulletType>> mountAmmoTypes = new Seq<>();
 
-    public MultiTurret(String name, Item ammoItem, BulletType mainBullet, String title, MultiTurretMount... mounts){
+    public MultiTurret(String name, BulletType type, Object ammo, String title, MultiTurretMount... mounts){
         this(name);
         addMountTurret(mounts);
-        addBaseTurret(ammoItem, mainBullet, title);
+        addBaseTurret(type, ammo, title);
     }
 
-    //should call addBaseTurret() in contents
-    public MultiTurret(String name, MultiTurretMount... mounts){
-        this(name);
-        addMountTurret(mounts);
-    }
-
-    //should call addMountTurret() in contents
-    public MultiTurret(String name, Item ammoItem, BulletType mainBullet, String title){
-        this(name);
-        addBaseTurret(ammoItem, mainBullet, title);
-    }
-
-    //should call addBaseTurret() and addMountTurret() in contents
     public MultiTurret(String name){
         super(name);
     }
@@ -79,11 +65,28 @@ public class MultiTurret extends ItemTurret {
         this.totalRangeTime = rangeTime * this.mounts.size;
     }
 
-    public void addBaseTurret(Item ammoItem, BulletType mainBullet, String title){
-        this.ammoItem = ammoItem;
-        this.bullet = mainBullet;
+    public void addBaseTurret(BulletType type, Object ammo, String title){
+        if(ammo instanceof Item) {
+            hasItems = true;
+            mainAmmo = ammo;
+            ammoType = "item";
+            ammo((Item)ammo, type);
+        }
+        if(ammo instanceof Liquid) {
+            hasLiquids = true;
+            mainAmmo = ammo;
+            ammoType = "liquid";
+            ammo((Liquid)ammo, type);
+        }
+        if(ammo instanceof Float) {
+            hasPower = true;
+            mainAmmo = ammo;
+            ammoType = "power";
+            powerUse = (Float)ammo;
+        }
+
+        this.bullet = type;
         this.title = title;
-        ammo(ammoItem, mainBullet);
     }
 
     public void addCustomMountLocation(Float[] xy){
@@ -92,29 +95,24 @@ public class MultiTurret extends ItemTurret {
         for(int iy = 1; iy < amount * 2; iy += 2) customMountLocationsY.add(xy[iy]);
     }
 
-    public void ammos(MultiTurretMount.MountAmmoType ammotype, Object... objects){
-        if(ammotype == MultiTurretMount.MountAmmoType.item) {
+    public void ammos(MultiTurretMount.MultiTurretMountType ammotype, Object... objects){
+        if(ammotype == MultiTurretMount.MultiTurretMountType.item) {
             mountAmmoTypes.add(OrderedMap.of(objects));
             liquidMountAmmoTypes.add(null);
         }
-        if(ammotype == MultiTurretMount.MountAmmoType.liquid) {
+        if(ammotype == MultiTurretMount.MultiTurretMountType.liquid) {
             mountAmmoTypes.add(null);
             liquidMountAmmoTypes.add(OrderedMap.of(objects));
         }
-        if(ammotype == MultiTurretMount.MountAmmoType.power){
+        if(ammotype == MultiTurretMount.MultiTurretMountType.power){ //do not say me "don't add null". i know that..
             liquidMountAmmoTypes.add(null);
             mountAmmoTypes.add(null);
         }
     }
 
-    public boolean iamdump(int h, Building tile, Item item){
-        return (tile instanceof MultiTurretBuild) && !((MultiTurretBuild) tile)._ammos.get(h).isEmpty() && (((MultiTurretBuild) tile)._ammos.get(h).peek()).item == item;
-    }
 
-    public ReqImage wtfisthis(int h, Building tile, Item item){
-        return new ReqImage(new ItemImage(item.icon(Cicon.medium)), ()->iamdump(h, tile, item));
-    }
-
+    public boolean iamdump(int h, Building tile, Item item){ return (tile instanceof MultiTurretBuild) && !((MultiTurretBuild) tile)._ammos.get(h).isEmpty() && (((MultiTurretBuild) tile)._ammos.get(h).peek()).item == item; }
+    public ReqImage wtfisthis(int h, Building tile, Item item){ return new ReqImage(new ItemImage(item.icon(Cicon.medium)), ()->iamdump(h, tile, item)); }
     @Override
     public void init(){
         consumes.add(new ConsumeLiquidFilter(i -> liquidAmmoTypes.containsKey(i), 1f){
@@ -242,14 +240,18 @@ public class MultiTurret extends ItemTurret {
             h.row();
 
             ObjectMap<ObjectMap<BulletType ,? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
-            if(main) types.put(of(bullet, ammoItem), ammoItem.icon(Cicon.medium));
+            TextureRegion icon = Core.atlas.find("error");
+            if(mainAmmo instanceof Item) icon = ((Item)mainAmmo).icon(Cicon.medium);
+            if(mainAmmo instanceof Liquid) icon = ((Liquid)mainAmmo).icon(Cicon.medium);
+            if(mainAmmo instanceof Float) icon = Icon.power.getRegion();
+            if(main) types.put(of(bullet, mainAmmo), icon);
             else {
-                if(mounts.get(i).ammoType == MultiTurretMount.MountAmmoType.power) {
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power) {
                     BulletType bullet = mounts.get(i).bullet;
                     types.put(of(bullet, null), Icon.power.getRegion());
                 }
 
-                if(mounts.get(i).ammoType == MultiTurretMount.MountAmmoType.item){
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item){
                     for(Item item : content.items()){
                         BulletType bullet = mountAmmoTypes.get(i).get(item);
                         if(bullet == null) continue;
@@ -257,7 +259,7 @@ public class MultiTurret extends ItemTurret {
                     }
                 }
 
-                if(mounts.get(i).ammoType == MultiTurretMount.MountAmmoType.liquid){
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.liquid){
                     for(Liquid liquid : content.liquids()) {
                         BulletType bullet = liquidMountAmmoTypes.get(i).get(liquid);
                         if(bullet == null) continue;
@@ -325,13 +327,13 @@ public class MultiTurret extends ItemTurret {
     public void setStats(){
         super.setStats();
 
-        stats.remove(Stat.shootRange);
-        stats.remove(Stat.inaccuracy);
-        stats.remove(Stat.reload);
-        stats.remove(Stat.ammo);
-        stats.remove(Stat.targetsAir);
-        stats.remove(Stat.targetsGround);
-        stats.remove(Stat.ammoUse);
+        if(stats.equals(Stat.shootRange)) stats.remove(Stat.shootRange);
+        if(stats.equals(Stat.inaccuracy)) stats.remove(Stat.inaccuracy);
+        if(stats.equals(Stat.reload)) stats.remove(Stat.reload);
+        if(stats.equals(Stat.ammo)) stats.remove(Stat.ammo);
+        if(stats.equals(Stat.targetsAir)) stats.remove(Stat.targetsAir);
+        if(stats.equals(Stat.targetsGround)) stats.remove(Stat.targetsGround);
+        if(stats.equals(Stat.ammoUse)) stats.remove(Stat.ammoUse);
 
         stats.add(Stat.weapons, table -> {
             table.add();
@@ -360,7 +362,7 @@ public class MultiTurret extends ItemTurret {
         });
     }
 
-    public class MultiTurretBuild extends ItemTurretBuild {
+    public class MultiTurretBuild extends TemplatedTurretBuild {
         public Seq<Integer> _totalAmmos = new Seq<>();
         public Seq<Float> _reloads = new Seq<>();
         public Seq<Float> _heats = new Seq<>();
@@ -406,7 +408,7 @@ public class MultiTurret extends ItemTurret {
                 }));
 
                 add(new Table(h -> {
-                    if(mounts.get(i).ammoType == MultiTurretMount.MountAmmoType.item) {
+                    if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item) {
                         MultiReqImage itemReq = new MultiReqImage();
 
                         for(Item item : mountAmmoTypes.get(i).keys()) itemReq.add(new ReqImage(item.icon(Cicon.tiny), () -> mountHasAmmo(i)));
@@ -424,7 +426,7 @@ public class MultiTurret extends ItemTurret {
 
                     }
 
-                    if(mounts.get(i).ammoType == MultiTurretMount.MountAmmoType.liquid) {
+                    if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.liquid) {
                         MultiReqImage liquidReq = new MultiReqImage();
 
                         for(Liquid liquid : liquidMountAmmoTypes.get(i).keys()) liquidReq.add(new ReqImage(liquid.icon(Cicon.tiny), () -> mountHasAmmo(i)));
@@ -441,7 +443,7 @@ public class MultiTurret extends ItemTurret {
 
                     }
 
-                    if(mounts.get(i).ammoType == MultiTurretMount.MountAmmoType.power) {
+                    if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power) {
                         MultiReqImage powerReq = new MultiReqImage();
 
                         powerReq.add(new ReqImage(Icon.powerSmall.getRegion(), () -> Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) >= 0.001f));
@@ -513,6 +515,7 @@ public class MultiTurret extends ItemTurret {
                 if (item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
 
                 BulletType type = mountAmmoTypes.get(h).get(item);
+                if(type == null) continue;
                 _totalAmmos.set(h, (int)(_totalAmmos.get(h) + type.ammoMultiplier));
 
                 boolean asdf = true;
@@ -695,6 +698,14 @@ public class MultiTurret extends ItemTurret {
         }
 
         @Override
+        public boolean shouldTurn(){
+            for(int i = 0; i < mounts.size; i++){
+                if(_chargings.get(i)) return false;
+            }
+            return !charging;
+        }
+
+        @Override
         protected void turnToTarget(float target) {
             super.turnToTarget(target);
 
@@ -714,7 +725,7 @@ public class MultiTurret extends ItemTurret {
 
         public void mountTurnToTarget(int mount, float target){
             float speed = mounts.get(mount).rotateSpeed * delta();
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.power || mounts.get(mount).powerUse > 0.001f) speed *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(mount).powerUse, 0, 1);
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.power || mounts.get(mount).powerUse > 0.001f) speed *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(mount).powerUse, 0, 1);
             else speed *= baseReloadSpeed();
             _rotations.set(mount, Angles.moveToward(_rotations.get(mount), target, speed));
         }
@@ -722,7 +733,7 @@ public class MultiTurret extends ItemTurret {
         public Posc findMountTargets(int mount){
             float[] loc = this.mountLocations(mount);
 
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.liquid && mounts.get(mount).extinguish && liquids.current().canExtinguish()) {
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.liquid && mounts.get(mount).extinguish && liquids.current().canExtinguish()) {
                 int tr = (int) (mounts.get(mount).range / tilesize);
                 for(int x = -tr; x <= tr; x++) for(int y = -tr; y <= tr; y++) {
                     Tile other = world.tileWorld(x + (int)loc[4]/8f, y + (int)loc[5]/8f);
@@ -757,11 +768,11 @@ public class MultiTurret extends ItemTurret {
 
         public void updateMountShooting(int mount){
             if(_reloads.get(mount) >= mounts.get(mount).reloadTime){
-                  mountShoot(mount, mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.liquid ? liquidMountAmmoTypes.get(mount).get(liquids.current()) : mountPeekAmmo(mount));
+                  mountShoot(mount, mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.liquid ? liquidMountAmmoTypes.get(mount).get(liquids.current()) : mountPeekAmmo(mount));
                   _reloads.set(mount, 0f);
             }else {
                 float speed = delta() * mountPeekAmmo(mount).reloadMultiplier;
-                if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.power || mounts.get(mount).powerUse > 0.001f) speed *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(mount).powerUse, 0, 1);
+                if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.power || mounts.get(mount).powerUse > 0.001f) speed *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(mount).powerUse, 0, 1);
                 else speed *= baseReloadSpeed();
                 if(speed >= 0.001f) _reloads.set(mount, _reloads.get(mount) + speed);
             }
@@ -777,7 +788,7 @@ public class MultiTurret extends ItemTurret {
 
             for(int i = 0; i < mounts.size; i++){
                 float used = Math.min(Math.min(liquids.get(liquid), maxUsed * Time.delta), Math.max(0, ((mounts.get(i).reloadTime - _reloads.get(i)) / coolantMultiplier) / liquid.heatCapacity));
-                if(mounts.get(i).ammoType == MultiTurretMount.MountAmmoType.power || mounts.get(i).powerUse > 0.001f) used *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1);
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power || mounts.get(i).powerUse > 0.001f) used *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1);
                 else used *= baseReloadSpeed();
                 _reloads.set(i, _reloads.get(i) + used * liquid.heatCapacity * coolantMultiplier);
 
@@ -858,21 +869,21 @@ public class MultiTurret extends ItemTurret {
         }
 
         public BulletType mountPeekAmmo(int mount){
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.power) return mounts.get(mount).bullet;
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.item) return _ammos.get(mount).peek().types(mount);
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.liquid) return liquidMountAmmoTypes.get(mount).get(liquids.current());
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.power) return mounts.get(mount).bullet;
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.item) return _ammos.get(mount).peek().types(mount);
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.liquid) return liquidMountAmmoTypes.get(mount).get(liquids.current());
 
             return null;
         }
 
         public BulletType mountUseAmmo(int mount){
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.power) return mounts.get(mount).bullet;
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.power) return mounts.get(mount).bullet;
             if(cheating()){
-                if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.item) return mountPeekAmmo(mount);
-                if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.liquid) return liquidMountAmmoTypes.get(mount).get(liquids.current());
+                if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.item) return mountPeekAmmo(mount);
+                if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.liquid) return liquidMountAmmoTypes.get(mount).get(liquids.current());
             }
 
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.item){
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.item){
                 ItemEntry entry = _ammos.get(mount).peek();
                 entry.amount -= mounts.get(mount).ammoPerShot;
                 if(entry.amount <= 0) _ammos.get(mount).pop();
@@ -890,14 +901,14 @@ public class MultiTurret extends ItemTurret {
         }
 
         public boolean mountHasAmmo(int mount){
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.power) {
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.power) {
                 return true;
             }
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.item) {
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.item) {
                 if (_ammos.get(mount).size >= 2 && _ammos.get(mount).peek().amount < mounts.get(mount).ammoPerShot) _ammos.get(mount).pop();
                 return _ammos.get(mount).size > 0 && _ammos.get(mount).peek().amount >= mounts.get(mount).ammoPerShot;
             }
-            if(mounts.get(mount).ammoType == MultiTurretMount.MountAmmoType.liquid) {
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.liquid) {
                 return liquidMountAmmoTypes.get(mount) != null
                     && liquidMountAmmoTypes.get(mount).get(liquids.current()) != null
                     && liquids.total() >= 1f / liquidMountAmmoTypes.get(mount).get(liquids.current()).ammoMultiplier;
@@ -919,7 +930,7 @@ public class MultiTurret extends ItemTurret {
             super.write(write);
 
             for(int i = 0; i < mounts.size; i++) {
-                if(mounts.get(i).ammoType != MultiTurretMount.MountAmmoType.item) continue;
+                if(mounts.get(i).mountType != MultiTurretMount.MultiTurretMountType.item) continue;
 
                 write.b(_ammos.get(i).size);
                 for (AmmoEntry entry : _ammos.get(i)) {
@@ -935,7 +946,7 @@ public class MultiTurret extends ItemTurret {
             super.read(read, revision);
 
             for(int h = 0; h < mounts.size; h++) {
-                if(mounts.get(h).ammoType != MultiTurretMount.MountAmmoType.item) continue;
+                if(mounts.get(h).mountType != MultiTurretMount.MultiTurretMountType.item) continue;
 
                 int amount = read.ub();
                 for(int i = 0; i < amount; i++) {

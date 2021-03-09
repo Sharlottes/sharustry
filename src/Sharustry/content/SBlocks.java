@@ -4,10 +4,9 @@ import Sharustry.entities.bullet.FieldBulletType;
 import Sharustry.graphics.SPal;
 import arc.math.Mathf;
 import arc.util.Time;
-import mindustry.Vars;
 import mindustry.entities.bullet.LaserBulletType;
+import mindustry.entities.bullet.ShrapnelBulletType;
 import mindustry.graphics.Pal;
-import mindustry.world.blocks.defense.turrets.ItemTurret;
 import multilib.Recipe.*;
 import Sharustry.world.blocks.defense.*;
 import Sharustry.world.blocks.production.*;
@@ -19,7 +18,7 @@ import mindustry.content.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
 
-import static Sharustry.content.SBullets.mainBullet;
+import static Sharustry.content.SBullets.jumbleBullet;
 import static Sharustry.content.STurretMounts.*;
 import static mindustry.type.ItemStack.*;
 
@@ -37,6 +36,7 @@ public class SBlocks implements ContentList{
     @Override
     public void load(){
         balkan = new SkillTurret("balkan"){{
+
             addSkills(entity -> () -> {
                 final Color data;
                 if(((TemplatedTurretBuild)entity).hasAmmo() && ((TemplatedTurretBuild)entity).peekAmmo() == SBullets.testLaser) data = Items.pyratite.color;
@@ -68,6 +68,8 @@ public class SBlocks implements ContentList{
                 Items.titanium, SBullets.accelMissile,
                 Items.pyratite, SBullets.testLaser
             );
+
+            hasPower = true;
             range = 45*8f;
             chargeTime = 40f;
             chargeMaxDelay = 30f;
@@ -90,21 +92,27 @@ public class SBlocks implements ContentList{
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
 
-        conductron = new MultiTurret("conductron", Items.titanium, new LaserBulletType(140){{
-            colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
-            hitEffect = Fx.hitLancer;
-            despawnEffect = Fx.none;
-            hitSize = 4;
-            lifetime = 16f;
-            drawSize = 400f;
-            collidesAir = false;
-            length = 173f;
-        }}, "Conductron", arcMount, arcMount, laserMount){{
+        conductron = new MultiTurret("conductron"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
-            ammos(MultiTurretMount.MountAmmoType.power, Liquids.water, SBullets.miniWater);
-            ammos(MultiTurretMount.MountAmmoType.power, Liquids.water, SBullets.miniWater);
-            ammos(MultiTurretMount.MountAmmoType.power, Liquids.water, SBullets.miniWater);
+
+            addBaseTurret(new LaserBulletType(140){{
+                colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
+                hitEffect = Fx.hitLancer;
+                despawnEffect = Fx.none;
+                hitSize = 4;
+                lifetime = 16f;
+                drawSize = 400f;
+                collidesAir = false;
+                length = 173f;
+            }}, Items.titanium, "Conductron");
+            addMountTurret(arcMount, arcMount, laserMount);
             addCustomMountLocation(new Float[]{-6.5f, -4.25f, 6.5f, -4.25f, 0f, 1.5f});
+
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+
+            hasPower = true;
             size = 3;
             maxAmmo = 30;
             ammoPerShot = 3;
@@ -126,10 +134,36 @@ public class SBlocks implements ContentList{
 
             health = 280 * size * size;
             shootSound = Sounds.laser;
+
         }};
 
-        technicus = new SkillTurret("technicus"){{
+
+        technicus = new MultiSkillTurret("technicus"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
+
+            addBaseTurret(new ShrapnelBulletType(){{
+                length = 110f;
+                damage = 105f;
+                ammoMultiplier = 5f;
+                toColor = Pal.thoriumPink;
+                shootEffect = smokeEffect = Fx.thoriumShoot;
+            }}, Items.thorium, "Technicus");
+            addMountTurret(unoMount, waveMount, hailMount);
+
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+
+            ammos(MultiTurretMount.MultiTurretMountType.liquid,
+                    Liquids.water, SBullets.miniWater,
+                    Liquids.slag, SBullets.miniSlag,
+                    Liquids.cryofluid, SBullets.miniCryo,
+                    Liquids.oil, SBullets.miniOil
+            );
+            ammos(MultiTurretMount.MultiTurretMountType.item,
+                    Items.graphite, Bullets.artilleryDense,
+                    Items.silicon, Bullets.artilleryHoming,
+                    Items.pyratite, Bullets.artilleryIncendiary
+            );
+
             addSkills(entity -> () -> {
                 for(int i = 0; i < 8; i++){
                     Time.run(0.1f * 60 * i,
@@ -143,15 +177,8 @@ public class SBlocks implements ContentList{
                 }
             }, 20);
 
-            ammoType = "item";
-
-            ammo(
-                Items.copper, Bullets.standardCopper,
-                Items.graphite, Bullets.standardDense,
-                Items.pyratite, Bullets.standardIncendiary,
-                Items.silicon, Bullets.standardHoming
-            );
-
+            hasPower = true;
+            size = 3;
             spread = 4f;
             shots = 2;
             alternate = true;
@@ -165,18 +192,20 @@ public class SBlocks implements ContentList{
             rotateSpeed = 10f;
         }};
 
-        jumble = new MultiTurret("multi-i", Items.graphite, mainBullet, "Aggregate", unoMount, waveMount, hailMount){{
+        jumble = new MultiTurret("multi-i"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 135, Items.lead, 75, Items.metaglass, 40, Items.graphite, 80, Items.silicon, 50));
-            ammos(MultiTurretMount.MountAmmoType.power, Liquids.water, SBullets.miniWater);
 
-            ammos(MultiTurretMount.MountAmmoType.liquid,
+            addBaseTurret(jumbleBullet, Items.graphite, "Aggregate");
+            addMountTurret(unoMount, waveMount, hailMount);
+
+            ammos(MultiTurretMount.MultiTurretMountType.power, Liquids.water, SBullets.miniWater);
+            ammos(MultiTurretMount.MultiTurretMountType.liquid,
                 Liquids.water, SBullets.miniWater,
                 Liquids.slag, SBullets.miniSlag,
                 Liquids.cryofluid, SBullets.miniCryo,
                 Liquids.oil, SBullets.miniOil
             );
-
-            ammos(MultiTurretMount.MountAmmoType.item,
+            ammos(MultiTurretMount.MultiTurretMountType.item,
                 Items.graphite, Bullets.artilleryDense,
                 Items.silicon, Bullets.artilleryHoming,
                 Items.pyratite, Bullets.artilleryIncendiary

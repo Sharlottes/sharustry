@@ -10,11 +10,11 @@ import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
 public class SBullets implements ContentList{
-    public static BulletType mainBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
+    public static BulletType jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
 
     @Override
     public void load(){
-        mainBullet = new BasicBulletType(){{
+        jumbleBullet = new BasicBulletType(){{
            ammoMultiplier = 3;
            speed = 2.5f;
            damage = 9;
