@@ -148,9 +148,9 @@ public class SBlocks implements ContentList{
                 toColor = Pal.thoriumPink;
                 shootEffect = smokeEffect = Fx.thoriumShoot;
             }}, Items.thorium, "Technicus");
-            addMountTurret(unoMount, waveMount, hailMount);
+            addMountTurret(tractMount, waveMount, hailMount);
 
-            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.tract);
 
             ammos(MultiTurretMount.MultiTurretMountType.liquid,
                     Liquids.water, SBullets.miniWater,

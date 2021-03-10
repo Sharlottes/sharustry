@@ -1,11 +1,16 @@
 package Sharustry.world.blocks.defense;
 
+import arc.Core;
 import arc.audio.Sound;
 import arc.func.Func2;
 import arc.graphics.Color;
+import arc.graphics.g2d.TextureRegion;
 import arc.struct.Seq;
+import mindustry.annotations.Annotations;
 import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
+import mindustry.ctype.Content;
+import mindustry.ctype.ContentType;
 import mindustry.entities.*;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.*;
@@ -95,6 +100,9 @@ public class MultiTurretMount {
 
     public Color laserColor = Color.white;
     public StatusEffect status = StatusEffects.none;
+
+    public TextureRegion laser;
+    public TextureRegion laserEnd;
     //region end
 
     //skill

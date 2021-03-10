@@ -12,11 +12,21 @@ import mindustry.graphics.Pal;
 import static Sharustry.content.SBullets.*;
 
 public class STurretMounts implements ContentList {
-    public static MultiTurretMount laserMount, arcMount, unoMount, hailMount, waveMount;
+    public static MultiTurretMount tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
 
 
     @Override
     public void load() {
+        tractMount = new MultiTurretMount("tractM"){{
+            title = "Tractor";
+            force = 24f;
+            scaledForce = 7f;
+            range = 230f;
+            damage = 0.3f;
+            rotateSpeed = 10;
+            powerUse = 3f;
+            mountType = MultiTurretMountType.tract;
+        }};
         laserMount = new MultiTurretMount("laserM", miniAccelMissile){{
             title = "Laser";
             barrels = 2;

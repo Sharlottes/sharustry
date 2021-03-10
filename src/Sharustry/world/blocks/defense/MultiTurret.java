@@ -26,6 +26,8 @@ import mindustry.world.Tile;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
+import java.util.Objects;
+
 import static arc.struct.ObjectMap.*;
 import static mindustry.Vars.*;
 
@@ -104,7 +106,7 @@ public class MultiTurret extends TemplatedTurret {
             mountAmmoTypes.add(null);
             liquidMountAmmoTypes.add(OrderedMap.of(objects));
         }
-        if(ammotype == MultiTurretMount.MultiTurretMountType.power){ //do not say me "don't add null". i know that..
+        if(ammotype == MultiTurretMount.MultiTurretMountType.power || ammotype == MultiTurretMount.MultiTurretMountType.tract){ //do not say me "don't add null". i know that..
             liquidMountAmmoTypes.add(null);
             mountAmmoTypes.add(null);
         }
@@ -173,12 +175,15 @@ public class MultiTurret extends TemplatedTurret {
             for(int i = 0; i < amount; i++){ //...why?
                 //[Sprite, Outline, Heat, Fade Mask]
                 TextureRegion[] sprites = {
-                    Core.atlas.find("shar-"+mounts.get(i).name +""),
+                    Core.atlas.find("shar-"+mounts.get(i).name + ""),
                     Core.atlas.find("shar-"+mounts.get(i).name + "-outline"),
                     Core.atlas.find("shar-"+mounts.get(i).name + "-heat"),
                     Core.atlas.find("shar-"+mounts.get(i).name + "-mask")
                 };
                 turrets.add(sprites);
+
+                mounts.get(i).laser = Core.atlas.find("shar-"+mounts.get(i).name + "-laser");
+                mounts.get(i).laserEnd = Core.atlas.find("shar-"+mounts.get(i).name + "-laser-end");
             }
         });
         for(int i = 0; i < mounts.size; i++) loopSounds.add(new SoundLoop(mounts.get(i).loopSound, mounts.get(i).loopVolume));
@@ -235,7 +240,7 @@ public class MultiTurret extends TemplatedTurret {
             rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (main?this.reloadTime:mounts.get(i).reloadTime) * (main?this.shots:mounts.get(i).shots), 1));
             rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(main?this.targetAir:mounts.get(i).targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
             rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(main?this.targetGround:mounts.get(i).targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
-
+            if(mounts.get(i).damage * 60f > 0.001f) rowAdd(h, String.format("[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", mounts.get(i).damage * 60f)));
             if(main ? chargeTime > 0.001f : mounts.get(i).chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(main?chargeTime/60:mounts.get(i).chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
             h.row();
 
@@ -248,37 +253,52 @@ public class MultiTurret extends TemplatedTurret {
             else {
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power) {
                     BulletType bullet = mounts.get(i).bullet;
-                    types.put(of(bullet, null), Icon.power.getRegion());
+                    if(bullet != null) types.put(of(bullet, null), Icon.power.getRegion());
                 }
 
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item){
                     for(Item item : content.items()){
                         BulletType bullet = mountAmmoTypes.get(i).get(item);
-                        if(bullet == null) continue;
-                        types.put(of(bullet, item), item.icon(Cicon.medium));
+                        if(bullet != null) types.put(of(bullet, item), item.icon(Cicon.medium));
                     }
                 }
 
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.liquid){
                     for(Liquid liquid : content.liquids()) {
                         BulletType bullet = liquidMountAmmoTypes.get(i).get(liquid);
-                        if(bullet == null) continue;
-                        types.put(of(bullet, liquid), liquid.icon(Cicon.medium));
+                        if(bullet != null) types.put(of(bullet, liquid), liquid.icon(Cicon.medium));
                     }
                 }
             }
 
             h.table(b -> {
-                for(ObjectMap<BulletType, ? extends UnlockableContent> type : types.keys()){
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract){
+                    b.add(new Stack() {{
+                        add(new Table(o -> {
+                            o.right();
+                            o.add(new Image(Icon.power.getRegion())).size(8 * 3).padRight(4);
+                        }));
+
+                        add(new Table(t -> {
+                            t.right().bottom();
+                            t.add(((int) mounts.get(i).powerUse * 60) + "").fontScale(0.9f).color(Color.yellow).padTop(8);
+                            t.pack();
+                        }));
+                    }}).padRight(4).right().top();
+
+                    b.add(Core.bundle.format("stat.shar.power")).padRight(10).left().top();
+                }
+                else for(ObjectMap<BulletType, ? extends UnlockableContent> type : types.keys()){
                     int ii = 0;
 
                     for(BulletType bullet : type.keys()){
                         ii ++;
+
                         if(type.get(bullet) == null) {
                             b.add(new Stack(){{
                                 add(new Table(o -> {
                                     o.right();
-                                    o.add(new Image(types.get(type))).size(8 * 3).padRight(4);
+                                    o.add(new Image(Icon.power.getRegion())).size(8 * 3).padRight(4);
                                 }));
 
                                 add(new Table(t -> {
@@ -327,14 +347,17 @@ public class MultiTurret extends TemplatedTurret {
     public void setStats(){
         super.setStats();
 
-        if(stats.equals(Stat.shootRange)) stats.remove(Stat.shootRange);
-        if(stats.equals(Stat.inaccuracy)) stats.remove(Stat.inaccuracy);
-        if(stats.equals(Stat.reload)) stats.remove(Stat.reload);
-        if(stats.equals(Stat.ammo)) stats.remove(Stat.ammo);
-        if(stats.equals(Stat.targetsAir)) stats.remove(Stat.targetsAir);
-        if(stats.equals(Stat.targetsGround)) stats.remove(Stat.targetsGround);
-        if(stats.equals(Stat.ammoUse)) stats.remove(Stat.ammoUse);
-
+        try {
+            stats.remove(Stat.shootRange);
+            stats.remove(Stat.inaccuracy);
+            stats.remove(Stat.reload);
+            if (Objects.equals(ammoType, "item") || Objects.equals(ammoType, "liquid")) stats.remove(Stat.ammo);
+            stats.remove(Stat.targetsAir);
+            stats.remove(Stat.targetsGround);
+            stats.remove(Stat.ammoUse);
+        } catch (Throwable a){
+            Log.log(Log.LogLevel.warn,"@", a);
+        }
         stats.add(Stat.weapons, table -> {
             table.add();
             table.row();
@@ -374,6 +397,11 @@ public class MultiTurret extends TemplatedTurret {
         public @Nullable Seq<Posc> _targets = new Seq<>();
         public Seq<Vec2> _targetPoss = new Seq<>();
         public Seq<Seq<ItemEntry>> _ammos = new Seq<>();
+        public Seq<Float> _lastXs = new Seq<>();
+        public Seq<Float> _lastYs = new Seq<>();
+        public Seq<Float> _strengths = new Seq<>();
+        public Seq<Boolean> _anys = new Seq<>();
+        public Seq<Unit> _tractTargets = new Seq<>();
         public float _heat;
 
         @Override
@@ -393,10 +421,15 @@ public class MultiTurret extends TemplatedTurret {
                 _shotCounters.add(0f);
                 _rotations.add(90f);
                 _targets.add(null);
+                _tractTargets.add(null);
                 _targetPoss.add(new Vec2());
                 _wasShootings.add(false);
                 _chargings.add(false);
                 _ammos.add(new Seq<>());
+                _lastXs.add(0f);
+                _lastYs.add(0f);
+                _strengths.add(0f);
+                _anys.add(false);
             }
         }
 
@@ -443,7 +476,7 @@ public class MultiTurret extends TemplatedTurret {
 
                     }
 
-                    if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power) {
+                    if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract) {
                         MultiReqImage powerReq = new MultiReqImage();
 
                         powerReq.add(new ReqImage(Icon.powerSmall.getRegion(), () -> Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) >= 0.001f));
@@ -620,7 +653,23 @@ public class MultiTurret extends TemplatedTurret {
                     Draw.blend();
                     Draw.color();
                 }
+
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract && _anys.get(i)){
+                    Draw.z(Layer.bullet);
+                    float ang = angleTo(_lastXs.get(i), _lastYs.get(i));
+
+                    Draw.mixcol(mounts.get(i).laserColor, Mathf.absin(4f, 0.6f));
+
+                    Drawf.laser(team, mounts.get(i).laser, mounts.get(i).laserEnd,
+                            x + Angles.trnsx(ang, mounts.get(i).shootLength), y + Angles.trnsy(ang, mounts.get(i).shootLength),
+                            _lastXs.get(i), _lastYs.get(i), _strengths.get(i) * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) * mounts.get(i).laserWidth);
+
+                    Draw.mixcol();
+                    Draw.reset();
+                }
             }
+
+            Draw.reset();
         }
 
         @Override
@@ -649,7 +698,10 @@ public class MultiTurret extends TemplatedTurret {
                 _recoils.set(i, Mathf.lerpDelta(_recoils.get(i), 0, mounts.get(i).restitution));
                 _heats.set(i, Mathf.lerpDelta(_heats.get(i), 0, mounts.get(i).cooldown));
 
-                if(!validateMountTarget(i)) _targets.set(i, null);
+                if(!validateMountTarget(i)) {
+                    _targets.set(i, null);
+                    _tractTargets.set(i, null);
+                }
             }
 
             __heat -= edelta();
@@ -659,6 +711,10 @@ public class MultiTurret extends TemplatedTurret {
                     if(mountHasAmmo(i)) {
                         this.mountLocations(i);
                         _targets.set(i, findMountTargets(i));
+
+                        final int j = i;
+                        float[] loc = this.mountLocations(i);
+                        _tractTargets.set(i, Units.closestEnemy(this.team, loc[0], loc[1], mounts.get(i).range, u -> u.checkTarget(mounts.get(j).targetAir, mounts.get(j).targetGround)));
                     }
                 }
                 __heat = 16;
@@ -668,7 +724,38 @@ public class MultiTurret extends TemplatedTurret {
                 if(mountHasAmmo(i)) {
                     float[] loc = this.mountLocations(i);
 
-                    if(validateMountTarget(i)) {
+                    if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract){
+                        _anys.set(i, false);
+
+                        //look at target
+                        if(_tractTargets.get(i) != null
+                                && _tractTargets.get(i).within(new Vec2(loc[0], loc[1]), mounts.get(i).range + _tractTargets.get(i).hitSize/2f)
+                                && _tractTargets.get(i).team() != team
+                                && _tractTargets.get(i).checkTarget(mounts.get(i).targetAir, mounts.get(i).targetGround)
+                                && Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) > 0.02f){
+                            if(!headless) control.sound.loop(mounts.get(i).shootSound, new Vec2(loc[0], loc[1]), mounts.get(i).shootSoundVolume);
+
+                            float dest = angleTo(_tractTargets.get(i));
+                            mountTurnToTarget(i, dest);
+                            _lastXs.set(i, _tractTargets.get(i).x);
+                            _lastYs.set(i, _tractTargets.get(i).y);
+                            _strengths.set(i, Mathf.lerpDelta(_strengths.get(i), 1f, 0.1f));
+
+                            //shoot when possible
+                            if(Angles.within(_rotations.get(i), dest, mounts.get(i).shootCone)){
+                                if(mounts.get(i).damage > 0) _tractTargets.get(i).damageContinuous(mounts.get(i).damage * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
+
+                                if(mounts.get(i).status != StatusEffects.none) _tractTargets.get(i).apply(mounts.get(i).status, mounts.get(i).statusDuration);
+
+                                _anys.set(i, true);
+                                _tractTargets.get(i).impulseNet(
+                                        Tmp.v1.set(new Vec2(loc[0], loc[1])).
+                                                sub(_tractTargets.get(i)).
+                                                limit((mounts.get(i).force + (1f - _tractTargets.get(i).dst(new Vec2(loc[0], loc[1])) / mounts.get(i).range) * mounts.get(i).scaledForce) * delta() * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) * timeScale));
+                            }
+                        }else _strengths.set(i, Mathf.lerpDelta(_strengths.get(i), 0, 0.1f));
+                    }
+                    else if(validateMountTarget(i)) {
                         boolean canShoot = true;
 
                         if(isControlled()) { //player behavior
@@ -901,9 +988,7 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         public boolean mountHasAmmo(int mount){
-            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.power) {
-                return true;
-            }
+            if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.power || mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.tract) return true;
             if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.item) {
                 if (_ammos.get(mount).size >= 2 && _ammos.get(mount).peek().amount < mounts.get(mount).ammoPerShot) _ammos.get(mount).pop();
                 return _ammos.get(mount).size > 0 && _ammos.get(mount).peek().amount >= mounts.get(mount).ammoPerShot;
