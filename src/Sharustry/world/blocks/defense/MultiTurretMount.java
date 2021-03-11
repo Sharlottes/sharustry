@@ -5,6 +5,7 @@ import arc.audio.Sound;
 import arc.func.Func2;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Rect;
 import arc.struct.Seq;
 import mindustry.annotations.Annotations;
 import mindustry.content.Fx;
@@ -105,6 +106,24 @@ public class MultiTurretMount {
     public TextureRegion laserEnd;
     //region end
 
+    //point region, mountType: point only
+    public Color colorPoint = Color.white;
+    public Effect beamEffect = Fx.pointBeam;
+    public Effect hitEffect = Fx.pointHit;
+
+    public float bulletDamage = 10f;
+    //region end
+
+    //repair region, mountType: repair only
+    static final Rect rect = new Rect();
+
+    public float repairRadius = 50f;
+    public float repairSpeed = 0.3f;
+    //region end
+
+    public boolean healBlock = false;
+    public boolean acceptCooling = false;
+
     //skill
     public Seq<Integer> skillDelays = new Seq<>();
     public Seq<Func2<Building, MultiTurretMount, Runnable>> skillSeq = new Seq<>();
@@ -127,6 +146,11 @@ public class MultiTurretMount {
 
 
     public enum MultiTurretMountType {
-        item, liquid, power, tract
+        item,
+        liquid,
+        power,
+        tract,
+        point,
+        repair
     }
 }

@@ -25,7 +25,7 @@ import static mindustry.type.ItemStack.*;
 public class SBlocks implements ContentList{
     public static Block
             //defense
-            balkan, jumble, conductron, technicus,
+            balkan, jumble, conductron, technicus, clinicus,
             //wall
             shieldWall,
             //drill
@@ -116,7 +116,6 @@ public class SBlocks implements ContentList{
             size = 3;
             maxAmmo = 30;
             ammoPerShot = 3;
-            hasPower = true;
             customMountLocation = true;
             range = 165f;
             chargeTime = 40f;
@@ -148,21 +147,11 @@ public class SBlocks implements ContentList{
                 toColor = Pal.thoriumPink;
                 shootEffect = smokeEffect = Fx.thoriumShoot;
             }}, Items.thorium, "Technicus");
-            addMountTurret(tractMount, waveMount, hailMount);
+            addMountTurret(tractMount, pointMount, repairMount);
 
             ammos(MultiTurretMount.MultiTurretMountType.tract);
-
-            ammos(MultiTurretMount.MultiTurretMountType.liquid,
-                    Liquids.water, SBullets.miniWater,
-                    Liquids.slag, SBullets.miniSlag,
-                    Liquids.cryofluid, SBullets.miniCryo,
-                    Liquids.oil, SBullets.miniOil
-            );
-            ammos(MultiTurretMount.MultiTurretMountType.item,
-                    Items.graphite, Bullets.artilleryDense,
-                    Items.silicon, Bullets.artilleryHoming,
-                    Items.pyratite, Bullets.artilleryIncendiary
-            );
+            ammos(MultiTurretMount.MultiTurretMountType.point);
+            ammos(MultiTurretMount.MultiTurretMountType.repair);
 
             addSkills(entity -> () -> {
                 for(int i = 0; i < 8; i++){
@@ -192,6 +181,40 @@ public class SBlocks implements ContentList{
             rotateSpeed = 10f;
         }};
 
+        clinicus = new MultiTurret("clinicus"){{
+            requirements(Category.turret, ItemStack.with(Items.copper, 335, Items.lead, 210, Items.graphite, 180, Items.silicon, 250, Items.thorium, 90));
+
+            addBaseTurret(Bullets.artilleryPlastic, Items.plastanium,"Clinicus");
+            addMountTurret(healBeamMount, healBeamMount, healLaserMount);
+            addCustomMountLocation(new Float[]{8f, -6f, -8f, -6f, 0f, 1.5f});
+
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.repair);
+
+            customMountLocation = true;
+            hasLiquids = true;
+            hasItems = true;
+            hasPower = true;
+            targetAir = false;
+            size = 3;
+            shots = 4;
+            inaccuracy = 12f;
+            reloadTime = 60f;
+            ammoEjectBack = 5f;
+            ammoUseEffect = Fx.casing3Double;
+            ammoPerShot = 2;
+            cooldown = 0.03f;
+            velocityInaccuracy = 0.2f;
+            restitution = 0.02f;
+            recoilAmount = 6f;
+            shootShake = 2f;
+            range = 290f;
+            minRange = 50f;
+
+            health = 130 * size * size;
+            shootSound = Sounds.artillery;
+        }};
         jumble = new MultiTurret("multi-i"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 135, Items.lead, 75, Items.metaglass, 40, Items.graphite, 80, Items.silicon, 50));
 

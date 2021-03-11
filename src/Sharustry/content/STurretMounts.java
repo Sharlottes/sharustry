@@ -3,6 +3,7 @@ package Sharustry.content;
 import arc.graphics.Color;
 import mindustry.content.Fx;
 import mindustry.ctype.ContentList;
+import mindustry.entities.bullet.LaserBoltBulletType;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.LightningBulletType;
 import mindustry.gen.Sounds;
@@ -12,13 +13,68 @@ import mindustry.graphics.Pal;
 import static Sharustry.content.SBullets.*;
 
 public class STurretMounts implements ContentList {
-    public static MultiTurretMount tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
+    public static MultiTurretMount healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
 
 
     @Override
     public void load() {
+        healBeamMount = new MultiTurretMount("healBeamM", new LaserBoltBulletType(5.2f, 10){{
+            lifetime = 35f;
+            healPercent = 5.5f;
+            collidesTeam = true;
+            backColor = Pal.heal;
+            frontColor = Color.white;
+        }}){{
+            healBlock = true;
+            title = "healBeam";
+
+            x = -4f;
+            y = -4.75f;
+            shootCone = 40f;
+            shots = 3;
+            burstSpacing = 5;
+            range = 10 * 8f;
+            shootSound = Sounds.lasershoot;
+            reloadTime = 65f;
+            recoilAmount = 1.5f;
+            heatColor = Pal.turretHeat;
+            powerUse = 1.25f;
+            mountType = MultiTurretMountType.power;
+        }};
+
+        healLaserMount = new MultiTurretMount("healLaserM"){{
+            title = "healLaser";
+            repairSpeed = 0.75f;
+            repairRadius = 85f;
+            powerUse = 1.5f;
+            laserColor = Color.valueOf("e8ffd7");
+            mountType = MultiTurretMountType.repair;
+        }};
+
+        repairMount = new MultiTurretMount("repairM"){{
+            title = "medic";
+            repairSpeed = 0.5f;
+            repairRadius = 65f;
+            powerUse = 1f;
+            laserColor = Color.valueOf("e8ffd7");
+            mountType = MultiTurretMountType.repair;
+        }};
+
+        pointMount = new MultiTurretMount("pointM"){{
+            title = "PointDefender";
+            powerUse = 8f;
+            range = 180f;
+            shootCone = 5f;
+            shootLength = 5f;
+            bulletDamage = 30f;
+            reloadTime = 9f;
+            mountType = MultiTurretMountType.point;
+        }};
+
         tractMount = new MultiTurretMount("tractM"){{
             title = "Tractor";
+            shootCone = 6f;
+            shootLength = 5f;
             force = 24f;
             scaledForce = 7f;
             range = 230f;
@@ -27,6 +83,7 @@ public class STurretMounts implements ContentList {
             powerUse = 3f;
             mountType = MultiTurretMountType.tract;
         }};
+
         laserMount = new MultiTurretMount("laserM", miniAccelMissile){{
             title = "Laser";
             barrels = 2;
@@ -42,13 +99,11 @@ public class STurretMounts implements ContentList {
             mountType = MultiTurretMountType.power;
         }};
 
-        arcMount = new MultiTurretMount("arcM",
-            new LightningBulletType(){{
-                damage = 20;
-                lightningLength = 25;
-                collidesAir = false;
-            }}
-        ){{
+        arcMount = new MultiTurretMount("arcM", new LightningBulletType(){{
+            damage = 20;
+            lightningLength = 25;
+            collidesAir = false;
+        }}){{
             title = "Arc";
             x = -4f;
             y = -4.75f;
@@ -67,24 +122,22 @@ public class STurretMounts implements ContentList {
         }};
 
 
-        unoMount = new MultiTurretMount("unoM",
-            new LaserBulletType(140){{
-                colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
-                hitEffect = Fx.hitLancer;
-                despawnEffect = Fx.none;
-                hitSize = 4;
-                lifetime = 16f;
-                drawSize = 400f;
-                collidesAir = false;
-                length = 173f;
-            }}
-        ){{
-           ammoPerShot = 5;
-           x = 2.75f;
-           y = 2.75f;
-           shootY = 13/4f;
-           range = 9 * 8;
-           title = "Uno";
+        unoMount = new MultiTurretMount("unoM", new LaserBulletType(140){{
+            colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
+            hitEffect = Fx.hitLancer;
+            despawnEffect = Fx.none;
+            hitSize = 4;
+            lifetime = 16f;
+            drawSize = 400f;
+            collidesAir = false;
+            length = 173f;
+        }}){{
+            ammoPerShot = 5;
+            x = 2.75f;
+            y = 2.75f;
+            shootY = 13/4f;
+            range = 9 * 8;
+            title = "Uno";
 
             recoilAmount = 2f;
             reloadTime = 80f;
