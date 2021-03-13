@@ -212,9 +212,8 @@ public class SBlocks implements ContentList{
             restitution = 0.02f;
             recoilAmount = 6f;
             shootShake = 2f;
-            range = 95f;
+            range = 32 * 8f;
             burstSpacing = 5f;
-            minRange = 50f;
 
             inaccuracy = 17f;
             health = 130 * size * size;
