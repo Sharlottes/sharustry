@@ -23,7 +23,6 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.Tile;
-import mindustry.world.blocks.ConstructBlock;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
@@ -245,9 +244,9 @@ public class MultiTurret extends TemplatedTurret {
             rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (main?this.reloadTime:mounts.get(i).reloadTime) * (main?this.shots:mounts.get(i).shots), 1));
             rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(main?this.targetAir:mounts.get(i).targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
             rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(main?this.targetGround:mounts.get(i).targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
-            if(mounts.get(i).damage * 60f > 0.001f) rowAdd(h, String.format("[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", mounts.get(i).damage * 60f)));
+            if(mounts.get(i).damage * 60f > 0.001f) rowAdd(h, "[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", mounts.get(i).damage * 60f));
             if(main ? chargeTime > 0.001f : mounts.get(i).chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(main?chargeTime/60:mounts.get(i).chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
-            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair) rowAdd(h, String.format("[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", mounts.get(i).repairRadius / tilesize)));
+            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair) rowAdd(h, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", mounts.get(i).repairRadius / tilesize));
             h.row();
 
             ObjectMap<ObjectMap<BulletType ,? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
@@ -547,6 +546,7 @@ public class MultiTurret extends TemplatedTurret {
                 Draw.alpha(fade);
                 Lines.dashCircle(loc[0], loc[1], mounts.get(i).range);
 
+                Draw.z(Layer.turret + 1);
                 Draw.color(this.team.color, fade);
                 Draw.rect(turrets.get(i)[3], loc[2], loc[3], this._rotations.get(i) - 90);
                 Draw.reset();
@@ -630,6 +630,20 @@ public class MultiTurret extends TemplatedTurret {
             float sY = rY + Tmp.v3.y;
 
             return new float[]{x, y, rX, rY, sX, sY};
+        }
+
+        @Override
+        public BlockStatus status() {
+            BlockStatus h = BlockStatus.noInput;
+            for(int i = 0; i < mounts.size; i++) {
+                if(i==mounts.size-1) return h;
+                h = BlockStatus.noInput;
+                if(mountHasAmmo(i)) h = BlockStatus.active;
+
+            }
+
+
+            return h;
         }
 
         @Override
