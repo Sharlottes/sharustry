@@ -1,6 +1,7 @@
 package Sharustry.content;
 
 import Sharustry.graphics.SPal;
+import arc.graphics.Color;
 import mindustry.ctype.*;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
@@ -10,10 +11,40 @@ import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
 public class SBullets implements ContentList{
-    public static BulletType jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
+    public static BulletType artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
 
     @Override
     public void load(){
+        artilleryHeal = new HealingBulletType(4.25f, -1){{
+            drag = 0.02f;
+
+            tractForce = 24f;
+            tractScaledForce = 7f;
+            shootLength = 5f;
+            pointBulletDamage = 30f;
+            repairSpeed = 0.5f;
+            repairRange = 65f;
+            pointHitEffect = Fx.plasticExplosion;
+            knockback = 1f;
+            lifetime = 12 * 60f;
+            width = height = 13f;
+            collidesTiles = false;
+            splashDamageRadius = 35f * 0.75f;
+            splashDamage = 45f;
+            fragBullets = 10;
+            backColor = Pal.plastaniumBack;
+            frontColor = Pal.plastaniumFront;
+            mixColorFrom = Pal.plastanium.cpy().lerp(Pal.heal, 0.5f);
+            mixColorTo = Pal.heal;
+            fragBulletType = new LaserBoltBulletType(5.2f, 2){{
+                lifetime = 35f;
+                healPercent = 5.5f;
+                collidesTeam = true;
+                backColor = Pal.heal;
+                frontColor = Color.white;
+            }};
+        }};
+
         jumbleBullet = new BasicBulletType(){{
            ammoMultiplier = 3;
            speed = 2.5f;

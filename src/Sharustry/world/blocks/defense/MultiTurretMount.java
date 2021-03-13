@@ -55,6 +55,8 @@ public class MultiTurretMount {
     public float spread = 0;
     public float burstSpacing = 0;
 
+    public float coolantMultiplier = 1;
+
     public float powerUse = 0f; //mountType: power only
 
     public boolean altEject = true;

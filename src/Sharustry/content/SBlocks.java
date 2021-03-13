@@ -176,17 +176,20 @@ public class SBlocks implements ContentList{
             range = 100;
             shootCone = 15f;
             ammoUseEffect = Fx.casing1;
-            health = 250;
             inaccuracy = 2f;
             rotateSpeed = 10f;
+
+
+            health = 110 * size * size;
+            shootSound = Sounds.shotgun;
         }};
 
         clinicus = new MultiTurret("clinicus"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 335, Items.lead, 210, Items.graphite, 180, Items.silicon, 250, Items.thorium, 90));
 
-            addBaseTurret(Bullets.artilleryPlastic, Items.plastanium,"Clinicus");
+            addBaseTurret(SBullets.artilleryHeal, Items.plastanium,"Clinicus");
             addMountTurret(healBeamMount, healBeamMount, healLaserMount);
-            addCustomMountLocation(new Float[]{8f, -6f, -8f, -6f, 0f, 1.5f});
+            addCustomMountLocation(new Float[]{6.75f, -2.5f, -6.5f, -2.5f, 0f, 1f});
 
             ammos(MultiTurretMount.MultiTurretMountType.power);
             ammos(MultiTurretMount.MultiTurretMountType.power);
@@ -198,9 +201,9 @@ public class SBlocks implements ContentList{
             hasPower = true;
             targetAir = false;
             size = 3;
-            shots = 4;
+            shots = 6;
             inaccuracy = 12f;
-            reloadTime = 60f;
+            reloadTime = 5 * 60f;
             ammoEjectBack = 5f;
             ammoUseEffect = Fx.casing3Double;
             ammoPerShot = 2;
@@ -209,12 +212,15 @@ public class SBlocks implements ContentList{
             restitution = 0.02f;
             recoilAmount = 6f;
             shootShake = 2f;
-            range = 290f;
+            range = 95f;
+            burstSpacing = 5f;
             minRange = 50f;
 
+            inaccuracy = 17f;
             health = 130 * size * size;
             shootSound = Sounds.artillery;
         }};
+
         jumble = new MultiTurret("multi-i"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 135, Items.lead, 75, Items.metaglass, 40, Items.graphite, 80, Items.silicon, 50));
 

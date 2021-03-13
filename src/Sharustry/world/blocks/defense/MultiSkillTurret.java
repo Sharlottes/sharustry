@@ -11,9 +11,7 @@ public class MultiSkillTurret extends MultiTurret {
     public Seq<Func<Building, Runnable>> skillSeq = new Seq<>();
 
     public MultiSkillTurret(String name, BulletType type, Object ammo, String title, MultiTurretMount... mounts){
-        this(name);
-        addMountTurret(mounts);
-        addBaseTurret(type, ammo, title);
+        super(name, type, ammo, title, mounts);
     }
 
     public MultiSkillTurret(String name){

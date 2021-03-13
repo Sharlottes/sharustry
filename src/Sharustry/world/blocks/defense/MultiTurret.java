@@ -25,6 +25,7 @@ import mindustry.ui.*;
 import mindustry.world.Tile;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
+import mindustry.world.modules.ConsumeModule;
 
 import java.util.Objects;
 
@@ -185,7 +186,7 @@ public class MultiTurret extends TemplatedTurret {
                 };
                 turrets.add(sprites);
 
-                //for some unknown reason, mounts cannot use @Load annotations...hmmmmmmmmm
+                //for some unknown reason, mounts cannot use @Load annotations...hmm
                 mounts.get(i).laser = Core.atlas.find("shar-"+mounts.get(i).name + "-laser");
                 mounts.get(i).laserEnd = Core.atlas.find("shar-"+mounts.get(i).name + "-laser-end");
             }
@@ -199,8 +200,8 @@ public class MultiTurret extends TemplatedTurret {
         super.drawPlace(x, y, rotation, valid);
         for(int i = 0; i < mounts.size; i++){
             float fade = Mathf.curve(Time.time % totalRangeTime, rangeTime * i, rangeTime * i + fadeTime) - Mathf.curve(Time.time % totalRangeTime, rangeTime * (i + 1) - fadeTime, rangeTime * (i + 1));
-            float tX = x * tilesize + this.offset + (customMountLocation ? customMountLocationsX.get(i) : mounts.get(i).x);
-            float tY = y * tilesize + this.offset + (customMountLocation ? customMountLocationsY.get(i) : mounts.get(i).y);
+            float tX = x * tilesize + offset + (customMountLocation ? customMountLocationsX.get(i) : mounts.get(i).x);
+            float tY = y * tilesize + offset + (customMountLocation ? customMountLocationsY.get(i) : mounts.get(i).y);
 
             Lines.stroke(3, Pal.gray);
             Draw.alpha(fade);
@@ -219,7 +220,7 @@ public class MultiTurret extends TemplatedTurret {
     public TextureRegion[] icons() {
         return new TextureRegion[]{
             this.baseRegion,
-            Core.atlas.find(this.name + "-icon")
+            Core.atlas.find(name + "-icon")
         };
     }
 
@@ -237,13 +238,13 @@ public class MultiTurret extends TemplatedTurret {
 
         w.table(Tex.underline, h -> {
             h.left().defaults().padRight(3).left();
-            if(main ? inaccuracy > 0 : mounts.get(i).inaccuracy > 0) h.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (main?this.inaccuracy:mounts.get(i).inaccuracy) + " " + StatUnit.degrees.localized());
-            if(main ? range > 0 : mounts.get(i).range > 0) rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((main?this.range:mounts.get(i).range) / tilesize, 1) + " " + StatUnit.blocks);
+            if(main ? inaccuracy > 0 : mounts.get(i).inaccuracy > 0) h.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (main?inaccuracy:mounts.get(i).inaccuracy) + " " + StatUnit.degrees.localized());
+            if(main ? range > 0 : mounts.get(i).range > 0) rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((main?range:mounts.get(i).range) / tilesize, 1) + " " + StatUnit.blocks);
 
             rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (main?ammoPerShot:mounts.get(i).ammoPerShot));
-            rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (main?this.reloadTime:mounts.get(i).reloadTime) * (main?this.shots:mounts.get(i).shots), 1));
-            rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(main?this.targetAir:mounts.get(i).targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
-            rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(main?this.targetGround:mounts.get(i).targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+            rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (main?reloadTime:mounts.get(i).reloadTime) * (main?shots:mounts.get(i).shots), 1));
+            rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(main?targetAir:mounts.get(i).targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+            rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(main?targetGround:mounts.get(i).targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
             if(mounts.get(i).damage * 60f > 0.001f) rowAdd(h, "[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", mounts.get(i).damage * 60f));
             if(main ? chargeTime > 0.001f : mounts.get(i).chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(main?chargeTime/60:mounts.get(i).chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
             if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair) rowAdd(h, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", mounts.get(i).repairRadius / tilesize));
@@ -359,13 +360,15 @@ public class MultiTurret extends TemplatedTurret {
             stats.remove(Stat.shootRange);
             stats.remove(Stat.inaccuracy);
             stats.remove(Stat.reload);
-            if (Objects.equals(ammoType, "item") || Objects.equals(ammoType, "liquid")) stats.remove(Stat.ammo);
+            if(Objects.equals(ammoType, "item") || Objects.equals(ammoType, "liquid")) stats.remove(Stat.ammo);
             stats.remove(Stat.targetsAir);
             stats.remove(Stat.targetsGround);
             stats.remove(Stat.ammoUse);
+            stats.remove(Stat.booster);
         } catch (Throwable a){
             Log.log(Log.LogLevel.warn,"@", a);
         }
+
         stats.add(Stat.weapons, table -> {
             table.add();
             table.row();
@@ -400,19 +403,19 @@ public class MultiTurret extends TemplatedTurret {
         public Seq<Float> _recoils = new Seq<>();
         public Seq<Float> _shotCounters = new Seq<>();
         public Seq<Float> _rotations = new Seq<>();
-        public Seq<Boolean> _wasShootings = new Seq<>();
-        public Seq<Boolean> _chargings = new Seq<>();
-        public @Nullable Seq<Posc> _targets = new Seq<>();
-        public Seq<Vec2> _targetPoss = new Seq<>();
-        public Seq<Seq<ItemEntry>> _ammos = new Seq<>();
         public Seq<Float> _lastXs = new Seq<>();
         public Seq<Float> _lastYs = new Seq<>();
         public Seq<Float> _strengths = new Seq<>();
+        public Seq<Boolean> _wasShootings = new Seq<>();
+        public Seq<Boolean> _chargings = new Seq<>();
         public Seq<Boolean> _anys = new Seq<>();
+        public Seq<Posc> _targets = new Seq<>();
         public Seq<Unit> _tractTargets = new Seq<>();
         public Seq<Unit> _repairTargets = new Seq<>();
         public Seq<Bullet> _pointTargets = new Seq<>();
         public Seq<Building> _healTargets = new Seq<>();
+        public Seq<Vec2> _targetPoses = new Seq<>();
+        public Seq<Seq<ItemEntry>> _ammos = new Seq<>();
         public float _heat;
 
         @Override
@@ -436,7 +439,7 @@ public class MultiTurret extends TemplatedTurret {
                 _pointTargets.add(null);
                 _repairTargets.add(null);
                 _healTargets.add(null);
-                _targetPoss.add(new Vec2());
+                _targetPoses.add(new Vec2());
                 _wasShootings.add(false);
                 _chargings.add(false);
                 _ammos.add(new Seq<>());
@@ -639,10 +642,7 @@ public class MultiTurret extends TemplatedTurret {
                 if(i==mounts.size-1) return h;
                 h = BlockStatus.noInput;
                 if(mountHasAmmo(i)) h = BlockStatus.active;
-
             }
-
-
             return h;
         }
 
@@ -862,17 +862,17 @@ public class MultiTurret extends TemplatedTurret {
                         boolean canShoot = true;
 
                         if(isControlled()) { //player behavior
-                            _targetPoss.get(i).set(unit().aimX, unit().aimY);
+                            _targetPoses.get(i).set(unit().aimX, unit().aimY);
                             canShoot = unit().isShooting;
                         }else if(this.logicControlled()) { //logic behavior
-                            _targetPoss.set(i, targetPos);
+                            _targetPoses.set(i, targetPos);
                             canShoot = logicShooting;
                         }else { //default AI behavior
                             mountTargetPosition(i, _targets.get(i), loc[0], loc[1]);
                             if(Float.isNaN(_rotations.get(i))) _rotations.set(i, 0f);
                         }
 
-                        float targetRot = Angles.angle(loc[0], loc[1], _targetPoss.get(i).x, _targetPoss.get(i).y);
+                        float targetRot = Angles.angle(loc[0], loc[1], _targetPoses.get(i).x, _targetPoses.get(i).y);
 
                         if(!_chargings.get(i)) mountTurnToTarget(i, targetRot);
 
@@ -953,10 +953,10 @@ public class MultiTurret extends TemplatedTurret {
 
             if(speed < 0.1) speed = 9999999;
 
-            _targetPoss.get(mount).set(Predict.intercept(Tmp.v4.set(x, y), pos, speed));
+            _targetPoses.get(mount).set(Predict.intercept(Tmp.v4.set(x, y), pos, speed));
 
 
-            if(_targetPoss.get(mount).isZero()) _targetPoss.get(mount).set(_targets.get(mount));
+            if(_targetPoses.get(mount).isZero()) _targetPoses.get(mount).set(_targets.get(mount));
         }
 
         public void updateMountShooting(int mount){
@@ -980,11 +980,11 @@ public class MultiTurret extends TemplatedTurret {
             Liquid liquid = liquids.current();
 
             for(int i = 0; i < mounts.size; i++){
-                if(!(mounts.get(i).acceptCooling)) continue;
+                if(!(mounts.get(i).acceptCooling) || liquidMountAmmoTypes.get(i) == null) continue;
                 float used = Math.min(Math.min(liquids.get(liquid), maxUsed * Time.delta), Math.max(0, ((mounts.get(i).reloadTime - _reloads.get(i)) / coolantMultiplier) / liquid.heatCapacity));
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power || mounts.get(i).powerUse > 0.001f) used *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1);
+                if(mounts.get(i).powerUse > 0.001f) used *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1);
                 else used *= baseReloadSpeed();
-                _reloads.set(i, _reloads.get(i) + used * liquid.heatCapacity * coolantMultiplier);
+                _reloads.set(i, _reloads.get(i) + used * liquid.heatCapacity * mounts.get(i).coolantMultiplier);
 
                 liquids.remove(liquid, used);
 
@@ -1007,7 +1007,7 @@ public class MultiTurret extends TemplatedTurret {
         public void mountBullet(int mount, BulletType type, float spreadAmount){
             float[] loc = mountLocations(mount);
 
-            float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(loc[4], loc[5], _targetPoss.get(mount).x, _targetPoss.get(mount).y) / type.range(), mounts.get(mount).minRange / type.range(), mounts.get(mount).range / type.range()) : 1;
+            float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(loc[4], loc[5], _targetPoses.get(mount).x, _targetPoses.get(mount).y) / type.range(), mounts.get(mount).minRange / type.range(), mounts.get(mount).range / type.range()) : 1;
             float angle = _rotations.get(mount) + Mathf.range(mounts.get(mount).inaccuracy + type.inaccuracy) + (spreadAmount - (mounts.get(mount).shots / 2f)) * mounts.get(mount).spread;
             type.create(this, this.team, loc[4], loc[5], angle, 1 + Mathf.range(mounts.get(mount).velocityInaccuracy), lifeScl);
 
@@ -1149,7 +1149,7 @@ public class MultiTurret extends TemplatedTurret {
                     short a = read.s();
                     _totalAmmos.set(i, _totalAmmos.get(i) + a);
 
-                    //only add ammo if this is a valid ammo type //NO ADD ON EVERY MOUNT WHICH ITEMAMMO
+                    //only add ammo if this is a valid ammo type //NO ADD ON EVERY MOUNT WHICH ITEM AMMO
                     if(item != null && mountAmmoTypes.get(h) != null && mountAmmoTypes.get(h).containsKey(item)) _ammos.get(i).add(new ItemEntry(item, a));
                 }
             }
