@@ -25,7 +25,6 @@ import mindustry.ui.*;
 import mindustry.world.Tile;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
-import mindustry.world.modules.ConsumeModule;
 
 import java.util.Objects;
 
@@ -51,6 +50,9 @@ public class MultiTurret extends TemplatedTurret {
     public ObjectMap<Liquid, BulletType> liquidAmmoTypes = new ObjectMap<>();
     public Seq<ObjectMap<Liquid, BulletType>> liquidMountAmmoTypes = new Seq<>();
     public Seq<ObjectMap<Item, BulletType>> mountAmmoTypes = new Seq<>();
+
+    public Seq<Integer> skillDelays = new Seq<>();
+    public Seq<Func<Building, Runnable>> skillSeq = new Seq<>();
 
     public MultiTurret(String name, BulletType type, Object ammo, String title, MultiTurretMount... mounts){
         this(name);
@@ -96,6 +98,13 @@ public class MultiTurret extends TemplatedTurret {
         customMountLocation = true;
         for(int ix = 0; ix < amount * 2; ix += 2) customMountLocationsX.add(xy[ix]);
         for(int iy = 1; iy < amount * 2; iy += 2) customMountLocationsY.add(xy[iy]);
+    }
+
+    public <T extends Building> void addSkills(Func<T, Runnable> skill, int delay){
+        if(skill != null) {
+            skillSeq.add((Func<Building, Runnable>) skill);
+            skillDelays.add(delay);
+        }
     }
 
     public void ammos(MultiTurretMount.MultiTurretMountType ammotype, Object... objects){
@@ -238,16 +247,26 @@ public class MultiTurret extends TemplatedTurret {
 
         w.table(Tex.underline, h -> {
             h.left().defaults().padRight(3).left();
-            if(main ? inaccuracy > 0 : mounts.get(i).inaccuracy > 0) h.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (main?inaccuracy:mounts.get(i).inaccuracy) + " " + StatUnit.degrees.localized());
-            if(main ? range > 0 : mounts.get(i).range > 0) rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((main?range:mounts.get(i).range) / tilesize, 1) + " " + StatUnit.blocks);
-
-            rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (main?ammoPerShot:mounts.get(i).ammoPerShot));
-            rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (main?reloadTime:mounts.get(i).reloadTime) * (main?shots:mounts.get(i).shots), 1));
-            rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(main?targetAir:mounts.get(i).targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
-            rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(main?targetGround:mounts.get(i).targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
-            if(mounts.get(i).damage * 60f > 0.001f) rowAdd(h, "[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", mounts.get(i).damage * 60f));
-            if(main ? chargeTime > 0.001f : mounts.get(i).chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(main?chargeTime/60:mounts.get(i).chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
-            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair) rowAdd(h, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", mounts.get(i).repairRadius / tilesize));
+            if(main){
+                rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((range) / tilesize, 1) + " " + StatUnit.blocks);
+                rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reloadTime * shots, 1));
+                rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+                rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+                if(inaccuracy > 0) rowAdd(h, "[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (inaccuracy) + " " + StatUnit.degrees.localized());
+                if(chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
+                if(Objects.equals(ammoType, "item")) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (ammoPerShot));
+            }
+            else{
+                rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((mounts.get(i).range) / tilesize, 1) + " " + StatUnit.blocks);
+                rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(mounts.get(i).targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+                rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(mounts.get(i).targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+                if(mounts.get(i).inaccuracy > 0) rowAdd(h, "[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (mounts.get(i).inaccuracy) + " " + StatUnit.degrees.localized());
+                if(mounts.get(i).chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(mounts.get(i).chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (mounts.get(i).ammoPerShot));
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", mounts.get(i).damage * 60f));
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair) rowAdd(h, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", mounts.get(i).repairRadius / tilesize));
+                if(mounts.get(i).mountType != MultiTurretMount.MultiTurretMountType.repair || mounts.get(i).mountType != MultiTurretMount.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (mounts.get(i).reloadTime) * (mounts.get(i).shots), 1));
+            }
             h.row();
 
             ObjectMap<ObjectMap<BulletType ,? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
@@ -329,7 +348,7 @@ public class MultiTurret extends TemplatedTurret {
                             if(bullet.damage > 0 && (bullet.collides || bullet.splashDamage <= 0)) rowAdd(e, Core.bundle.format("bullet.damage", bullet.damage));
                             if(bullet.buildingDamageMultiplier != 1) rowAdd(e, Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1)));
                             if(bullet.splashDamage > 0) rowAdd(e, Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1)));
-                            if(bullet.ammoMultiplier > 0 && !(bullet instanceof LiquidBulletType)) rowAdd(e, Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1)));
+                            if(bullet.ammoMultiplier > 0 && ((main) ? !(bullet instanceof LiquidBulletType) : mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item) && !Mathf.equal(bullet.ammoMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1)));
                             if(!Mathf.equal(bullet.reloadMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.reload", bullet.reloadMultiplier));
                             if(bullet.knockback > 0) rowAdd(e, Core.bundle.format("bullet.knockback", Strings.fixed(bullet.knockback, 1)));
                             if(bullet.healPercent > 0) rowAdd(e, Core.bundle.format("bullet.healpercent", bullet.healPercent));
@@ -397,6 +416,7 @@ public class MultiTurret extends TemplatedTurret {
     }
 
     public class MultiTurretBuild extends TemplatedTurretBuild {
+        public Seq<Integer> _shotcounters = new Seq<>();
         public Seq<Integer> _totalAmmos = new Seq<>();
         public Seq<Float> _reloads = new Seq<>();
         public Seq<Float> _heats = new Seq<>();
@@ -417,6 +437,7 @@ public class MultiTurret extends TemplatedTurret {
         public Seq<Vec2> _targetPoses = new Seq<>();
         public Seq<Seq<ItemEntry>> _ammos = new Seq<>();
         public float _heat;
+        public int shotcounter;
 
         @Override
         public void remove(){
@@ -428,6 +449,7 @@ public class MultiTurret extends TemplatedTurret {
         public void created(){
             super.created();
             for(int i = 0; i < mounts.size; i++){
+                _shotcounters.add(0);
                 _totalAmmos.add(0);
                 _reloads.add(0f);
                 _heats.add(0f);
@@ -994,6 +1016,17 @@ public class MultiTurret extends TemplatedTurret {
             }
         }
 
+        @Override
+        protected void shoot(BulletType type) {
+            super.shoot(type);
+
+            shotcounter++;
+            for(int i = 0; i < skillDelays.size; i++) if(shotcounter % skillDelays.get(i) == 0) {
+                shotcounter = 0;
+                skillSeq.get(i).get(this).run();
+            }
+        }
+
         public void mountEffect(int mount, BulletType type){
             float[] loc = mountLocations(mount);
 
@@ -1060,6 +1093,12 @@ public class MultiTurret extends TemplatedTurret {
             }
 
             if(!mounts.get(mount).sequential) _shotCounters.set(mount, _shotCounters.get(mount)+1);
+
+            if(!mounts.get(mount).sequential) _shotcounters.set(mount, _shotcounters.get(mount)+1);
+            for(int i = 0; i < mounts.get(mount).skillDelays.size; i++) if(_shotcounters.get(mount) % mounts.get(mount).skillDelays.get(i) == 0) {
+                _shotcounters.set(mount, 0);
+                mounts.get(mount).skillSeq.get(i).get(this, mounts.get(mount)).run();
+            }
         }
 
         public BulletType mountPeekAmmo(int mount){

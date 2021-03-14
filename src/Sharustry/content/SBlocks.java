@@ -137,7 +137,7 @@ public class SBlocks implements ContentList{
         }};
 
 
-        technicus = new MultiSkillTurret("technicus"){{
+        technicus = new MultiTurret("technicus"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
             addBaseTurret(new ShrapnelBulletType(){{
@@ -184,7 +184,7 @@ public class SBlocks implements ContentList{
             shootSound = Sounds.shotgun;
         }};
 
-        clinicus = new MultiTurret("clinicus"){{
+        clinicus = new MultiConstructTurret("clinicus"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 335, Items.lead, 210, Items.graphite, 180, Items.silicon, 250, Items.thorium, 90));
 
             addBaseTurret(SBullets.artilleryHeal, Items.plastanium,"Clinicus");
@@ -203,7 +203,7 @@ public class SBlocks implements ContentList{
             size = 3;
             shots = 6;
             inaccuracy = 12f;
-            reloadTime = 5 * 60f;
+            reloadTime = 1.5f * 60f;
             ammoEjectBack = 5f;
             ammoUseEffect = Fx.casing3Double;
             ammoPerShot = 2;

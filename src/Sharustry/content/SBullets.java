@@ -16,17 +16,19 @@ public class SBullets implements ContentList{
     @Override
     public void load(){
         artilleryHeal = new HealingBulletType(4.25f, -1){{
-            drag = 0.02f;
+            sprite = "shar-construct";
+            drag = 0.0125f;
 
-            tractForce = 24f;
+            despawnEffect = Fx.healWave;
+            tractForce = 12f;
             tractScaledForce = 7f;
             shootLength = 5f;
             pointBulletDamage = 30f;
-            repairSpeed = 0.5f;
+            repairSpeed = 0.1f;
             repairRange = 65f;
             pointHitEffect = Fx.plasticExplosion;
             knockback = 1f;
-            lifetime = 12 * 60f;
+            lifetime = 5 * 60f;
             width = height = 13f;
             collidesTiles = false;
             splashDamageRadius = 35f * 0.75f;
