@@ -25,7 +25,8 @@ import static mindustry.type.ItemStack.*;
 public class SBlocks implements ContentList{
     public static Block
             //defense
-            balkan, jumble, conductron, technicus, asclepius, clinicus,
+            //marksman,
+            balkan, jumble, conductron, trinity, asclepius, clinicus,
             //wall
             shieldWall,
             //drill
@@ -69,6 +70,7 @@ public class SBlocks implements ContentList{
                 Items.pyratite, SBullets.testLaser
             );
 
+
             hasPower = true;
             range = 45*8f;
             chargeTime = 40f;
@@ -91,7 +93,53 @@ public class SBlocks implements ContentList{
             acceptCoolant = false;
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
+        /*
+        marksman = new MultiTurret("marksman"){{
+            requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
+            addBaseTurret(new LaserBulletType(140){{
+                colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
+                hitEffect = Fx.hitLancer;
+                despawnEffect = Fx.none;
+                hitSize = 4;
+                lifetime = 16f;
+                drawSize = 400f;
+                collidesAir = false;
+                length = 173f;
+            }}, Items.titanium, "Marksman");
+            addMountTurret(electricLaserMountR, electricLaserMountL);
+            addCustomMountLocation(new Float[]{
+                    -3f, -2f,
+                    3f, -2f,
+            });
+
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+
+            hasPower = true;
+            size = 4;
+            maxAmmo = 30;
+            ammoPerShot = 3;
+            customMountLocation = true;
+            range = 165f;
+            chargeTime = 40f;
+            chargeMaxDelay = 30f;
+            chargeEffects = 7;
+            recoilAmount = 2f;
+            reloadTime = 80f;
+            cooldown = 0.03f;
+            shootShake = 2f;
+            shootEffect = Fx.lancerLaserShoot;
+            smokeEffect = Fx.none;
+            chargeEffect = Fx.lancerLaserCharge;
+            chargeBeginEffect = Fx.lancerLaserChargeBegin;
+            heatColor = Color.red;
+
+            health = 280 * size * size;
+            shootSound = Sounds.laser;
+
+        }};
+        */
         conductron = new MultiTurret("conductron"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
@@ -106,7 +154,11 @@ public class SBlocks implements ContentList{
                 length = 173f;
             }}, Items.titanium, "Conductron");
             addMountTurret(arcMount, arcMount, laserMount);
-            addCustomMountLocation(new Float[]{-6.5f, -4.25f, 6.5f, -4.25f, 0f, 1.5f});
+            addCustomMountLocation(new Float[]{
+                -6.5f, -4.25f,
+                6.5f, -4.25f,
+                0f, 1.5f
+            });
 
             ammos(MultiTurretMount.MultiTurretMountType.power);
             ammos(MultiTurretMount.MultiTurretMountType.power);
@@ -137,7 +189,7 @@ public class SBlocks implements ContentList{
         }};
 
 
-        technicus = new MultiTurret("technicus"){{
+        trinity = new MultiTurret("trinity"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
             addBaseTurret(new ShrapnelBulletType(){{
@@ -146,8 +198,13 @@ public class SBlocks implements ContentList{
                 ammoMultiplier = 5f;
                 toColor = Pal.thoriumPink;
                 shootEffect = smokeEffect = Fx.thoriumShoot;
-            }}, Items.thorium, "Technicus");
-            addMountTurret(tractMount, pointMount, repairMount);
+            }}, Items.thorium, "Trinity");
+            addMountTurret(repairMount, pointMount, tractMount);
+            addCustomMountLocation(new Float[]{
+                    -8f, 0f,
+                    0f, 6.5f,
+                    8f, 0f
+            });
 
             ammos(MultiTurretMount.MultiTurretMountType.tract);
             ammos(MultiTurretMount.MultiTurretMountType.point);
