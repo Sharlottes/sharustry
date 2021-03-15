@@ -6,6 +6,7 @@ import mindustry.ctype.ContentList;
 import mindustry.entities.bullet.LaserBoltBulletType;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.LightningBulletType;
+import mindustry.entities.bullet.MissileBulletType;
 import mindustry.gen.Sounds;
 import Sharustry.world.blocks.defense.MultiTurretMount;
 import mindustry.graphics.Pal;
@@ -18,21 +19,94 @@ public class STurretMounts implements ContentList {
 
     @Override
     public void load() {
+        healMissileMountR = new MultiTurretMount("healMissileMR"){{
+
+            healBlock = true;
+            title = "healMissileRight";
+            reloadTime = 40f;
+            shots = 3;
+            inaccuracy = 5f;
+            shootSound = Sounds.missile;
+
+            recoilAmount = 2f;
+            heatColor = Pal.turretHeat;
+            powerUse = 2f;
+            mountType = MultiTurretMountType.power;
+
+            barrels = 5;
+
+            bullet = new MissileBulletType(3.5f, 15){{
+                despawnEffect = hitEffect = Fx.healWave;
+                healPercent = 5;
+                width = 8f;
+                height = 8f;
+                shrinkY = 0f;
+                drag = -0.003f;
+                homingRange = 60f;
+                keepVelocity = false;
+                splashDamageRadius = 25f;
+                splashDamage = 16f;
+                lifetime = 2 * 60f;
+                trailColor = Pal.heal;
+                backColor = Color.white;
+                frontColor = Pal.heal;
+                weaveScale = 6f;
+                weaveMag = 1f;
+            }};
+        }};
+
+        healMissileMountL = new MultiTurretMount("healMissileML"){{
+
+            healBlock = true;
+            title = "healMissileLeft";
+            reloadTime = 40f;
+            shots = 3;
+            inaccuracy = 5f;
+            shootSound = Sounds.missile;
+
+            recoilAmount = 2f;
+            heatColor = Pal.turretHeat;
+            powerUse = 2f;
+            mountType = MultiTurretMountType.power;
+
+            barrels = 5;
+
+            bullet = new MissileBulletType(3.5f, 15){{
+                despawnEffect = hitEffect = Fx.healWave;
+                healPercent = 5;
+                width = 8f;
+                height = 8f;
+                shrinkY = 0f;
+                drag = -0.003f;
+                homingRange = 60f;
+                keepVelocity = false;
+                splashDamageRadius = 25f;
+                splashDamage = 16f;
+                lifetime = 2 * 60f;
+                trailColor = Pal.heal;
+                backColor = Color.white;
+                frontColor = Pal.heal;
+                weaveScale = 6f;
+                weaveMag = 1f;
+            }};
+        }};
+
         healBeamMountL = new MultiTurretMount("healBeamM2L", new LaserBoltBulletType(6.2f, 20){{
             lifetime = 55f;
             healPercent = 8.5f;
             collidesTeam = true;
             backColor = Pal.heal;
             frontColor = Color.white;
-            width *= 1.5f;
-            height *= 1.5f;
-            fragBullet = new LaserBoltBulletType(2.5f, 3){{
-                lifetime = 25f;
+            width *= 0.75f;
+            height *= 0.75f;
+            fragBullet = new LaserBoltBulletType(5.2f, 3){{
+                lifetime = 15f;
                 healPercent = 2.15f;
                 collidesTeam = true;
                 backColor = Pal.heal;
                 frontColor = Color.white;
             }};
+            fragBullets = 2;
             fragVelocityMin = 0.75f;
         }}){{
             healBlock = true;
@@ -49,23 +123,23 @@ public class STurretMounts implements ContentList {
             powerUse = 2.5f;
             mountType = MultiTurretMountType.power;
         }};
+
         healBeamMountR = new MultiTurretMount("healBeamM2R", new LaserBoltBulletType(6.2f, 20){{
             lifetime = 55f;
             healPercent = 8.5f;
             collidesTeam = true;
             backColor = Pal.heal;
             frontColor = Color.white;
-            width *= 1.5f;
-            height *= 1.5f;
-            fragBullet = new LaserBoltBulletType(2.5f, 3){{
-                lifetime = 25f;
+            width *= 0.75f;
+            height *= 0.75f;
+            fragBullet = new LaserBoltBulletType(5.2f, 3){{
+                lifetime = 15f;
                 healPercent = 2.15f;
                 collidesTeam = true;
                 backColor = Pal.heal;
                 frontColor = Color.white;
             }};
-            fragAngle = 45;
-            fragBullets = 3;
+            fragBullets = 2;
             fragVelocityMin = 0.75f;
         }}){{
             healBlock = true;
@@ -82,7 +156,6 @@ public class STurretMounts implements ContentList {
             powerUse = 2.5f;
             mountType = MultiTurretMountType.power;
         }};
-
 
         healBeamMount = new MultiTurretMount("healBeamM", new LaserBoltBulletType(5.2f, 10){{
             lifetime = 35f;

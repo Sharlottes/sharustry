@@ -32,6 +32,7 @@ import static arc.struct.ObjectMap.*;
 import static mindustry.Vars.*;
 
 public class MultiTurret extends TemplatedTurret {
+    public float healHealth = 0.4f;
     public boolean customMountLocation = false;
     public Seq<Float> customMountLocationsX = new Seq<>();
     public Seq<Float> customMountLocationsY = new Seq<>();
@@ -479,10 +480,11 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         public void tf(Table table, int i){
+            if(mounts.size > 3 && i == 2) table.row();
             table.add(new Stack(){{
                 add(new Table(o -> {
                     o.left();
-                    o.add(new Image(Core.atlas.find("shar-" + mounts.get(i).name + "-full"))).size(8 * 9);
+                    o.add(new Image(Core.atlas.find("shar-" + mounts.get(i).name + "-full")));
                 }));
 
                 add(new Table(h -> {
@@ -545,7 +547,10 @@ public class MultiTurret extends TemplatedTurret {
         }
         @Override
         public void displayConsumption(Table table){
-            for(int i = 0; i < mounts.size; i++) tf(table, i);
+            for(int i = 0; i < mounts.size; i++){
+                table.center();
+                tf(table, i);
+            }
         }
 
         @Override
@@ -799,7 +804,7 @@ public class MultiTurret extends TemplatedTurret {
                         _targets.set(i, findMountTargets(i));
                         _healTargets.set(i, Units.findAllyTile(team, loc[0], loc[1], mounts.get(i).range, Building::damaged));
 
-                        if(mounts.get(i).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(i).range, Building::damaged) != null) _targets.set(_healTargets.copy());
+                        if(mounts.get(i).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(i).range, b -> damaged() && b.health <= b.block.health * healHealth) != null) _targets.set(_healTargets.copy());
                         final int j = i;
                         _tractTargets.set(i, Units.closestEnemy(this.team, loc[0], loc[1], mounts.get(i).range, u -> u.checkTarget(mounts.get(j).targetAir, mounts.get(j).targetGround)));
                         _pointTargets.set(i, Groups.bullet.intersect(loc[0] - mounts.get(i).range, loc[1] - mounts.get(i).range, mounts.get(i).range * 2, mounts.get(i).range * 2).min(b -> b.team != team && b.type().hittable, b -> b.dst2(new Vec2(loc[0], loc[1]))));

@@ -15,7 +15,7 @@ public class SBullets implements ContentList{
 
     @Override
     public void load(){
-        artilleryHeal = new HealingBulletType(3.25f, -1){{
+        artilleryHeal = new HealingBulletType(3.25f, 50){{
             sprite = "shar-construct";
             drag = 0.0125f;
 
@@ -40,7 +40,7 @@ public class SBullets implements ContentList{
             frontColor = Pal.plastaniumFront;
             mixColorFrom = Pal.plastanium.cpy().lerp(Pal.heal, 0.5f);
             mixColorTo = Pal.heal;
-            fragBulletType = new LaserBoltBulletType(4.2f, 2){{
+            fragBulletType = new LaserBoltBulletType(4.2f, 10){{
                 lifetime = 25f;
                 healPercent = 5.5f;
                 collidesTeam = true;
@@ -49,7 +49,7 @@ public class SBullets implements ContentList{
             }};
         }};
 
-        artilleryHealBig = new HealingBulletType(4.25f, -1){{
+        artilleryHealBig = new HealingBulletType(4.25f, 150){{
             sprite = "shar-construct";
             drag = 0.0125f;
 
@@ -74,9 +74,7 @@ public class SBullets implements ContentList{
             frontColor = Pal.plastaniumFront;
             mixColorFrom = Pal.plastanium.cpy().lerp(Pal.heal, 0.5f);
             mixColorTo = Pal.heal;
-            fragBullet = artilleryHeal;
-            fragBullets = 2;
-            fragBulletType = new LaserBoltBulletType(5.2f, 2){{
+            fragBulletType = new LaserBoltBulletType(5.2f, 5){{
                 lifetime = 35f;
                 healPercent = 5.5f;
                 collidesTeam = true;

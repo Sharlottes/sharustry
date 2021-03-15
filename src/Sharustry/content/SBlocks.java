@@ -188,9 +188,16 @@ public class SBlocks implements ContentList{
             requirements(Category.turret, ItemStack.with(Items.copper, 820, Items.lead, 430, Items.graphite, 320, Items.silicon, 580, Items.titanium, 120, Items.thorium, 140, Items.plastanium, 85));
 
             addBaseTurret(SBullets.artilleryHealBig, Items.plastanium,"Asclepius");
-            addMountTurret(healBeamMountR, healBeamMountL, healLaserMount2);
-            addCustomMountLocation(new Float[]{-7f, 2.5f, 7f, 2.5f, 0f, 1.5f});
+            addMountTurret(healBeamMountR, healBeamMountL, healMissileMountL, healMissileMountR, healLaserMount2);
+            addCustomMountLocation(new Float[]{
+                    -7.25f, 2f,
+                    7.25f, 2f,
+                    -10f, -4.5f,
+                    10f, -4.5f,
+                    0f, 1.5f});
 
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
             ammos(MultiTurretMount.MultiTurretMountType.power);
             ammos(MultiTurretMount.MultiTurretMountType.power);
             ammos(MultiTurretMount.MultiTurretMountType.repair);
