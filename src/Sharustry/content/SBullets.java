@@ -11,24 +11,60 @@ import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
 public class SBullets implements ContentList{
-    public static BulletType artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
+    public static BulletType artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
 
     @Override
     public void load(){
-        artilleryHeal = new HealingBulletType(4.25f, -1){{
+        artilleryHeal = new HealingBulletType(3.25f, -1){{
+            sprite = "shar-construct";
+            drag = 0.0125f;
+
+            fragSpacing *= 2f;
+            tractForce = 8f;
+            tractScaledForce = 7f;
+            shootLength = 5f;
+            pointBulletDamage = 9f;
+            repairSpeed = 0.1f;
+            repairRange = 45f;
+            tractRange = 40f;
+            pointRange = 35f;
+            pointHitEffect = Fx.shootHeal;
+            knockback = 2f;
+            lifetime = 4 * 60f;
+            width = height = 9f;
+            collidesTiles = false;
+            splashDamageRadius = 35f * 0.75f;
+            splashDamage = 45f;
+            fragBullets = 10;
+            backColor = Pal.plastaniumBack;
+            frontColor = Pal.plastaniumFront;
+            mixColorFrom = Pal.plastanium.cpy().lerp(Pal.heal, 0.5f);
+            mixColorTo = Pal.heal;
+            fragBulletType = new LaserBoltBulletType(4.2f, 2){{
+                lifetime = 25f;
+                healPercent = 5.5f;
+                collidesTeam = true;
+                backColor = Pal.heal;
+                frontColor = Color.white;
+            }};
+        }};
+
+        artilleryHealBig = new HealingBulletType(4.25f, -1){{
             sprite = "shar-construct";
             drag = 0.0125f;
 
             despawnEffect = Fx.healWave;
-            tractForce = 12f;
-            tractScaledForce = 7f;
+            tractForce = 24f;
+            tractScaledForce = 14f;
             shootLength = 5f;
             pointBulletDamage = 30f;
-            repairSpeed = 0.1f;
-            repairRange = 65f;
-            pointHitEffect = Fx.plasticExplosion;
-            knockback = 1f;
-            lifetime = 5 * 60f;
+            repairSpeed = 0.35f;
+            repairRange = 85f;
+            tractRange = 80f;
+            pointRange = 70f;
+            pointHitEffect = Fx.shootHeal;
+            knockback = 5f;
+            lifetime = 7 * 60f;
             width = height = 13f;
             collidesTiles = false;
             splashDamageRadius = 35f * 0.75f;
@@ -38,6 +74,8 @@ public class SBullets implements ContentList{
             frontColor = Pal.plastaniumFront;
             mixColorFrom = Pal.plastanium.cpy().lerp(Pal.heal, 0.5f);
             mixColorTo = Pal.heal;
+            fragBullet = artilleryHeal;
+            fragBullets = 2;
             fragBulletType = new LaserBoltBulletType(5.2f, 2){{
                 lifetime = 35f;
                 healPercent = 5.5f;

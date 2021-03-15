@@ -13,11 +13,77 @@ import mindustry.graphics.Pal;
 import static Sharustry.content.SBullets.*;
 
 public class STurretMounts implements ContentList {
-    public static MultiTurretMount healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
+    public static MultiTurretMount healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
 
 
     @Override
     public void load() {
+        healBeamMountL = new MultiTurretMount("healBeamM2L", new LaserBoltBulletType(6.2f, 20){{
+            lifetime = 55f;
+            healPercent = 8.5f;
+            collidesTeam = true;
+            backColor = Pal.heal;
+            frontColor = Color.white;
+            width *= 1.5f;
+            height *= 1.5f;
+            fragBullet = new LaserBoltBulletType(2.5f, 3){{
+                lifetime = 25f;
+                healPercent = 2.15f;
+                collidesTeam = true;
+                backColor = Pal.heal;
+                frontColor = Color.white;
+            }};
+            fragVelocityMin = 0.75f;
+        }}){{
+            healBlock = true;
+            title = "healBeamLeft";
+
+            shootCone = 40f;
+            shots = 5;
+            burstSpacing = 6.5f;
+            range = 15 * 8f;
+            shootSound = Sounds.lasershoot;
+            reloadTime = 85f;
+            recoilAmount = 2.5f;
+            heatColor = Pal.turretHeat;
+            powerUse = 2.5f;
+            mountType = MultiTurretMountType.power;
+        }};
+        healBeamMountR = new MultiTurretMount("healBeamM2R", new LaserBoltBulletType(6.2f, 20){{
+            lifetime = 55f;
+            healPercent = 8.5f;
+            collidesTeam = true;
+            backColor = Pal.heal;
+            frontColor = Color.white;
+            width *= 1.5f;
+            height *= 1.5f;
+            fragBullet = new LaserBoltBulletType(2.5f, 3){{
+                lifetime = 25f;
+                healPercent = 2.15f;
+                collidesTeam = true;
+                backColor = Pal.heal;
+                frontColor = Color.white;
+            }};
+            fragAngle = 45;
+            fragBullets = 3;
+            fragVelocityMin = 0.75f;
+        }}){{
+            healBlock = true;
+            title = "healBeamRight";
+
+            shootCone = 40f;
+            shots = 5;
+            burstSpacing = 6.5f;
+            range = 15 * 8f;
+            shootSound = Sounds.lasershoot;
+            reloadTime = 85f;
+            recoilAmount = 2.5f;
+            heatColor = Pal.turretHeat;
+            powerUse = 2.5f;
+            mountType = MultiTurretMountType.power;
+        }};
+
+
         healBeamMount = new MultiTurretMount("healBeamM", new LaserBoltBulletType(5.2f, 10){{
             lifetime = 35f;
             healPercent = 5.5f;
@@ -35,17 +101,26 @@ public class STurretMounts implements ContentList {
             burstSpacing = 5;
             range = 10 * 8f;
             shootSound = Sounds.lasershoot;
-            reloadTime = 65f;
+            reloadTime = 105f;
             recoilAmount = 1.5f;
             heatColor = Pal.turretHeat;
             powerUse = 1.25f;
             mountType = MultiTurretMountType.power;
         }};
 
-        healLaserMount = new MultiTurretMount("healLaserM"){{
+        healLaserMount2 = new MultiTurretMount("healLaserM2"){{
             title = "healLaser";
             repairSpeed = 0.75f;
-            repairRadius = 85f;
+            repairRadius = 75f;
+            powerUse = 3f;
+            laserColor = Color.valueOf("e8ffd7");
+            mountType = MultiTurretMountType.repair;
+        }};
+
+        healLaserMount = new MultiTurretMount("healLaserM"){{
+            title = "healLaser";
+            repairSpeed = 0.5f;
+            repairRadius = 55f;
             powerUse = 1.5f;
             laserColor = Color.valueOf("e8ffd7");
             mountType = MultiTurretMountType.repair;

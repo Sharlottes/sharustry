@@ -25,7 +25,7 @@ import static mindustry.type.ItemStack.*;
 public class SBlocks implements ContentList{
     public static Block
             //defense
-            balkan, jumble, conductron, technicus, clinicus,
+            balkan, jumble, conductron, technicus, asclepius, clinicus,
             //wall
             shieldWall,
             //drill
@@ -184,6 +184,43 @@ public class SBlocks implements ContentList{
             shootSound = Sounds.shotgun;
         }};
 
+        asclepius = new MultiConstructTurret("asclepius"){{
+            requirements(Category.turret, ItemStack.with(Items.copper, 820, Items.lead, 430, Items.graphite, 320, Items.silicon, 580, Items.titanium, 120, Items.thorium, 140, Items.plastanium, 85));
+
+            addBaseTurret(SBullets.artilleryHealBig, Items.plastanium,"Asclepius");
+            addMountTurret(healBeamMountR, healBeamMountL, healLaserMount2);
+            addCustomMountLocation(new Float[]{-7f, 2.5f, 7f, 2.5f, 0f, 1.5f});
+
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.repair);
+
+            customMountLocation = true;
+            hasLiquids = true;
+            hasItems = true;
+            hasPower = true;
+            targetAir = false;
+            size = 4;
+            shots = 6;
+            maxConstruct = 18;
+            inaccuracy = 45f;
+            reloadTime = 2.5f * 60f;
+            ammoEjectBack = 5f;
+            ammoUseEffect = Fx.casing3Double;
+            ammoPerShot = 8;
+            cooldown = 0.03f;
+            velocityInaccuracy = 0.3f;
+            restitution = 0.04f;
+            recoilAmount = 8f;
+            shootShake = 3.5f;
+            range = 45 * 8f;
+            burstSpacing = 7f;
+
+            inaccuracy = 17f;
+            health = 240 * size * size;
+            shootSound = Sounds.artillery;
+        }};
+
         clinicus = new MultiConstructTurret("clinicus"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 335, Items.lead, 210, Items.graphite, 180, Items.silicon, 250, Items.thorium, 90));
 
@@ -201,12 +238,12 @@ public class SBlocks implements ContentList{
             hasPower = true;
             targetAir = false;
             size = 3;
-            shots = 6;
+            shots = 3;
             inaccuracy = 12f;
             reloadTime = 1.5f * 60f;
             ammoEjectBack = 5f;
             ammoUseEffect = Fx.casing3Double;
-            ammoPerShot = 2;
+            ammoPerShot = 4;
             cooldown = 0.03f;
             velocityInaccuracy = 0.2f;
             restitution = 0.02f;
@@ -239,6 +276,7 @@ public class SBlocks implements ContentList{
                 Items.pyratite, Bullets.artilleryIncendiary
             );
 
+            shootCone = 35;
             size = 2;
             range = 15 * 8;
             maxAmmo = 30;
