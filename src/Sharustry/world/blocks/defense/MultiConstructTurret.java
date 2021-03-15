@@ -143,8 +143,8 @@ public class MultiConstructTurret extends MultiTurret {
                                 for(int i = 0; i < Groups.bullet.size(); i++)
                                     if(Groups.bullet.index(i).owner == self() && Groups.bullet.index(i).type == bullet) h++;
                                 Log.info(h);
-                                return h + "";
-                            })).color(Color.yellow);
+                                return h + " / " + maxConstruct;
+                            })).color(h == maxConstruct ? Color.red : Color.yellow);
                         }));
                     }}).growX().left();
                 }).left();
