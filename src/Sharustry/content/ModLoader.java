@@ -11,7 +11,8 @@ public class ModLoader implements ContentList{
         new SStatusEffects(),
         new SBullets(),
         new STurretMounts(),
-        new SBlocks()
+        new SBlocks(),
+        new STechTree()
     };
 
     public void load(){
