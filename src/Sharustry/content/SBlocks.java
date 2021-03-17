@@ -2,7 +2,9 @@ package Sharustry.content;
 
 import Sharustry.entities.bullet.FieldBulletType;
 import Sharustry.graphics.SPal;
+import Sharustry.world.blocks.storage.BattleCore;
 import arc.math.Mathf;
+import arc.struct.EnumSet;
 import arc.util.Time;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.ShrapnelBulletType;
@@ -32,7 +34,9 @@ public class SBlocks implements ContentList{
             //drill
             adaptDrill, multiDrill,
             //crafterator
-            multi;
+            multi,
+            //battle storage
+            armedNucleus;
 
     @Override
     public void load(){
@@ -327,7 +331,7 @@ public class SBlocks implements ContentList{
             addBaseTurret(jumbleBullet, Items.graphite, "Aggregate");
             addMountTurret(unoMount, waveMount, hailMount);
 
-            ammos(MultiTurretMount.MultiTurretMountType.power, Liquids.water, SBullets.miniWater);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
             ammos(MultiTurretMount.MultiTurretMountType.liquid,
                 Liquids.water, SBullets.miniWater,
                 Liquids.slag, SBullets.miniSlag,
@@ -409,118 +413,44 @@ public class SBlocks implements ContentList{
             );
         }};
 
+        armedNucleus = new BattleCore("armedNucleus"){{
+            customMountLocation = true;
+            hasLiquids = true;
+            hasItems = true;
+            hasPower = true;
+            requirements(Category.effect, with(Items.copper, 8000, Items.lead, 8000, Items.silicon, 5000, Items.thorium, 4000));
 
-
-
-
-
-
-
-
-
-
-
-        /* //fuck
-        warehouseBattle = new BattleCoreBlock("warehouse-battle"){{
-
+            unitType = UnitTypes.gamma;
+            health = 6000;
+            itemCapacity = 13000;
             size = 5;
-            itemCapacity = 7000;
-            flags = EnumSet.of(BlockFlag. core);
-            requirements(Category.effect, with(Items.titanium, 600, Items.thorium, 500, Items.plastanium, 450, Items.phaseFabric, 150, Items.surgeAlloy, 100));
-            turrets.add(
-                new ItemBattleCoreBlock("duo-part1"){{
-                    requirements(Category.turret, with(Items.copper, 35), true);
-                    ammo(
-                        Items.copper, Bullets.standardCopper,
-                        Items.graphite, Bullets.standardDense,
-                        Items.pyratite, Bullets.standardIncendiary,
-                        Items.silicon, Bullets.standardHoming
-                    );
 
-                    spread = 4f;
-                    shots = 2;
-                    alternate = true;
-                    reloadTime = 20f;
-                    restitution = 0.03f;
-                    range = 100;
-                    shootCone = 15f;
-                    ammoUseEffect = Fx.casing1;
-                    health = 250;
-                    inaccuracy = 2f;
-                    rotateSpeed = 10f;
-                    offsetx = +5;
-                    offsety = +5;
-                }},
-                new ItemBattleCoreBlock("duo-part2"){{
-                    requirements(Category.turret, with(Items.copper, 35), true);
-                    ammo(
-                        Items.copper, Bullets.standardCopper,
-                        Items.graphite, Bullets.standardDense,
-                        Items.pyratite, Bullets.standardIncendiary,
-                        Items.silicon, Bullets.standardHoming
-                    );
+            unitCapModifier = 24;
+            researchCostMultiplier = 0.06f;
 
-                    spread = 4f;
-                    shots = 2;
-                    alternate = true;
-                    reloadTime = 20f;
-                    restitution = 0.03f;
-                    range = 100;
-                    shootCone = 15f;
-                    ammoUseEffect = Fx.casing1;
-                    health = 250;
-                    inaccuracy = 2f;
-                    rotateSpeed = 10f;
-                    offsetx = -5;
-                    offsety = +5;
-                }},
-                new ItemBattleCoreBlock("duo-part3"){{
-                    requirements(Category.turret, with(Items.copper, 35), true);
-                    ammo(
-                        Items.copper, Bullets.standardCopper,
-                        Items.graphite, Bullets.standardDense,
-                        Items.pyratite, Bullets.standardIncendiary,
-                        Items.silicon, Bullets.standardHoming
-                    );
+            addMountTurret(hailMount, hailMount, hailMount, hailMount, unoMount, unoMount, unoMount, unoMount);
+            addCustomMountLocation(new Float[]{
+                13f, 13f,
+                -13f, 13f,
+                13f, -13f,
+                -13f, -13f,
+                10f, 0f,
+                0f, 10f,
+                -10f, 0f,
+                0f, -10f
+            });
 
-                    spread = 4f;
-                    shots = 2;
-                    alternate = true;
-                    reloadTime = 20f;
-                    restitution = 0.03f;
-                    range = 100;
-                    shootCone = 15f;
-                    ammoUseEffect = Fx.casing1;
-                    health = 250;
-                    inaccuracy = 2f;
-                    rotateSpeed = 10f;
-                    offsetx = +5;
-                    offsety = -5;
-                }},
-                new ItemBattleCoreBlock("duo-part4"){{
-                    requirements(Category.turret, with(Items.copper, 35), true);
-                    ammo(
-                        Items.copper, Bullets.standardCopper,
-                        Items.graphite, Bullets.standardDense,
-                        Items.pyratite, Bullets.standardIncendiary,
-                        Items.silicon, Bullets.standardHoming
-                    );
-
-                    spread = 4f;
-                    shots = 2;
-                    alternate = true;
-                    reloadTime = 20f;
-                    restitution = 0.03f;
-                    range = 100;
-                    shootCone = 15f;
-                    ammoUseEffect = Fx.casing1;
-                    health = 250;
-                    inaccuracy = 2f;
-                    rotateSpeed = 10f;
-                    offsetx = -5;
-                    offsety = -5;
-                }}
-            );
-        }};*/
+            for(int i = 0; i < 4; i++) {
+                ammos(MultiTurretMount.MultiTurretMountType.item,
+                    Items.graphite, Bullets.artilleryDense,
+                    Items.silicon, Bullets.artilleryHoming,
+                    Items.pyratite, Bullets.artilleryIncendiary
+                );
+            }
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+        }};
     }
 }

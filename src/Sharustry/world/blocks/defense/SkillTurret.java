@@ -5,6 +5,7 @@ import Sharustry.graphics.SPal;
 import arc.func.Func;
 import arc.graphics.Color;
 import arc.math.Mathf;
+import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.content.Fx;
@@ -29,7 +30,7 @@ public class SkillTurret extends TemplatedTurret {
     }
 
     public class SkillTurretBuild extends TemplatedTurretBuild {
-        public int shotcounter;
+        public IntSeq shotcounters;
 
         @Override
         protected void shoot(BulletType type) {
@@ -104,10 +105,13 @@ public class SkillTurret extends TemplatedTurret {
                 useAmmo();
             }
 
-            shotcounter++;
-            for(int i = 0; i < skillDelays.size; i++) if(shotcounter % skillDelays.get(i) == 0) {
-                shotcounter = 0;
-                skillSeq.get(i).get(this).run();
+
+            for(int i = 0; i < skillDelays.size; i++) {
+                shotcounters.set(i, shotcounters.get(i));
+                if(shotcounters.get(i) == skillDelays.get(i)) {
+                    shotcounters.set(i, 0);
+                    skillSeq.get(i).get(this).run();
+                }
             }
         }
 

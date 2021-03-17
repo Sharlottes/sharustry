@@ -1,5 +1,7 @@
-package Sharustry.world.blocks.defense;
+package Sharustry.world.blocks.storage;
 
+import Sharustry.graphics.Drawm;
+import Sharustry.world.blocks.defense.MultiTurretMount;
 import arc.*;
 import arc.func.Func;
 import arc.graphics.*;
@@ -24,46 +26,45 @@ import mindustry.graphics.*;
 import mindustry.logic.LAccess;
 import mindustry.type.*;
 import mindustry.ui.*;
+import mindustry.world.Block;
 import mindustry.world.Tile;
+import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
-import java.util.Objects;
-
-import static arc.struct.ObjectMap.*;
 import static mindustry.Vars.*;
 
-public class MultiTurret extends TemplatedTurret {
+import static arc.struct.ObjectMap.of;
+
+public class BattleCore extends CoreBlock {
+    public Block reviveBlock = Blocks.coreNucleus;
+
+    public final static float logicControlCooldown = 60 * 2;
+
     public float healHealth = 0.4f;
     public boolean customMountLocation = false;
     public Seq<Float> customMountLocationsX = new Seq<>();
     public Seq<Float> customMountLocationsY = new Seq<>();
     public float rangeTime = 80;
     public float fadeTime = 20;
-    public String title;
     public Seq<MultiTurretMount> mounts = new Seq<>();
     public int amount;
     public float totalRangeTime;
-    public Object mainAmmo;
-    public BulletType bullet;
     public Seq<SoundLoop> loopSounds = new Seq<>();
 
-    public TextureRegion outline, baseTurret;
     public Seq<TextureRegion[]> turrets = new Seq<>();
     public ObjectMap<Liquid, BulletType> liquidAmmoTypes = new ObjectMap<>();
     public Seq<ObjectMap<Liquid, BulletType>> liquidMountAmmoTypes = new Seq<>();
     public Seq<ObjectMap<Item, BulletType>> mountAmmoTypes = new Seq<>();
 
-    public Seq<Integer> skillDelays = new Seq<>();
-    public Seq<Func<Building, Runnable>> skillSeq = new Seq<>();
+    public TextureRegion heatRegion, iconRegion;
 
-    public MultiTurret(String name, BulletType type, Object ammo, String title, MultiTurretMount... mounts){
+    public BattleCore(String name, MultiTurretMount... mounts){
         this(name);
         addMountTurret(mounts);
-        addBaseTurret(type, ammo, title);
     }
 
-    public MultiTurret(String name){
+    public BattleCore(String name){
         super(name);
     }
 
@@ -73,41 +74,10 @@ public class MultiTurret extends TemplatedTurret {
         this.totalRangeTime = rangeTime * this.mounts.size;
     }
 
-    public void addBaseTurret(BulletType type, Object ammo, String title){
-        if(ammo instanceof Item) {
-            hasItems = true;
-            mainAmmo = ammo;
-            ammoType = "item";
-            ammo(ammo, type);
-        }
-        if(ammo instanceof Liquid) {
-            hasLiquids = true;
-            mainAmmo = ammo;
-            ammoType = "liquid";
-            ammo(ammo, type);
-        }
-        if(ammo instanceof Float) {
-            hasPower = true;
-            mainAmmo = ammo;
-            ammoType = "power";
-            powerUse = (Float)ammo;
-        }
-
-        this.bullet = type;
-        this.title = title;
-    }
-
     public void addCustomMountLocation(Float[] xy){
         customMountLocation = true;
         for(int ix = 0; ix < amount * 2; ix += 2) customMountLocationsX.add(xy[ix]);
         for(int iy = 1; iy < amount * 2; iy += 2) customMountLocationsY.add(xy[iy]);
-    }
-
-    public <T extends Building> void addSkills(Func<T, Runnable> skill, int delay){
-        if(skill != null) {
-            skillSeq.add((Func<Building, Runnable>) skill);
-            skillDelays.add(delay);
-        }
     }
 
     public void ammos(MultiTurretMount.MultiTurretMountType ammotype, Object... objects){
@@ -128,9 +98,6 @@ public class MultiTurret extends TemplatedTurret {
         }
     }
 
-
-    public boolean iamdump(int h, Building tile, Item item){ return (tile instanceof MultiTurretBuild) && !((MultiTurretBuild) tile)._ammos.get(h).isEmpty() && (((MultiTurretBuild) tile)._ammos.get(h).peek()).item == item; }
-    public ReqImage wtfisthis(int h, Building tile, Item item){ return new ReqImage(new ItemImage(item.icon(Cicon.medium)), ()->iamdump(h, tile, item)); }
     @Override
     public void init(){
         consumes.add(new ConsumeLiquidFilter(i -> liquidAmmoTypes.containsKey(i), 1f){
@@ -150,50 +117,24 @@ public class MultiTurret extends TemplatedTurret {
             }
         });
 
-        consumes.add(new ConsumeItemFilter(i -> ammoTypes.containsKey(i)){
-            @Override
-            public void build(Building tile, Table table){
-                MultiReqImage image = new MultiReqImage();
-                Vars.content.items().each(i -> filter.get(i) && i.unlockedNow(), item -> {
-                    for(int h = 0; h < amount; h++) image.add(wtfisthis(h,tile,item));
-                });
-
-                table.add(image).size(8 * 4); //what the fucking hell have i done?
-            }
-
-            @Override
-            public boolean valid(Building entity){
-                //valid when there's any ammo in the turret
-                return entity instanceof MultiTurretBuild && !((MultiTurretBuild) entity).ammo.isEmpty();
-            }
-
-            @Override
-            public void display(Stats stats){
-                //don't display
-            }
-        });
-
         super.init();
     }
 
     @Override
     public void load(){
         super.load();
-
-        teamRegion = Core.atlas.find("error");
-        baseRegion = Core.atlas.find(name + "-base", "block-" + this.size);
-        region = Core.atlas.find(name + "-baseTurret");
+        region = Core.atlas.find(name);
+        iconRegion = Drawm.generateTeamRegion(this);
+        teamRegion = Core.atlas.find(name + "-team");
         heatRegion = Core.atlas.find(name + "-heat");
-        outline = Core.atlas.find(name + "-outline");
-        baseTurret = Core.atlas.find(name + "-baseTurret");
         Events.on(EventType.ClientLoadEvent.class, e -> {
             for(int i = 0; i < amount; i++){ //...why?
                 //[Sprite, Outline, Heat, Fade Mask]
                 TextureRegion[] sprites = {
-                    Core.atlas.find("shar-"+mounts.get(i).name + ""),
-                    Core.atlas.find("shar-"+mounts.get(i).name + "-outline"),
-                    Core.atlas.find("shar-"+mounts.get(i).name + "-heat"),
-                    Core.atlas.find("shar-"+mounts.get(i).name + "-mask")
+                        Core.atlas.find("shar-"+mounts.get(i).name + ""),
+                        Core.atlas.find("shar-"+mounts.get(i).name + "-outline"),
+                        Core.atlas.find("shar-"+mounts.get(i).name + "-heat"),
+                        Core.atlas.find("shar-"+mounts.get(i).name + "-mask")
                 };
                 turrets.add(sprites);
 
@@ -237,8 +178,8 @@ public class MultiTurret extends TemplatedTurret {
     @Override
     public TextureRegion[] icons() {
         return new TextureRegion[]{
-            this.baseRegion,
-            Core.atlas.find(name + "-icon")
+                region,
+                iconRegion
         };
     }
 
@@ -247,62 +188,46 @@ public class MultiTurret extends TemplatedTurret {
         h.add(str);
     }
 
-    void addStatS(Table w, boolean main, int i){
+    void addStatS(Table w, int i){
         w.left();
         w.row();
-        w.add((main?title:mounts.get(i).title)).right().top();
+        w.add((mounts.get(i).title)).right().top();
         w.row();
-        w.image(main?baseTurret:Core.atlas.find("shar-"+mounts.get(i).name + "-full")).size(60).scaling(Scaling.bounded).right().top();
+        w.image(Core.atlas.find("shar-"+mounts.get(i).name + "-full")).size(60).scaling(Scaling.bounded).right().top();
 
         w.table(Tex.underline, h -> {
             h.left().defaults().padRight(3).left();
-            if(main){
-                rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((range) / tilesize, 1) + " " + StatUnit.blocks);
-                rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reloadTime * shots, 1));
-                rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
-                rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
-                if(inaccuracy > 0) rowAdd(h, "[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (inaccuracy) + " " + StatUnit.degrees.localized());
-                if(chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
-                if(Objects.equals(ammoType, "item")) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (ammoPerShot));
-            }
-            else{
-                rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((mounts.get(i).range) / tilesize, 1) + " " + StatUnit.blocks);
-                rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(mounts.get(i).targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
-                rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(mounts.get(i).targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
-                if(mounts.get(i).inaccuracy > 0) rowAdd(h, "[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (mounts.get(i).inaccuracy) + " " + StatUnit.degrees.localized());
-                if(mounts.get(i).chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(mounts.get(i).chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (mounts.get(i).ammoPerShot));
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", mounts.get(i).damage * 60f));
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair) rowAdd(h, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", mounts.get(i).repairRadius / tilesize));
-                if(mounts.get(i).mountType != MultiTurretMount.MultiTurretMountType.repair || mounts.get(i).mountType != MultiTurretMount.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (mounts.get(i).reloadTime) * (mounts.get(i).shots), 1));
-            }
+
+            rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((mounts.get(i).range) / tilesize, 1) + " " + StatUnit.blocks);
+            rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(mounts.get(i).targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+            rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(mounts.get(i).targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
+            if(mounts.get(i).inaccuracy > 0) rowAdd(h, "[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (mounts.get(i).inaccuracy) + " " + StatUnit.degrees.localized());
+            if(mounts.get(i).chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(mounts.get(i).chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
+            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (mounts.get(i).ammoPerShot));
+            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", mounts.get(i).damage * 60f));
+            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair) rowAdd(h, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", mounts.get(i).repairRadius / tilesize));
+            if(mounts.get(i).mountType != MultiTurretMount.MultiTurretMountType.repair || mounts.get(i).mountType != MultiTurretMount.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (mounts.get(i).reloadTime) * (mounts.get(i).shots), 1));
+
             h.row();
 
             ObjectMap<ObjectMap<BulletType ,? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
-            TextureRegion icon = Core.atlas.find("error");
-            if(mainAmmo instanceof Item) icon = ((Item)mainAmmo).icon(Cicon.medium);
-            if(mainAmmo instanceof Liquid) icon = ((Liquid)mainAmmo).icon(Cicon.medium);
-            if(mainAmmo instanceof Float) icon = Icon.power.getRegion();
-            if(main) types.put(of(bullet, mainAmmo), icon);
-            else {
-                //tract does put nothing lol
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power) {
-                    BulletType bullet = mounts.get(i).bullet;
-                    if(bullet != null) types.put(of(bullet, null), Icon.power.getRegion());
-                }
+            //tract does put nothing lol
+            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power) {
+                BulletType bullet = mounts.get(i).bullet;
+                if(bullet != null) types.put(of(bullet, null), Icon.power.getRegion());
+            }
 
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item){
-                    for(Item item : content.items()){
-                        BulletType bullet = mountAmmoTypes.get(i).get(item);
-                        if(bullet != null) types.put(of(bullet, item), item.icon(Cicon.medium));
-                    }
+            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item){
+                for(Item item : content.items()){
+                    BulletType bullet = mountAmmoTypes.get(i).get(item);
+                    if(bullet != null) types.put(of(bullet, item), item.icon(Cicon.medium));
                 }
+            }
 
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.liquid){
-                    for(Liquid liquid : content.liquids()) {
-                        BulletType bullet = liquidMountAmmoTypes.get(i).get(liquid);
-                        if(bullet != null) types.put(of(bullet, liquid), liquid.icon(Cicon.medium));
-                    }
+            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.liquid){
+                for(Liquid liquid : content.liquids()) {
+                    BulletType bullet = liquidMountAmmoTypes.get(i).get(liquid);
+                    if(bullet != null) types.put(of(bullet, liquid), liquid.icon(Cicon.medium));
                 }
             }
 
@@ -357,7 +282,7 @@ public class MultiTurret extends TemplatedTurret {
                             if(bullet.damage > 0 && (bullet.collides || bullet.splashDamage <= 0)) rowAdd(e, Core.bundle.format("bullet.damage", bullet.damage));
                             if(bullet.buildingDamageMultiplier != 1) rowAdd(e, Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1)));
                             if(bullet.splashDamage > 0) rowAdd(e, Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1)));
-                            if(bullet.ammoMultiplier > 0 && ((main) ? !(bullet instanceof LiquidBulletType) : mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item) && !Mathf.equal(bullet.ammoMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1)));
+                            if(bullet.ammoMultiplier > 0 && (mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.item) && !Mathf.equal(bullet.ammoMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1)));
                             if(!Mathf.equal(bullet.reloadMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.reload", bullet.reloadMultiplier));
                             if(bullet.knockback > 0) rowAdd(e, Core.bundle.format("bullet.knockback", Strings.fixed(bullet.knockback, 1)));
                             if(bullet.healPercent > 0) rowAdd(e, Core.bundle.format("bullet.healpercent", bullet.healPercent));
@@ -388,7 +313,6 @@ public class MultiTurret extends TemplatedTurret {
             stats.remove(Stat.shootRange);
             stats.remove(Stat.inaccuracy);
             stats.remove(Stat.reload);
-            if(Objects.equals(ammoType, "item") || Objects.equals(ammoType, "liquid")) stats.remove(Stat.ammo);
             stats.remove(Stat.targetsAir);
             stats.remove(Stat.targetsGround);
             stats.remove(Stat.ammoUse);
@@ -403,28 +327,21 @@ public class MultiTurret extends TemplatedTurret {
             table.left();
             table.add("[lightgray]" + Core.bundle.get("stat.shar.base-t")).fillX().padLeft(24);
             table.row();
-
-            //Base Turret
-            table.table(null, w -> {
-                addStatS(w, true, 0);
-                table.row().left();
-            }).left();
-
-            table.row();
             table.left();
             table.add("[lightgray]" + Core.bundle.get("stat.shar.mini-t")).fillX().padLeft(24);
 
             //Mounts
             table.table(null, w -> {
                 for(int i = 0; i < mounts.size; i++){
-                    addStatS(w, false, i);
+                    addStatS(w,  i);
                     table.row();
                 }
             });
         });
     }
 
-    public class MultiTurretBuild extends TemplatedTurretBuild {
+
+    public class BattleCoreBuild extends CoreBuild {
         public Seq<Integer> _shotcounters = new Seq<>();
         public Seq<Integer> _totalAmmos = new Seq<>();
         public Seq<Float> _reloads = new Seq<>();
@@ -444,9 +361,9 @@ public class MultiTurret extends TemplatedTurret {
         public Seq<Bullet> _pointTargets = new Seq<>();
         public Seq<Building> _healTargets = new Seq<>();
         public Seq<Vec2> _targetPoses = new Seq<>();
-        public Seq<Seq<ItemEntry>> _ammos = new Seq<>();
-        public float _heat;
-        public int shotcounter;
+        public Seq<Seq<BattleCore.ItemEntry>> _ammos = new Seq<>();
+        public float logicControlTime = -1;
+        public boolean logicShooting = false;
 
         @Override
         public void remove(){
@@ -480,10 +397,8 @@ public class MultiTurret extends TemplatedTurret {
                 _anys.add(false);
             }
         }
-
         public void tf(Table table, int i){
             if(mounts.size > 3 && i % 3 == 0) table.row();
-
             table.add(new Stack(){{
                 add(new Table(o -> {
                     o.left();
@@ -566,8 +481,6 @@ public class MultiTurret extends TemplatedTurret {
                     break;
                 }
             }
-
-            bars.add(new Bar("stat.ammo", Pal.ammo, () -> Mathf.clamp((float)totalAmmo / maxAmmo, 0f, 1f))).growX();
             bars.row();
         }
 
@@ -602,41 +515,7 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public int removeStack(Item item, int amount){
-            return 0;
-        }
-
-        @Override
-        public void control(LAccess type, double p1, double p2, double p3, double p4){
-            if(type == LAccess.shoot && !unit.isPlayer()){
-                for(int i = 0; i < mounts.size; i++) _targetPoses.get(i).set(World.unconv((float)p1), World.unconv((float)p2));
-                logicControlTime = logicControlCooldown;
-                logicShooting = !Mathf.zero(p3);
-            }
-
-            super.control(type, p1, p2, p3, p4);
-        }
-
-        @Override
-        public void control(LAccess type, Object p1, double p2, double p3, double p4){
-            if(type == LAccess.shootp && !unit.isPlayer()){
-                logicControlTime = logicControlCooldown;
-                logicShooting = !Mathf.zero(p2);
-
-                if(p1 instanceof Posc){
-                    for(int i = 0; i < mounts.size; i++){
-                        if(!mountHasAmmo(i)) return;
-                        BulletType bullet = mountPeekAmmo(i);
-                        float speed = bullet.speed;
-                        //slow bullets never intersect
-                        if(speed < 0.1f) speed = 9999999f;
-
-                        _targetPoses.get(i).set(Predict.intercept(this, (Posc)p1, speed));
-                        if(_targetPoses.get(i).isZero()) _targetPoses.get(i).set((Posc)p1);
-                    }
-                }
-            }
-
-            super.control(type, p1, p2, p3, p4);
+            return super.removeStack(item, amount);
         }
 
         @Override
@@ -648,11 +527,12 @@ public class MultiTurret extends TemplatedTurret {
 
                 BulletType type = mountAmmoTypes.get(h).get(item);
                 if(type == null) continue;
+                if(_totalAmmos.get(h) + type.ammoMultiplier > mounts.get(h).maxAmmo) continue;
                 _totalAmmos.set(h, (int)(_totalAmmos.get(h) + type.ammoMultiplier));
 
                 boolean asdf = true;
                 for(int i = 0; i < _ammos.get(h).size; i++) {
-                    ItemEntry entry = _ammos.get(h).get(i);
+                    BattleCore.ItemEntry entry = _ammos.get(h).get(i);
 
                     if(entry.item == item) {
                         entry.amount += (int)type.ammoMultiplier;
@@ -662,42 +542,39 @@ public class MultiTurret extends TemplatedTurret {
                     }
                 }
 
-                if(asdf) _ammos.get(h).add(new ItemEntry(item, (int)type.ammoMultiplier < mounts.get(h).ammoPerShot ? (int)type.ammoMultiplier + mounts.get(h).ammoPerShot : (int)type.ammoMultiplier));
+                if(asdf) _ammos.get(h).add(new BattleCore.ItemEntry(item, (int)type.ammoMultiplier < mounts.get(h).ammoPerShot ? (int)type.ammoMultiplier + mounts.get(h).ammoPerShot : (int)type.ammoMultiplier));
             }
-
-            if(ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo) super.handleItem(source, item);
+            super.handleItem(source, item);
         }
 
         @Override
         public int acceptStack(Item item, int amount, Teamc source){
             for(int i = 0; i < mounts.size; i++)
                 if(mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null)
-                    return Math.max(Math.min((int)(( mounts.get(i).maxAmmo - _totalAmmos.get(i)) / mountAmmoTypes.get(i).get(item).ammoMultiplier), amount), Math.min((int)((maxAmmo - totalAmmo) / ammoTypes.get(item).ammoMultiplier), amount));
+                    return Math.min((int)((mounts.get(i).maxAmmo - _totalAmmos.get(i)) / mountAmmoTypes.get(i).get(item).ammoMultiplier), amount);
             return 0;
         }
 
         @Override
         public boolean acceptItem(Building source, Item item){
             for(int i = 0; i < mounts.size; i++)
-                if((mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null &&_totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo)
-                    || ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo)
-                    return true;
-            return false;
+                if(mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null &&_totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo) return true;
+            return super.acceptItem(source, item);
         }
 
         @Override
         public boolean acceptLiquid(Building source, Liquid liquid){
             for(int i = 0; i < mounts.size; i++)
                 if(liquidMountAmmoTypes.get(i) != null
-                    && liquidMountAmmoTypes.get(i).get(liquid) != null
-                    && (liquids.current() == liquid || (liquidMountAmmoTypes.get(i).containsKey(liquid)
-                    && (!liquidMountAmmoTypes.get(i).containsKey(liquids.current()) || liquids.get(liquids.current()) <= 1f / liquidMountAmmoTypes.get(i).get(liquids.current()).ammoMultiplier + 0.001f))))
+                        && liquidMountAmmoTypes.get(i).get(liquid) != null
+                        && (liquids.current() == liquid || (liquidMountAmmoTypes.get(i).containsKey(liquid)
+                        && (!liquidMountAmmoTypes.get(i).containsKey(liquids.current()) || liquids.get(liquids.current()) <= 1f / liquidMountAmmoTypes.get(i).get(liquids.current()).ammoMultiplier + 0.001f))))
                     return true;
             return false;
         }
 
         public float[] mountLocations(int mount){
-            Tmp.v1.trns(this.rotation - 90, (customMountLocation ? customMountLocationsX.get(mount) : mounts.get(mount).x), (customMountLocation ? customMountLocationsY.get(mount) : mounts.get(mount).y) - recoil);
+            Tmp.v1.trns(this.rotation - 90, (customMountLocation ? customMountLocationsX.get(mount) : mounts.get(mount).x), (customMountLocation ? customMountLocationsY.get(mount) : mounts.get(mount).y));
             Tmp.v1.add(x, y);
             Tmp.v2.trns(_rotations.get(mount), -_recoils.get(mount));
             float i = (_shotCounters.get(mount) % mounts.get(mount).barrels) - (mounts.get(mount).barrels - 1) / 2;
@@ -726,23 +603,7 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public void draw() {
-            Draw.rect(baseRegion, x, y);
-
-            Draw.z(Layer.turret);
-            Tmp.v4.trns(rotation, -recoil);
-            Tmp.v4.add(x, y);
-
-            Drawf.shadow(outline, Tmp.v4.x - (size / 2f), Tmp.v4.y - (size / 2f), rotation - 90);
-            Draw.rect(outline, Tmp.v4.x, Tmp.v4.y, rotation - 90);
-            Draw.rect(region, Tmp.v4.x, Tmp.v4.y, rotation - 90);
-
-            if(heatRegion != Core.atlas.find("error") && _heat > 0.00001){
-                Draw.color(heatColor, _heat);
-                Draw.blend(Blending.additive);
-                Draw.rect(heatRegion, Tmp.v4.x, Tmp.v4.y, rotation - 90);
-                Draw.blend();
-                Draw.color();
-            }
+            super.draw();
 
             for(int i = 0; i < mounts.size; i++){
                 float[] loc = mountLocations(i);
@@ -751,6 +612,7 @@ public class MultiTurret extends TemplatedTurret {
             }
 
             for(int i = 0; i < mounts.size; i++){
+                Draw.z(Layer.turret);
                 float[] loc = mountLocations(i);
 
                 Draw.rect(turrets.get(i)[1], loc[2], loc[3], _rotations.get(i) - 90);
@@ -807,15 +669,82 @@ public class MultiTurret extends TemplatedTurret {
         public float __heat;
 
         @Override
+        public void control(LAccess type, double p1, double p2, double p3, double p4){
+            if(type == LAccess.shoot && !unit.isPlayer()){
+                for(int i = 0; i < mounts.size; i++) _targetPoses.get(i).set(World.unconv((float)p1), World.unconv((float)p2));
+                logicControlTime = logicControlCooldown;
+                logicShooting = !Mathf.zero(p3);
+            }
+
+            super.control(type, p1, p2, p3, p4);
+        }
+
+        @Override
+        public void control(LAccess type, Object p1, double p2, double p3, double p4){
+            if(type == LAccess.shootp && !unit.isPlayer()){
+                logicControlTime = logicControlCooldown;
+                logicShooting = !Mathf.zero(p2);
+
+                if(p1 instanceof Posc){
+                    for(int i = 0; i < mounts.size; i++){
+                        if(!mountHasAmmo(i)) return;
+                        BulletType bullet = mountPeekAmmo(i);
+                        float speed = bullet.speed;
+                        //slow bullets never intersect
+                        if(speed < 0.1f) speed = 9999999f;
+
+                        _targetPoses.get(i).set(Predict.intercept(this, (Posc)p1, speed));
+                        if(_targetPoses.get(i).isZero()) _targetPoses.get(i).set((Posc)p1);
+                    }
+                }
+            }
+
+            super.control(type, p1, p2, p3, p4);
+        }
+
+        public boolean logicControlled(){
+            return logicControlTime > 0;
+        }
+
+        @Override
+        public void drawTeam(){
+            //why
+        }
+
+        @Override
         public void updateTile() {
-            unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);
             for(int i = 0; i < mounts.size; i++){
                 unit.ammo((float)unit.type().ammoCapacity * _totalAmmos.get(i) /  mounts.get(i).maxAmmo);
                 unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
                 unit.ammo(power.status * unit.type().ammoCapacity);
             }
 
+            unit.health(health);
+            unit.rotation(rotation);
+            unit.team(team);
+            unit.set(x, y);
+
             super.updateTile();
+
+            if(logicControlTime > 0) logicControlTime -= Time.delta;
+
+            float maxUsed = consumes.<ConsumeLiquidBase>get(ConsumeType.liquid).amount / mounts.size;
+
+            Liquid liquid = liquids.current();
+
+            for(int i = 0; i < mounts.size; i++){
+                if(!(mounts.get(i).acceptCooling) || liquidMountAmmoTypes.get(i) == null) continue;
+                float used = Math.min(Math.min(liquids.get(liquid), maxUsed * Time.delta), Math.max(0, ((mounts.get(i).reloadTime - _reloads.get(i)) / mounts.get(i).coolantMultiplier) / liquid.heatCapacity));
+                if(mounts.get(i).powerUse > 0.001f) used *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1);
+                else used *= baseReloadSpeed();
+                _reloads.set(i, _reloads.get(i) + used * liquid.heatCapacity * mounts.get(i).coolantMultiplier);
+
+                liquids.remove(liquid, used);
+
+                float[] loc = mountLocations(i);
+
+                if(Mathf.chance(0.06 / mounts.size * used)) mounts.get(i).coolEffect.at(loc[0] + Mathf.range(mounts.get(i).width), loc[1] + Mathf.range(mounts.get(i).height));
+            }
 
             for(int i = 0; i < mounts.size; i++){
                 _wasShootings.set(i, false);
@@ -916,8 +845,8 @@ public class MultiTurret extends TemplatedTurret {
                         boolean targetIsBeingRepaired = false;
                         if(_repairTargets.get(i) != null){
                             if(_repairTargets.get(i).dead()
-                                || _repairTargets.get(i).dst(loc[0], loc[1]) - _repairTargets.get(i).hitSize / 2f > mounts.get(i).repairRadius
-                                || _repairTargets.get(i).health() >= _repairTargets.get(i).maxHealth()) _repairTargets.set(i, null);
+                                    || _repairTargets.get(i).dst(loc[0], loc[1]) - _repairTargets.get(i).hitSize / 2f > mounts.get(i).repairRadius
+                                    || _repairTargets.get(i).health() >= _repairTargets.get(i).maxHealth()) _repairTargets.set(i, null);
                             else {
                                 _repairTargets.get(i).heal(mounts.get(i).repairSpeed * Time.delta * _strengths.get(i) * Mathf.clamp(power.graph.getPowerBalance() / mounts.get(i).powerUse, 0, 1));
                                 float dest = angleTo(_repairTargets.get(i));
@@ -932,23 +861,18 @@ public class MultiTurret extends TemplatedTurret {
                     else if(validateMountTarget(i)) {
                         boolean canShoot = true;
 
-                        if(isControlled()) { //player behavior
-                            _targetPoses.get(i).set(unit().aimX, unit().aimY);
-                            canShoot = unit().isShooting;
-                        }else if(this.logicControlled()) { //logic behavior
-                            _targetPoses.set(i, targetPos);
+                        //default AI behavior
+                        if(this.logicControlled()) { //logic behavior
                             canShoot = logicShooting;
-                        }else { //default AI behavior
+                        }else{
                             mountTargetPosition(i, _targets.get(i), loc[0], loc[1]);
                             if(Float.isNaN(_rotations.get(i))) _rotations.set(i, 0f);
                         }
-
                         float targetRot = Angles.angle(loc[0], loc[1], _targetPoses.get(i).x, _targetPoses.get(i).y);
 
                         if(!_chargings.get(i)) mountTurnToTarget(i, targetRot);
 
                         if (Angles.angleDist(_rotations.get(i), targetRot) < mounts.get(i).shootCone && canShoot) {
-                            wasShooting = true;
                             _wasShootings.set(i, true);
                             updateMountShooting(i);
                         }
@@ -956,33 +880,6 @@ public class MultiTurret extends TemplatedTurret {
                 }
             }
 
-        }
-
-        @Override
-        public boolean shouldTurn(){
-            for(int i = 0; i < mounts.size; i++)
-                if(_chargings.get(i)) return false;
-            return !charging;
-        }
-
-        @Override
-        protected void turnToTarget(float target) {
-            super.turnToTarget(target);
-
-            for(int i = 0; i < mounts.size; i++) {
-                float speed = mounts.get(i).rotateSpeed * delta() * baseReloadSpeed();
-                float dist = Math.abs(Angles.angleDist(rotation, target));
-
-                if(dist < speed) return;
-
-                float angle = Mathf.mod(rotation, 360);
-                float to = Mathf.mod(target, 360);
-                float allRot = speed;
-
-                if((angle > to && Angles.backwardDistance(angle, to) > Angles.forwardDistance(angle, to)) || (angle < to && Angles.backwardDistance(angle, to) < Angles.forwardDistance(angle, to))) allRot = -speed;
-
-                _rotations.set(i, (_rotations.get(i) + allRot) % 360);
-            }
         }
 
         public void mountTurnToTarget(int mount, float target){
@@ -1006,15 +903,15 @@ public class MultiTurret extends TemplatedTurret {
 
             if(mounts.get(mount).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(mount).range, Building::damaged) != null) return Units.findAllyTile(team, loc[0], loc[1], mounts.get(mount).range, Building::damaged);
             else if(mounts.get(mount).targetAir && !mounts.get(mount).targetGround)
-                 return Units.bestEnemy(this.team, loc[0], loc[1], mounts.get(mount).range, e -> !e.dead && !e.isGrounded(), mounts.get(mount).unitSort);
+                return Units.bestEnemy(this.team, loc[0], loc[1], mounts.get(mount).range, e -> !e.dead && !e.isGrounded(), mounts.get(mount).unitSort);
             else return Units.bestTarget(this.team, loc[0], loc[1], mounts.get(mount).range, e -> !e.dead && (e.isGrounded() || mounts.get(mount).targetAir) && (!e.isGrounded() || mounts.get(mount).targetGround), b -> true, mounts.get(mount).unitSort);
         }
 
         public boolean validateMountTarget(int mount){
             float[] loc = mountLocations(mount);
-            if(mounts.get(mount).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(mount).range, Building::damaged) != null) return (_targets != null && !(_targets instanceof Teamc && ((Teamc) _targets).team() != team) && !(_targets instanceof Healthc && !((Healthc) _targets).isValid())) || isControlled() || logicControlled();
+            if(mounts.get(mount).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(mount).range, Building::damaged) != null) return (_targets != null && !(_targets instanceof Teamc && ((Teamc) _targets).team() != team) && !(_targets instanceof Healthc && !((Healthc) _targets).isValid())) || logicControlled();
 
-            return !Units.invalidateTarget(_targets.get(mount), team, loc[0], loc[1]) || isControlled() || logicControlled();
+            return !Units.invalidateTarget(_targets.get(mount), team, loc[0], loc[1]) || logicControlled();
         }
 
         public void mountTargetPosition(int mount, Posc pos, float x, float y){
@@ -1033,8 +930,8 @@ public class MultiTurret extends TemplatedTurret {
 
         public void updateMountShooting(int mount){
             if(_reloads.get(mount) >= mounts.get(mount).reloadTime){
-                  mountShoot(mount, mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.liquid ? liquidMountAmmoTypes.get(mount).get(liquids.current()) : mountPeekAmmo(mount));
-                  _reloads.set(mount, 0f);
+                mountShoot(mount, mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.liquid ? liquidMountAmmoTypes.get(mount).get(liquids.current()) : mountPeekAmmo(mount));
+                _reloads.set(mount, 0f);
             }else {
                 float speed = delta() * mountPeekAmmo(mount).reloadMultiplier;
                 if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.power || mounts.get(mount).powerUse > 0.001f) speed *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(mount).powerUse, 0, 1);
@@ -1043,38 +940,8 @@ public class MultiTurret extends TemplatedTurret {
             }
         }
 
-        @Override
-        protected void updateCooling() {
-            super.updateCooling();
-
-            float maxUsed = consumes.<ConsumeLiquidBase>get(ConsumeType.liquid).amount / mounts.size;
-
-            Liquid liquid = liquids.current();
-
-            for(int i = 0; i < mounts.size; i++){
-                if(!(mounts.get(i).acceptCooling) || liquidMountAmmoTypes.get(i) == null) continue;
-                float used = Math.min(Math.min(liquids.get(liquid), maxUsed * Time.delta), Math.max(0, ((mounts.get(i).reloadTime - _reloads.get(i)) / mounts.get(i).coolantMultiplier) / liquid.heatCapacity));
-                if(mounts.get(i).powerUse > 0.001f) used *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1);
-                else used *= baseReloadSpeed();
-                _reloads.set(i, _reloads.get(i) + used * liquid.heatCapacity * mounts.get(i).coolantMultiplier);
-
-                liquids.remove(liquid, used);
-
-                float[] loc = mountLocations(i);
-
-                if(Mathf.chance(0.06 / mounts.size * used)) mounts.get(i).coolEffect.at(loc[0] + Mathf.range(mounts.get(i).width), loc[1] + Mathf.range(mounts.get(i).height));
-            }
-        }
-
-        @Override
-        protected void shoot(BulletType type) {
-            super.shoot(type);
-
-            shotcounter++;
-            for(int i = 0; i < skillDelays.size; i++) if(shotcounter % skillDelays.get(i) == 0) {
-                shotcounter = 0;
-                skillSeq.get(i).get(this).run();
-            }
+        protected float baseReloadSpeed(){
+            return efficiency();
         }
 
         public void mountEffect(int mount, BulletType type){
@@ -1167,7 +1034,7 @@ public class MultiTurret extends TemplatedTurret {
             }
 
             if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.item){
-                ItemEntry entry = _ammos.get(mount).peek();
+                BattleCore.ItemEntry entry = _ammos.get(mount).peek();
                 entry.amount -= mounts.get(mount).ammoPerShot;
                 if(entry.amount <= 0) _ammos.get(mount).pop();
 
@@ -1194,8 +1061,8 @@ public class MultiTurret extends TemplatedTurret {
             }
             if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.liquid) {
                 return liquidMountAmmoTypes.get(mount) != null
-                    && liquidMountAmmoTypes.get(mount).get(liquids.current()) != null
-                    && liquids.total() >= 1f / liquidMountAmmoTypes.get(mount).get(liquids.current()).ammoMultiplier;
+                        && liquidMountAmmoTypes.get(mount).get(liquids.current()) != null
+                        && liquids.total() >= 1f / liquidMountAmmoTypes.get(mount).get(liquids.current()).ammoMultiplier;
             }
             return false;
         }
@@ -1223,10 +1090,9 @@ public class MultiTurret extends TemplatedTurret {
                 if(mounts.get(i).mountType != MultiTurretMount.MultiTurretMountType.item) continue;
 
                 write.b(_ammos.get(i).size);
-                for (AmmoEntry entry : _ammos.get(i)) {
-                    ItemEntry it = (ItemEntry) entry;
-                    write.s(it.item.id);
-                    write.s(it.amount);
+                for (BattleCore.ItemEntry entry : _ammos.get(i)) {
+                    write.s(entry.item.id);
+                    write.s(entry.amount);
                 }
             }
         }
@@ -1242,12 +1108,10 @@ public class MultiTurret extends TemplatedTurret {
                 } catch(Throwable e){
                     Log.warn(String.valueOf(e));
                 }
-
                 if(mounts.get(h).mountType != MultiTurretMount.MultiTurretMountType.item) continue;
-
                 int amount = read.ub();
                 for(int i = 0; i < amount; i++) {
-                    Item item = Vars.content.item(revision < 2 ? read.ub() : read.s());
+                    Item item = content.item(revision < 2 ? read.ub() : read.s());
                     short a = read.s();
                     _totalAmmos.set(i, _totalAmmos.get(i) + a);
 
@@ -1257,16 +1121,14 @@ public class MultiTurret extends TemplatedTurret {
             }
         }
     }
-    public class ItemEntry extends AmmoEntry{
+
+    public class ItemEntry {
         protected Item item;
+        public int amount;
 
         ItemEntry(Item item, int amount){
             this.item = item;
             this.amount = amount;
-        }
-        @Override
-        public BulletType type(){
-            return ammoTypes.get(item);
         }
 
         public BulletType types(int i){

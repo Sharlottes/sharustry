@@ -117,7 +117,7 @@ public class MultiTurretMount {
     //region end
 
     //repair region, mountType: repair only
-    static final Rect rect = new Rect();
+    public static final Rect rect = new Rect();
 
     public float repairRadius = 50f;
     public float repairSpeed = 0.3f;
