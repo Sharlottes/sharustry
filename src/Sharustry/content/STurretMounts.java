@@ -46,7 +46,6 @@ public class STurretMounts implements ContentList {
             chargeTime = 40f;
             chargeMaxDelay = 30f;
             chargeEffects = 7;
-            targetAir = false;
             shootSound = Sounds.laser;
             powerUse = 6f;
             maxAmmo = 30;
@@ -81,7 +80,6 @@ public class STurretMounts implements ContentList {
             chargeTime = 40f;
             chargeMaxDelay = 30f;
             chargeEffects = 7;
-            targetAir = false;
             shootSound = Sounds.laser;
             powerUse = 6f;
             maxAmmo = 30;
@@ -328,7 +326,6 @@ public class STurretMounts implements ContentList {
             shootCone = 40f;
             rotateSpeed = 8f;
             powerUse = 3.3f;
-            targetAir = false;
             range = 90f;
             shootEffect = Fx.lightningShoot;
             heatColor = Color.red;
@@ -366,7 +363,6 @@ public class STurretMounts implements ContentList {
             chargeTime = 40f;
             chargeMaxDelay = 30f;
             chargeEffects = 7;
-            targetAir = false;
             shootSound = Sounds.laser;
             powerUse = 6f;
             maxAmmo = 30;
@@ -393,7 +389,6 @@ public class STurretMounts implements ContentList {
         }};
 
         waveMount = new MultiTurretMount("waveM"){{
-            targetAir = false;
             reloadTime = 3;
             x = 4.25f;
             y = -3.5f;

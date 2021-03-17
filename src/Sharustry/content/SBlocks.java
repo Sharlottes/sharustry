@@ -4,7 +4,6 @@ import Sharustry.entities.bullet.FieldBulletType;
 import Sharustry.graphics.SPal;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.math.Mathf;
-import arc.struct.EnumSet;
 import arc.util.Time;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.ShrapnelBulletType;
@@ -35,8 +34,8 @@ public class SBlocks implements ContentList{
             adaptDrill, multiDrill,
             //crafterator
             multi,
-            //battle storage
-            armedNucleus;
+            //armed core
+            armedFoundation, armedNucleus;
 
     @Override
     public void load(){
@@ -413,6 +412,28 @@ public class SBlocks implements ContentList{
             );
         }};
 
+        armedFoundation = new BattleCore("armedFoundation"){{
+            customMountLocation = true;
+            hasPower = true;
+            requirements(Category.effect, with(Items.copper, 3000, Items.lead, 3000, Items.silicon, 2000));
+
+            unitType = UnitTypes.beta;
+            health = 3500;
+            itemCapacity = 9000;
+            size = 4;
+
+            unitCapModifier = 16;
+            researchCostMultiplier = 0.02f;
+
+            addMountTurret(healLaserMount2, healBeamMountR, healBeamMountL);
+            addCustomMountLocation(new Float[]{
+                0f,0f,
+                0f, -10f,
+                0f, 10f
+            });
+            ammos(MultiTurretMount.MultiTurretMountType.repair);
+        }};
+
         armedNucleus = new BattleCore("armedNucleus"){{
             customMountLocation = true;
             hasLiquids = true;
@@ -426,7 +447,7 @@ public class SBlocks implements ContentList{
             size = 5;
 
             unitCapModifier = 24;
-            researchCostMultiplier = 0.06f;
+            researchCostMultiplier = 0.03f;
 
             addMountTurret(hailMount, hailMount, hailMount, hailMount, unoMount, unoMount, unoMount, unoMount);
             addCustomMountLocation(new Float[]{

@@ -29,6 +29,10 @@ public class STechTree implements ContentList{
             node(shieldWall);
         });
 
+        margeNode(coreFoundation, () -> {
+            node(armedFoundation);
+        });
+
         margeNode(coreNucleus, () -> {
             node(armedNucleus);
         });
