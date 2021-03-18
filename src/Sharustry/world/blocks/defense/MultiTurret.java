@@ -681,8 +681,11 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public boolean acceptItem(Building source, Item item){
             for(int i = 0; i < mounts.size; i++)
-                if((mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null &&_totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo)
-                    || ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo)
+                if((mountAmmoTypes.get(i) != null
+                        && mountAmmoTypes.get(i).get(item) != null
+                        &&_totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo)
+                    || ammoTypes.get(item) != null
+                        && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo)
                     return true;
             return false;
         }

@@ -432,6 +432,8 @@ public class SBlocks implements ContentList{
                 0f, 10f
             });
             ammos(MultiTurretMount.MultiTurretMountType.repair);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
         }};
 
         armedNucleus = new BattleCore("armedNucleus"){{

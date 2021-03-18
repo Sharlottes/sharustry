@@ -565,7 +565,9 @@ public class BattleCore extends CoreBlock {
         @Override
         public boolean acceptItem(Building source, Item item){
             for(int i = 0; i < mounts.size; i++)
-                if(mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null &&_totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo) return true;
+                if(mountAmmoTypes.get(i) != null
+                        && mountAmmoTypes.get(i).get(item) != null
+                        &&_totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo) return true;
             return super.acceptItem(source, item);
         }
 
