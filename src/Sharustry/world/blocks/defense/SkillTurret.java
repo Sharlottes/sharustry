@@ -30,7 +30,13 @@ public class SkillTurret extends TemplatedTurret {
     }
 
     public class SkillTurretBuild extends TemplatedTurretBuild {
-        public IntSeq shotcounters;
+        public Seq<Integer> shotcounters = new Seq<>();
+
+        @Override
+        public void created() {
+            for(int i = 0; i < skillDelays.size; i++) shotcounters.add(0);
+            super.created();
+        }
 
         @Override
         protected void shoot(BulletType type) {
@@ -107,7 +113,7 @@ public class SkillTurret extends TemplatedTurret {
 
 
             for(int i = 0; i < skillDelays.size; i++) {
-                shotcounters.set(i, shotcounters.get(i));
+                shotcounters.set(i, shotcounters.get(i) + 1);
                 if(shotcounters.get(i) == skillDelays.get(i)) {
                     shotcounters.set(i, 0);
                     skillSeq.get(i).get(this).run();
