@@ -17,6 +17,7 @@ import mindustry.entities.bullet.BulletType;
 import mindustry.gen.*;
 import mindustry.graphics.Pal;
 import mindustry.type.StatusEffect;
+import mindustry.ui.Cicon;
 
 public class MultiTurretMount {
     public int shots = 1;
@@ -123,6 +124,16 @@ public class MultiTurretMount {
     public float repairSpeed = 0.3f;
     //region end
 
+    //mass region, mountType: mass only
+    public float translation = 7f;
+    public int minDistribute = 10;
+    public float knockback = 4f;
+    public float bulletSpeed = 5.5f;
+    public float bulletLifetime = 200f;
+    public Effect receiveEffect = Fx.mineBig;
+    public float shake = 3f;
+    //region end
+
     public boolean healBlock = false;
     public boolean acceptCooling = false;
 
@@ -146,13 +157,13 @@ public class MultiTurretMount {
         }
     }
 
-
     public enum MultiTurretMountType {
         item,
         liquid,
         power,
         tract,
         point,
-        repair
+        repair,
+        mass
     }
 }

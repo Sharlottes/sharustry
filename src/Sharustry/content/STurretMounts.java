@@ -14,11 +14,30 @@ import mindustry.graphics.Pal;
 import static Sharustry.content.SBullets.*;
 
 public class STurretMounts implements ContentList {
-    public static MultiTurretMount electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
+    public static MultiTurretMount massMount, electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
 
 
     @Override
     public void load() {
+        massMount = new MultiTurretMount("miniMassDriver"){{
+            rotateSpeed = 0.04f;
+            translation = 7f;
+            minDistribute = 10;
+            knockback = 4f;
+            bulletSpeed = 5.5f;
+            bulletLifetime = 200f;
+            shootEffect = Fx.shootBig2;
+            smokeEffect = Fx.shootBigSmoke2;
+            receiveEffect = Fx.mineBig;
+            shootSound = Sounds.shootBig;
+            shake = 3f;
+            powerUse = 3f;
+            title = "Mini MassDriver";
+            reloadTime = 200f;
+            range = 440f;
+
+            mountType = MultiTurretMountType.mass;
+        }};
         electricLaserMountL = new MultiTurretMount("electLaserML", new LaserBulletType(140){{
             colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
             hitEffect = Fx.hitLancer;

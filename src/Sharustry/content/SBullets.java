@@ -11,10 +11,12 @@ import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
 public class SBullets implements ContentList{
-    public static BulletType artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
+    public static BulletType mountDriverBolt, artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
 
     @Override
     public void load(){
+        mountDriverBolt = new MountDriverBolt();
+
         artilleryHeal = new HealingBulletType(3.25f, 50){{
             sprite = "shar-construct";
             drag = 0.0125f;

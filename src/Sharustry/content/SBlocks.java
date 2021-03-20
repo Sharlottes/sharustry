@@ -202,16 +202,19 @@ public class SBlocks implements ContentList{
                 toColor = Pal.thoriumPink;
                 shootEffect = smokeEffect = Fx.thoriumShoot;
             }}, Items.thorium, "Trinity");
-            addMountTurret(repairMount, pointMount, tractMount);
+            addMountTurret(repairMount, pointMount, tractMount, massMount);
             addCustomMountLocation(new Float[]{
                     -8f, 0f,
                     0f, 6.5f,
-                    8f, 0f
+                    8f, 0f,
+                    0f, 0f,
             });
 
             ammos(MultiTurretMount.MultiTurretMountType.tract);
             ammos(MultiTurretMount.MultiTurretMountType.point);
             ammos(MultiTurretMount.MultiTurretMountType.repair);
+            ammos(MultiTurretMount.MultiTurretMountType.mass);
+
 
             addSkills(entity -> () -> {
                 for(int i = 0; i < 8; i++){
@@ -226,6 +229,9 @@ public class SBlocks implements ContentList{
                 }
             }, 20);
 
+            hasItems = true;
+            itemCapacity = 150;
+            configurable = true;
             hasPower = true;
             size = 3;
             spread = 4f;
@@ -441,6 +447,7 @@ public class SBlocks implements ContentList{
             hasLiquids = true;
             hasItems = true;
             hasPower = true;
+            configurable = true;
             requirements(Category.effect, with(Items.copper, 8000, Items.lead, 8000, Items.silicon, 5000, Items.thorium, 4000));
 
             unitType = UnitTypes.gamma;

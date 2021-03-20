@@ -5,7 +5,6 @@ import Sharustry.graphics.SPal;
 import arc.func.Func;
 import arc.graphics.Color;
 import arc.math.Mathf;
-import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.content.Fx;
@@ -13,6 +12,8 @@ import mindustry.content.Items;
 import mindustry.entities.Effect;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.Building;
+
+import java.util.Objects;
 
 public class SkillTurret extends TemplatedTurret {
     public Seq<Integer> skillDelays = new Seq<>();
@@ -114,7 +115,7 @@ public class SkillTurret extends TemplatedTurret {
 
             for(int i = 0; i < skillDelays.size; i++) {
                 shotcounters.set(i, shotcounters.get(i) + 1);
-                if(shotcounters.get(i) == skillDelays.get(i)) {
+                if(Objects.equals(shotcounters.get(i), skillDelays.get(i))) {
                     shotcounters.set(i, 0);
                     skillSeq.get(i).get(this).run();
                 }
