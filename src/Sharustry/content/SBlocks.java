@@ -447,7 +447,6 @@ public class SBlocks implements ContentList{
             hasLiquids = true;
             hasItems = true;
             hasPower = true;
-            configurable = true;
             requirements(Category.effect, with(Items.copper, 8000, Items.lead, 8000, Items.silicon, 5000, Items.thorium, 4000));
 
             unitType = UnitTypes.gamma;

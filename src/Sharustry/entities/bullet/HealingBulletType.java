@@ -189,7 +189,7 @@ public class HealingBulletType extends BasicBulletType {
                 Tmp.v1.trns(b.rotation(), shootLength);
 
                 pointEffect.at(b.x + Tmp.v1.x, b.y + Tmp.v1.y, b.rotation(), pointColor, new Vec2().set(pointTarget));
-                pointShootEffect.at(b.x + Tmp.v1.x, b.y + Tmp.v1.y, b.rotation(), pointColor);
+                //pointShootEffect.at(b.x + Tmp.v1.x, b.y + Tmp.v1.y, b.rotation(), pointColor);
                 pointHitEffect.at(pointTarget.x, pointTarget.y, pointColor);
                 pointShootSound.at(b.x + Tmp.v1.x, b.y + Tmp.v1.y, Mathf.random(0.9f, 1.1f));
 

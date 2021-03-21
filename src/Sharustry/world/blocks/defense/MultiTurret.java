@@ -72,9 +72,11 @@ public class MultiTurret extends TemplatedTurret {
     public MultiTurret(String name){
         super(name);
 
-        config(MultiTurretMount.class, (MultiTurretBuild tile, MultiTurretMount mount) -> tile.selectedMount = mount);
-        config(Point2.class, (MultiTurretBuild tile, Point2 point) -> tile._links.set(this.mounts.indexOf(tile.selectedMount), Point2.pack(point.x + tile.tileX(), point.y + tile.tileY())));
-        config(Integer.class, (MultiTurretBuild tile, Integer point) -> tile._links.set(this.mounts.indexOf(tile.selectedMount), point));
+        if(configurable) {
+            config(MultiTurretMount.class, (MultiTurretBuild tile, MultiTurretMount mount) -> tile.selectedMount = mount);
+            config(Point2.class, (MultiTurretBuild tile, Point2 point) -> tile._links.set(this.mounts.indexOf(tile.selectedMount), Point2.pack(point.x + tile.tileX(), point.y + tile.tileY())));
+            config(Integer.class, (MultiTurretBuild tile, Integer point) -> tile._links.set(this.mounts.indexOf(tile.selectedMount), point));
+        }
     }
 
     public void addMountTurret(MultiTurretMount... mounts){
@@ -741,7 +743,7 @@ public class MultiTurret extends TemplatedTurret {
                 if(asdf) _ammos.get(h).add(new ItemEntry(item, (int)type.ammoMultiplier < mounts.get(h).ammoPerShot ? (int)type.ammoMultiplier + mounts.get(h).ammoPerShot : (int)type.ammoMultiplier));
             }
 
-            if(selectedMount.mountType == MultiTurretMount.MultiTurretMountType.mass) {
+            if(selectedMount != null && selectedMount.mountType == MultiTurretMount.MultiTurretMountType.mass) {
                 items.add(item, 1);
                 Log.info(items.get(item));
             }
@@ -1389,6 +1391,8 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         public void handlePayload(Bullet bullet, DriverBulletData data){
+            if(mounts.find(m -> m.mountType != MultiTurretMount.MultiTurretMountType.mass) != null) return;
+
             int totalItems = items.total();
 
             //add all the items possible
@@ -1428,6 +1432,7 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public Point2 config(){
+            if(mounts.find(m -> m.mountType != MultiTurretMount.MultiTurretMountType.mass) != null) return null;
             return Point2.unpack(_links.get(mounts.indexOf(selectedMount))).sub(tile.x, tile.y);
         }
 
