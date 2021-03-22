@@ -1,12 +1,12 @@
 package Sharustry.world.blocks.defense;
 
 import Sharustry.content.SBullets;
-import Sharustry.world.blocks.defense.MountSelection;
 import arc.*;
 import arc.func.Func;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import arc.math.geom.Geometry;
 import arc.math.geom.Point2;
 import arc.math.geom.Vec2;
 import arc.scene.ui.Image;
@@ -14,7 +14,6 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
-import arc.util.pooling.Pool;
 import arc.util.pooling.Pools;
 import mindustry.*;
 import mindustry.audio.*;
@@ -26,6 +25,7 @@ import mindustry.entities.bullet.*;
 import mindustry.game.EventType;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.input.InputHandler;
 import mindustry.logic.LAccess;
 import mindustry.type.*;
 import mindustry.ui.*;
@@ -71,12 +71,6 @@ public class MultiTurret extends TemplatedTurret {
 
     public MultiTurret(String name){
         super(name);
-
-        if(configurable) {
-            config(MultiTurretMount.class, (MultiTurretBuild tile, MultiTurretMount mount) -> tile.selectedMount = mount);
-            config(Point2.class, (MultiTurretBuild tile, Point2 point) -> tile._links.set(this.mounts.indexOf(tile.selectedMount), Point2.pack(point.x + tile.tileX(), point.y + tile.tileY())));
-            config(Integer.class, (MultiTurretBuild tile, Integer point) -> tile._links.set(this.mounts.indexOf(tile.selectedMount), point));
-        }
     }
 
     public void addMountTurret(MultiTurretMount... mounts){
@@ -107,6 +101,13 @@ public class MultiTurret extends TemplatedTurret {
 
         this.bullet = type;
         this.title = title;
+
+
+        if(configurable) {
+            config(MultiTurretMount.class, (MultiTurretBuild tile, MultiTurretMount mount) -> tile.selectedMount = mount);
+            config(Point2.class, (MultiTurretBuild tile, Point2 point) -> tile._links.set(this.mounts.indexOf(tile.selectedMount), Point2.pack(point.x + tile.tileX(), point.y + tile.tileY())));
+            config(Integer.class, (MultiTurretBuild tile, Integer point) -> tile._links.set(this.mounts.indexOf(tile.selectedMount), point));
+        }
     }
 
     public void addCustomMountLocation(Float[] xy){
@@ -135,7 +136,8 @@ public class MultiTurret extends TemplatedTurret {
                 || ammotype == MultiTurretMount.MultiTurretMountType.tract
                 || ammotype == MultiTurretMount.MultiTurretMountType.point
                 || ammotype == MultiTurretMount.MultiTurretMountType.repair
-                || ammotype == MultiTurretMount.MultiTurretMountType.mass){
+                || ammotype == MultiTurretMount.MultiTurretMountType.mass
+                || ammotype == MultiTurretMount.MultiTurretMountType.drill){
             liquidMountAmmoTypes.add(null);
             mountAmmoTypes.add(null);
         }
@@ -463,6 +465,7 @@ public class MultiTurret extends TemplatedTurret {
         public Seq<Integer> _shotcounters = new Seq<>();
         public Seq<Integer> _totalAmmos = new Seq<>();
         public Seq<Integer> _links = new Seq<>();
+        public Seq<Integer> _targetIDs = new Seq<>();
         public Seq<Float> _reloads = new Seq<>();
         public Seq<Float> _heats = new Seq<>();
         public Seq<Float> _recoils = new Seq<>();
@@ -471,6 +474,7 @@ public class MultiTurret extends TemplatedTurret {
         public Seq<Float> _lastXs = new Seq<>();
         public Seq<Float> _lastYs = new Seq<>();
         public Seq<Float> _strengths = new Seq<>();
+        public Seq<Float> _mineTimers = new Seq<>();
         public Seq<Boolean> _wasShootings = new Seq<>();
         public Seq<Boolean> _chargings = new Seq<>();
         public Seq<Boolean> _anys = new Seq<>();
@@ -483,7 +487,14 @@ public class MultiTurret extends TemplatedTurret {
         public Seq<Seq<ItemEntry>> _ammos = new Seq<>();
         public Seq<MassDriver.DriverState> _massStates = new Seq<>();
         public Seq<OrderedSet<Tile>> _waitingShooterses = new Seq<>();
+        public Seq<Tile> _mineTiles = new Seq<>();
+        public Seq<Tile> _ores = new Seq<>();
+        public Seq<Item> _targetItems = new Seq<>();
+        public Seq<Seq<Tile>> _proxOreses = new Seq<>();
+        public Seq<Seq<Item>> _proxItemses = new Seq<>();
         public float _heat;
+        public Seq<Float> __heats = new Seq<>();
+        public Seq<Float> ___heats = new Seq<>();
         public int shotcounter;
         public MultiTurretMount selectedMount;
 
@@ -501,27 +512,37 @@ public class MultiTurret extends TemplatedTurret {
                 _shotcounters.add(0);
                 _totalAmmos.add(0);
                 _links.add(-1);
+                _targetIDs.add(-1);
                 _reloads.add(0f);
                 _heats.add(0f);
+                __heats.add(0f);
+                ___heats.add(0f);
                 _recoils.add(0f);
                 _shotCounters.add(0f);
                 _rotations.add(90f);
+                _mineTimers.add(0f);
+                _lastXs.add(0f);
+                _lastYs.add(0f);
+                _strengths.add(0f);
+                _wasShootings.add(false);
+                _chargings.add(false);
+                _anys.add(false);
                 _targets.add(null);
                 _tractTargets.add(null);
                 _pointTargets.add(null);
                 _repairTargets.add(null);
                 _healTargets.add(null);
+                _mineTiles.add(null);
+                _ores.add(null);
+                _targetItems.add(null);
                 _targetPoses.add(new Vec2());
-                _wasShootings.add(false);
-                _chargings.add(false);
                 _ammos.add(new Seq<>());
-                _lastXs.add(0f);
-                _lastYs.add(0f);
-                _strengths.add(0f);
-                _anys.add(false);
+                _proxItemses.add(new Seq<>());
+                _proxOreses.add(new Seq<>());
                 _massStates.add(MassDriver.DriverState.idle);
                 _waitingShooterses.add(new OrderedSet<>());
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.mass) selectedMount = mounts.get(i);
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.drill) mountReMap(i);
             }
         }
 
@@ -574,7 +595,8 @@ public class MultiTurret extends TemplatedTurret {
                             || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract
                             || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.point
                             || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair
-                            || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.mass) {
+                            || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.mass
+                            || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.drill) {
                         MultiReqImage powerReq = new MultiReqImage();
 
                         powerReq.add(new ReqImage(Icon.powerSmall.getRegion(), () -> Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) >= 0.001f));
@@ -625,6 +647,11 @@ public class MultiTurret extends TemplatedTurret {
                 Lines.stroke(3, Pal.gray);
                 Draw.alpha(fade);
 
+                if(_mineTiles.get(i) != null){
+                    Lines.stroke(1f, Pal.accent);
+                    Lines.poly(_mineTiles.get(i).worldx(), _mineTiles.get(i).worldy(), 4, tilesize / 2f * Mathf.sqrt2, Time.time);
+                    Draw.color();
+                }
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair){
                     Lines.dashCircle(loc[0], loc[1], mounts.get(i).repairRadius);
                     Lines.stroke(1, Pal.heal);
@@ -745,7 +772,6 @@ public class MultiTurret extends TemplatedTurret {
 
             if(selectedMount != null && selectedMount.mountType == MultiTurretMount.MultiTurretMountType.mass) {
                 items.add(item, 1);
-                Log.info(items.get(item));
             }
             if(ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo) super.handleItem(source, item);
         }
@@ -878,6 +904,26 @@ public class MultiTurret extends TemplatedTurret {
                     Draw.color();
                     Draw.reset();
                 }
+                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.drill
+                        && _mineTiles.get(i) != null){
+                    float focusLen = mounts.get(i).laserOffset / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);
+                    float swingScl = 12f, swingMag = tilesize / 8f;
+                    float flashScl = 0.3f;
+
+                    float px = loc[0] + Angles.trnsx(_rotations.get(i), focusLen);
+                    float py = loc[1] + Angles.trnsy(_rotations.get(i), focusLen);
+
+                    float ex = _mineTiles.get(i).worldx() + Mathf.sin(Time.time + 48, swingScl, swingMag);
+                    float ey = _mineTiles.get(i).worldy() + Mathf.sin(Time.time + 48, swingScl + 2f, swingMag);
+
+                    Draw.z(Layer.flyingUnit + 0.1f);
+
+                    Draw.color(Color.lightGray, Color.white, 1f - flashScl + Mathf.absin(Time.time, 0.5f, flashScl));
+
+                    Drawf.laser(team(), mounts.get(i).laser, mounts.get(i).laserEnd, px, py, ex, ey, mounts.get(i).laserWidth);
+
+                    Draw.color();
+                }
             }
 
             Draw.reset();
@@ -892,7 +938,6 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         public float __heat;
-
         @Override
         public void updateTile() {
             unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);
@@ -915,13 +960,16 @@ public class MultiTurret extends TemplatedTurret {
                     _pointTargets.set(i, null);
                     _healTargets.set(i, null);
                 }
+
+                __heats.set(i, __heats.get(i) - delta());
+                ___heats.set(i, ___heats.get(i) - delta());
             }
 
-            __heat -= edelta();
-
+            __heat -= delta();
             if(__heat <= 0.001){
                 for(int i = 0; i < mounts.size; i++){
                     float[] loc = this.mountLocations(i);
+
                     if(mountHasAmmo(i)) {
                         this.mountLocations(i);
                         _targets.set(i, findMountTargets(i));
@@ -945,7 +993,7 @@ public class MultiTurret extends TemplatedTurret {
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.mass){
                     Building link = world.build(this._links.get(i));
                     boolean hasLink = linkValid(i);
-
+                    Log.info(mounts.indexOf(selectedMount));
                     if(hasLink) _links.set(i, link.pos());
                     if(_reloads.get(i) > 0f) _reloads.set(i, Mathf.clamp(_reloads.get(i) - delta() * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) / mounts.get(i).reloadTime));
                     if(!shooterValid(currentShooter(i), i)) _waitingShooterses.get(i).remove(currentShooter(i));
@@ -1032,6 +1080,40 @@ public class MultiTurret extends TemplatedTurret {
                                 }
                             }
                         }
+                    }
+                }
+                else if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.drill){
+                    Building core = state.teams.closestCore(loc[4], loc[5], team);
+
+                    //target ore
+                    targetMine(core, i);
+                    if(core == null || _mineTiles.get(i) == null || Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) < 0.2f || !Angles.within(_rotations.get(i), angleTo(_mineTiles.get(i)), mounts.get(i).shootCone) || items.get(_mineTiles.get(i).drop()) >= itemCapacity){
+                        _mineTiles.set(i, null);
+                        _mineTimers.set(i, 0f);
+                    }
+
+                    if(_mineTiles.get(i) != null){
+                        //mine tile
+                        Item item = _mineTiles.get(i).drop();
+                        _mineTimers.set(i, _mineTimers.get(i) + Time.delta * mounts.get(i).mineSpeed * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
+
+                        if(Mathf.chance(0.06 * Time.delta)){
+                            Fx.pulverizeSmall.at(_mineTiles.get(i).worldx() + Mathf.range(tilesize / 2f), _mineTiles.get(i).worldy() + Mathf.range(tilesize / 2f), 0f, item.color);
+                        }
+
+                        if(_mineTimers.get(i) >= 50f + item.hardness * 15f){
+                            _mineTimers.set(i, 0f);
+
+                            if(state.rules.sector != null && team() == state.rules.defaultTeam) state.rules.sector.info.handleProduction(item, 1);
+
+                            //items are synced anyways
+                            InputHandler.transferItemTo(null, item, 1,
+                                    _mineTiles.get(i).worldx() + Mathf.range(tilesize / 2f),
+                                    _mineTiles.get(i).worldy() + Mathf.range(tilesize / 2f),
+                                    this);
+                        }
+
+                        if(!headless) control.sound.loop(mounts.get(i).shootSound, this, mounts.get(i).shootSoundVolume);
                     }
                 }
                 else if(mountHasAmmo(i)) {
@@ -1136,6 +1218,17 @@ public class MultiTurret extends TemplatedTurret {
                 }
             }
 
+        }
+
+        @Override
+        public void removeFromProximity(){
+            //reset when pushed
+            for(int i = 0;i < mounts.size; i++) {
+                _targetItems.set(i, null);
+                _targetIDs.set(i, -1);
+                _mineTiles.set(i, null);
+            }
+            super.removeFromProximity();
         }
 
         @Override
@@ -1368,7 +1461,8 @@ public class MultiTurret extends TemplatedTurret {
                     || mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.tract
                     || mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.point
                     || mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.repair
-                    || mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.mass) return true;
+                    || mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.mass
+                    || mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.drill) return true;
             if(mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.item) {
                 if (_ammos.get(mount).size >= 2 && _ammos.get(mount).peek().amount < mounts.get(mount).ammoPerShot) _ammos.get(mount).pop();
                 return _ammos.get(mount).size > 0 && _ammos.get(mount).peek().amount >= mounts.get(mount).ammoPerShot;
@@ -1463,6 +1557,97 @@ public class MultiTurret extends TemplatedTurret {
             return true;
         }
 
+        public void targetMine(Building core, int i){
+            //target ore
+            if(core == null) return;
+
+            if(___heats.get(i) <= 0.001 || _targetItems.get(i) == null){
+                _targetItems.set(i, iterateMap(core, i));
+                ___heats.set(i, 16f);
+            }
+
+            //if inventory is full, do not mine.
+            if(_targetItems.get(i) == null || items.get(_targetItems.get(i)) >= itemCapacity){
+                _mineTiles.set(i, null);
+            }
+            else{
+                if(Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) >= 0.2f && __heats.get(i) <= 0.001 && _targetItems.get(i) != null && _targetIDs.get(i) > -1){
+                    _ores.set(i, _proxOreses.get(i).get(_targetIDs.get(i)));
+                    __heats.set(i, 16f);
+                }
+
+                if(_ores.get(i) != null && Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) >= 0.2f){
+                    float dest = angleTo(_ores.get(i));
+                    mountTurnToTarget(i, dest);
+
+                    if(Angles.within(_rotations.get(i), dest, mounts.get(i).shootCone)){
+                        _mineTiles.set(i, _ores.get(i));
+                    }
+                    if(_ores.get(i).block() != Blocks.air){
+                        if(_targetIDs.get(i) > -1) mountReFind(_targetIDs.get(i), i);
+                        _targetItems.set(i, null);
+                        _targetIDs.set(i, -1);
+                        _mineTiles.set(i, null);
+                    }
+                }
+            }
+
+        }
+        public @Nullable Item iterateMap(Building core, int i){
+            if(_proxOreses.get(i) == null || !_proxOreses.get(i).any()) return null;
+            Item last = null;
+            _targetIDs.set(i, -1);
+            for(int h = 0; h < _proxOreses.get(i).size; h++){
+                if(mountCanMine(_proxItemses.get(i).get(h), i) && (last == null || last.lowPriority || core.items.get(last) > core.items.get(_proxItemses.get(i).get(h)))){
+                    if(_proxOreses.get(i).get(h).block() != Blocks.air){
+                        //try to relocate its ore
+                        mountReFind(h, i);
+                        //if it fails, ignore the ore
+                        if(_proxOreses.get(i).get(h).block() != Blocks.air) continue;
+                    }
+                    last = _proxItemses.get(i).get(h);
+                    _targetIDs.set(i, h);
+                }
+            }
+
+            return last;
+
+        }
+        public void mountReMap(int mount){
+            _proxOreses.set(mount, new Seq<>());
+            _proxItemses.set(mount, new Seq<>());
+            ObjectSet<Item> tempItems = new ObjectSet<>();
+
+            float[] loc = mountLocations(mount);
+            Geometry.circle((int) loc[0] / 8, (int)loc[1] / 8, (int)(mounts.get(mount).range / tilesize + 0.5f), (x, y) -> {
+                Tile other = world.tile(x, y);
+                if(other != null && other.drop() != null){
+                    Item drop = other.drop();
+                    if(!tempItems.contains(drop)){
+                        tempItems.add(drop);
+                        _proxItemses.get(mount).add(drop);
+                        _proxOreses.get(mount).add(other);
+                    }
+                }
+            });
+        }
+
+        public void mountReFind(int i, int mount){
+            Item item = _proxItemses.get(mount).get(i);
+
+            float[] loc = mountLocations(mount);
+            Geometry.circle((int) loc[0] / 8, (int)loc[1] / 8, (int)(mounts.get(mount).range / tilesize + 0.5f), (x, y) -> {
+                Tile other = world.tile(x, y);
+                if(other != null && other.drop() != null && other.drop() == item && other.block() == Blocks.air){
+                    _proxOreses.get(mount).set(i, other);
+                }
+            });
+        }
+
+        public boolean mountCanMine(Item item, int mount){
+            return item.hardness >= mounts.get(mount).minDrillTier && item.hardness <= mounts.get(mount).maxDrillTier && items.get(item) < itemCapacity;
+        }
+
         @Override
         public void write(Writes write){ //for some reason, w/r doesn't work well.
             super.write(write);
@@ -1520,6 +1705,7 @@ public class MultiTurret extends TemplatedTurret {
             }
         }
     }
+
     public class ItemEntry extends AmmoEntry{
         protected Item item;
 

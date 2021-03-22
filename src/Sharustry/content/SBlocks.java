@@ -193,6 +193,7 @@ public class SBlocks implements ContentList{
 
 
         trinity = new MultiTurret("trinity"){{
+            configurable = true;
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
             addBaseTurret(new ShrapnelBulletType(){{
@@ -202,19 +203,22 @@ public class SBlocks implements ContentList{
                 toColor = Pal.thoriumPink;
                 shootEffect = smokeEffect = Fx.thoriumShoot;
             }}, Items.thorium, "Trinity");
-            addMountTurret(repairMount, pointMount, tractMount, massMount);
+            addMountTurret(repairMount, pointMount, tractMount, drillMount, drillMount, massMount);
             addCustomMountLocation(new Float[]{
                     -8f, 0f,
                     0f, 6.5f,
                     8f, 0f,
-                    0f, 0f,
+                    -3f, 8f,
+                    3f, 8f,
+                    0f, 0f
             });
 
             ammos(MultiTurretMount.MultiTurretMountType.tract);
             ammos(MultiTurretMount.MultiTurretMountType.point);
             ammos(MultiTurretMount.MultiTurretMountType.repair);
+            ammos(MultiTurretMount.MultiTurretMountType.drill);
+            ammos(MultiTurretMount.MultiTurretMountType.drill);
             ammos(MultiTurretMount.MultiTurretMountType.mass);
-
 
             addSkills(entity -> () -> {
                 for(int i = 0; i < 8; i++){
@@ -231,7 +235,6 @@ public class SBlocks implements ContentList{
 
             hasItems = true;
             itemCapacity = 150;
-            configurable = true;
             hasPower = true;
             size = 3;
             spread = 4f;

@@ -1,5 +1,6 @@
 package Sharustry.content;
 
+import arc.audio.Sound;
 import arc.graphics.Color;
 import mindustry.content.Fx;
 import mindustry.ctype.ContentList;
@@ -14,11 +15,27 @@ import mindustry.graphics.Pal;
 import static Sharustry.content.SBullets.*;
 
 public class STurretMounts implements ContentList {
-    public static MultiTurretMount massMount, electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
+    public static MultiTurretMount drillMount, massMount, electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
 
 
     @Override
     public void load() {
+        drillMount = new MultiTurretMount("DrillM"){{
+            title = "Mini Miner";
+            mountType = MultiTurretMountType.drill;
+
+            laserWidth = 0.75f;
+            shootSound = Sounds.minebeam;
+            shootSoundVolume = 0.9f;
+
+            minDrillTier = 0;
+            maxDrillTier = 3;
+            mineSpeed = 0.75f;
+            laserOffset = 4f;
+            shootCone = 6f;
+
+            range = 60f;
+        }};
         massMount = new MultiTurretMount("miniMassDriver"){{
             rotateSpeed = 0.04f;
             translation = 7f;

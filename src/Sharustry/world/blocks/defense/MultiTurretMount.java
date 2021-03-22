@@ -58,7 +58,7 @@ public class MultiTurretMount {
 
     public float coolantMultiplier = 1;
 
-    public float powerUse = 0f; //mountType: power only
+    public float powerUse = 0f; //mountType: without item and liquid
 
     public boolean altEject = true;
     public boolean ejectRight = true;
@@ -134,6 +134,13 @@ public class MultiTurretMount {
     public float shake = 3f;
     //region end
 
+    //drill region, mountType: drill only
+    /** Drill tiers, inclusive */
+    public int minDrillTier = 0, maxDrillTier = 3;
+    public float mineSpeed = 0.75f;
+    public float laserOffset = 4f;
+    //region end
+
     public boolean healBlock = false;
     public boolean acceptCooling = false;
 
@@ -164,6 +171,7 @@ public class MultiTurretMount {
         tract,
         point,
         repair,
-        mass
+        mass,
+        drill
     }
 }
