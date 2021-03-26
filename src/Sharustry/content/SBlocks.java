@@ -85,7 +85,7 @@ public class SBlocks implements ContentList{
             shootShake = 4f;
             shootEffect = SFx.balkanShoot;
             smokeEffect = Fx.none;
-            chargeEffect = SFx.balkanCharge;
+            chargeEffect = SFx.balkanChargeCircles;
             chargeBeginEffect = SFx.balkanChargeBegin;
             heatColor = Color.blue;
             size = 2;

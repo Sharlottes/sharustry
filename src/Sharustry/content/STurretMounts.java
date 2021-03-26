@@ -379,7 +379,7 @@ public class STurretMounts implements ContentList {
             hitSize = 4;
             lifetime = 16f;
             drawSize = 400f;
-            collidesAir = false;
+            collidesAir = true;
             length = 173f;
         }}){{
             ammoPerShot = 5;

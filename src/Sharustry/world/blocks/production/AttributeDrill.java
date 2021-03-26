@@ -2,7 +2,10 @@ package Sharustry.world.blocks.production;
 
 import arc.*;
 import arc.graphics.*;
+import arc.math.Mathf;
+import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.layout.*;
+import arc.struct.Seq;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.*;
@@ -25,7 +28,13 @@ public class AttributeDrill extends Drill{
     public float baseEfficiency = 1;
     public float maxHeatBoost = 1;
 
-    public AttributeDrill(String name){ super(name);}
+    public float brightness = 0.9f;
+
+    public AttributeDrill(String name){
+        super(name);
+
+        config(Attribute.class, (AttributeDrillBuild tile, Attribute attr) -> tile.attribute = attr);
+    }
 
     @Override
     public void setBars(){
@@ -74,38 +83,30 @@ public class AttributeDrill extends Drill{
     public class AttributeDrillBuild extends DrillBuild {
         public float attrsum;
         public Attribute attribute;
-        public Color attributeColor = Color.darkGray;
-        public String attributeStr = "none";
-        short config;
+        public Color attributeColor;
+        public String attributeStr;
+        public Seq<Boolean> attributeClicked = new Seq<>();
+
+        public int color = Pal.accent.rgba();
+        public float smoothTime;
+
         public void created(){
             attribute = defaultAttribute;
+            attributeStr = defaultAttribute.toString();
+            attributeColor = Color.lightGray;
+
+            for(Attribute attr : Attribute.all){
+                attributeClicked.add(false);
+            }
         }
 
         @Override
         public void updateTile(){
             super.updateTile();
-            if(attribute == Attribute.oil){
-                attributeColor = Liquids.oil.barColor;
-                attributeStr = "oil";
-            }
-            else if(attribute == Attribute.heat){
-                attributeColor = Pal.lightOrange;
-                attributeStr = "heat";
-            }
-            else if(attribute == Attribute.spores){
-                attributeColor = Pal.sap;
-                attributeStr = "spores";
-            }
-            else if(attribute == Attribute.water){
-                attributeColor = Liquids.water.color;
-                attributeStr = "water";
-            }
-            else if(attribute == Attribute.light) {
-                attributeColor = Color.lightGray;
-                attributeStr = "light";
-            }
-
             attrsum = sumAttribute(attribute, tile.x, tile.y)<0?-baseEfficiency:sumAttribute(attribute, tile.x, tile.y);
+
+            if(attribute == Attribute.light) smoothTime = Mathf.lerpDelta(smoothTime, 1f, 0.02f);
+            else smoothTime = Mathf.lerpDelta(smoothTime, 0, 0.02f);
         }
         @Override
         public float efficiency(){
@@ -120,40 +121,105 @@ public class AttributeDrill extends Drill{
         public void buildConfiguration(Table table){
             super.buildConfiguration(table);
 
-            table.button(Icon.star, () -> {
-                attribute = Attribute.oil;
-                config = 1;
-            }).size(40);
-            table.button(Icon.star, () -> {
-                attribute = Attribute.heat;
-                config = 2;
-            }).size(40);
-            table.button(Icon.star, () -> {
-                attribute = Attribute.spores;
-                config = 3;
-            }).size(40);
-            table.button(Icon.star, () -> {
-                attribute = Attribute.water;
-                config = 4;
-            }).size(40);
-            table.button(Icon.star, () -> {
-                attribute = Attribute.light;
-                config = 5;
-            }).size(40);
-            this.configure(attribute);
+            Log.info(attributeClicked.get(Attribute.water.ordinal()));
+            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-tarred")).tint(attributeClicked.get(Attribute.oil.ordinal()) ? Color.valueOf("313131") : Color.white), 40, () -> {
+                configure(Attribute.oil);
+                for(Attribute attr : Attribute.all){
+                    attributeClicked.set(attr.ordinal(), false);
+                    if(attr == attribute) attributeClicked.set(attr.ordinal(), true);
+                }
+                table.clear();
+                buildConfiguration(table);
+
+                attributeColor = Color.valueOf("313131");
+                attributeStr = "oil";
+            }).size(40).color(Color.valueOf("313131"));
+            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-burning")).tint(attributeClicked.get(Attribute.heat.ordinal()) ? Color.valueOf("ffc455") : Color.white), 40, () -> {
+                configure(Attribute.heat);
+                for(Attribute attr : Attribute.all){
+                    attributeClicked.set(attr.ordinal(), false);
+                    if(attr == attribute) attributeClicked.set(attr.ordinal(), true);
+                }
+                table.clear();
+                buildConfiguration(table);
+
+                attributeColor = Color.valueOf("ffc455");
+                attributeStr = "heat";
+            }).size(40).color(Color.valueOf("ffc455"));
+            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-spore-slowed")).tint(attributeClicked.get(Attribute.spores.ordinal()) ? Pal.spore : Color.white), 40, () -> {
+                configure(Attribute.spores);
+                for(Attribute attr : Attribute.all){
+                    attributeClicked.set(attr.ordinal(), false);
+                    if(attr == attribute) attributeClicked.set(attr.ordinal(), true);
+                }
+                table.clear();
+                buildConfiguration(table);
+
+                attributeColor = Pal.spore;
+                attributeStr = "spores";
+            }).size(40).color(Pal.spore);
+            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-wet")).tint(attributeClicked.get(Attribute.water.ordinal()) ? Color.royal : Color.white), 40, () -> {
+                configure(Attribute.water);
+                for(Attribute attr : Attribute.all){
+                    attributeClicked.set(attr.ordinal(), false);
+                    if(attr == attribute) attributeClicked.set(attr.ordinal(), true);
+                }
+                table.clear();
+                buildConfiguration(table);
+
+                attributeColor = Color.royal;
+                attributeStr = "water";
+            }).size(40).color(Color.royal);
+            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-blasted")).tint(attributeClicked.get(Attribute.light.ordinal()) ? Color.lightGray : Color.white), 40, () -> {
+                configure(Attribute.light);
+                for(Attribute attr : Attribute.all){
+                    attributeClicked.set(attr.ordinal(), false);
+                    if(attr == attribute) attributeClicked.set(attr.ordinal(), true);
+                }
+                table.clear();
+                buildConfiguration(table);
+
+                attributeColor = Color.lightGray;
+                attributeStr = "light";
+            }).size(40).color(Color.lightGray);
+        }
+
+        @Override
+        public void drawLight(){
+            Drawf.light(team, x, y, (30f + Mathf.absin(10f, 7f)) * smoothTime * block.size, Tmp.c1.set(color), brightness * super.efficiency());
         }
 
         @Override
         public void write(Writes write){
             super.write(write);
-            write.s(config);
+            write.i(attribute.ordinal());
         }
 
         @Override
         public void read(Reads read, byte revision){
             super.read(read, revision);
-            short config = read.s();
-            attribute = config==1?Attribute.oil:config==2?Attribute.heat:config==3?Attribute.spores:config==4?Attribute.water:Attribute.light;
+            attribute = Attribute.all[read.i()];
+
+            if(attribute == Attribute.oil){
+                attributeColor = Color.valueOf("313131");
+                attributeStr = "oil";
+            }
+            else if(attribute == Attribute.heat){
+                attributeColor = Color.valueOf("ffc455");
+                attributeStr = "heat";
+            }
+            else if(attribute == Attribute.spores){
+                attributeColor = Pal.spore;
+                attributeStr = "spores";
+            }
+            else if(attribute == Attribute.water){
+                attributeColor = Color.royal;
+                attributeStr = "water";
+            }
+            else if(attribute == Attribute.light) {
+                attributeColor = Color.lightGray;
+                attributeStr = "light";
+            }
         }
     }
 }
