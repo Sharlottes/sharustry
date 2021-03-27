@@ -123,9 +123,9 @@ public class BattleCore extends CoreBlock {
     @Override
     public void load(){
         super.load();
-        region = Core.atlas.find(name);
         iconRegion = Drawm.generateTeamRegion(this);
-        teamRegion = Core.atlas.find(name + "-team");
+        region = Core.atlas.find(name);
+        //teamRegion = Core.atlas.find(name + "-team");
         heatRegion = Core.atlas.find(name + "-heat");
         Events.on(EventType.ClientLoadEvent.class, e -> {
             for(int i = 0; i < amount; i++){ //...why?
