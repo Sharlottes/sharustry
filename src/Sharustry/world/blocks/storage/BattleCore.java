@@ -37,8 +37,6 @@ import static mindustry.Vars.*;
 import static arc.struct.ObjectMap.of;
 
 public class BattleCore extends CoreBlock {
-    public Block reviveBlock = Blocks.coreNucleus;
-
     public final static float logicControlCooldown = 60 * 2;
 
     public float healHealth = 0.4f;
@@ -122,19 +120,18 @@ public class BattleCore extends CoreBlock {
 
     @Override
     public void load(){
-        super.load();
         iconRegion = Drawm.generateTeamRegion(this);
-        region = Core.atlas.find(name);
+        super.load();
         //teamRegion = Core.atlas.find(name + "-team");
         heatRegion = Core.atlas.find(name + "-heat");
         Events.on(EventType.ClientLoadEvent.class, e -> {
             for(int i = 0; i < amount; i++){ //...why?
                 //[Sprite, Outline, Heat, Fade Mask]
                 TextureRegion[] sprites = {
-                        Core.atlas.find("shar-"+mounts.get(i).name + ""),
-                        Core.atlas.find("shar-"+mounts.get(i).name + "-outline"),
-                        Core.atlas.find("shar-"+mounts.get(i).name + "-heat"),
-                        Core.atlas.find("shar-"+mounts.get(i).name + "-mask")
+                        Core.atlas.find("shar-" + mounts.get(i).name + ""),
+                        Core.atlas.find("shar-" + mounts.get(i).name + "-outline"),
+                        Core.atlas.find("shar-" + mounts.get(i).name + "-heat"),
+                        Core.atlas.find("shar-" + mounts.get(i).name + "-mask")
                 };
                 turrets.add(sprites);
 
@@ -713,11 +710,6 @@ public class BattleCore extends CoreBlock {
 
         public boolean logicControlled(){
             return logicControlTime > 0;
-        }
-
-        @Override
-        public void drawTeam(){
-            //why
         }
 
         @Override

@@ -2,6 +2,7 @@ package Sharustry.content;
 
 import Sharustry.entities.bullet.FieldBulletType;
 import Sharustry.graphics.SPal;
+import Sharustry.world.blocks.logic.VariableLogicBlock;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.math.Mathf;
 import arc.util.Time;
@@ -25,9 +26,11 @@ import static mindustry.type.ItemStack.*;
 
 public class SBlocks implements ContentList{
     public static Block
+            //logic
+            variableProcessor,
             //defense
             //marksman,
-            balkan, jumble, conductron, trinity, asclepius, clinicus,
+            balkan, jumble, conductron, trinity, asclepius, clinicus, fossor,
             //wall
             shieldWall,
             //drill
@@ -39,6 +42,14 @@ public class SBlocks implements ContentList{
 
     @Override
     public void load(){
+        variableProcessor = new VariableLogicBlock("variable-processor"){{
+            requirements(Category.logic, with(Items.copper, 80, Items.lead, 50, Items.silicon, 30));
+
+            instructionsPerTick = 2;
+
+            size = 1;
+        }};
+
         balkan = new SkillTurret("balkan"){{
 
             addSkills(entity -> () -> {
@@ -203,22 +214,18 @@ public class SBlocks implements ContentList{
                 toColor = Pal.thoriumPink;
                 shootEffect = smokeEffect = Fx.thoriumShoot;
             }}, Items.thorium, "Trinity");
-            addMountTurret(repairMount, pointMount, tractMount, drillMount, drillMount, massMount);
+            addMountTurret(repairMount, pointMount, massMount, tractMount);
             addCustomMountLocation(new Float[]{
                     -8f, 0f,
                     0f, 6.5f,
-                    8f, 0f,
-                    -3f, 8f,
-                    3f, 8f,
-                    0f, 0f
+                    0f, 0f,
+                    8f, 0f
             });
 
-            ammos(MultiTurretMount.MultiTurretMountType.tract);
-            ammos(MultiTurretMount.MultiTurretMountType.point);
             ammos(MultiTurretMount.MultiTurretMountType.repair);
-            ammos(MultiTurretMount.MultiTurretMountType.drill);
-            ammos(MultiTurretMount.MultiTurretMountType.drill);
+            ammos(MultiTurretMount.MultiTurretMountType.point);
             ammos(MultiTurretMount.MultiTurretMountType.mass);
+            ammos(MultiTurretMount.MultiTurretMountType.tract);
 
             addSkills(entity -> () -> {
                 for(int i = 0; i < 8; i++){
@@ -275,7 +282,6 @@ public class SBlocks implements ContentList{
             hasLiquids = true;
             hasItems = true;
             hasPower = true;
-            targetAir = false;
             size = 4;
             shots = 6;
             maxConstruct = 18;
@@ -292,7 +298,7 @@ public class SBlocks implements ContentList{
             range = 45 * 8f;
             burstSpacing = 7f;
 
-            inaccuracy = 17f;
+            inaccuracy = 25f;
             health = 240 * size * size;
             shootSound = Sounds.artillery;
         }};
@@ -312,7 +318,6 @@ public class SBlocks implements ContentList{
             hasLiquids = true;
             hasItems = true;
             hasPower = true;
-            targetAir = false;
             size = 3;
             shots = 3;
             inaccuracy = 12f;
@@ -330,6 +335,47 @@ public class SBlocks implements ContentList{
 
             inaccuracy = 17f;
             health = 130 * size * size;
+            shootSound = Sounds.artillery;
+        }};
+
+        fossor = new MultiConstructTurret("fossor"){{
+            configurable = true;
+            requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 180, Items.graphite, 140, Items.silicon, 200, Items.titanium, 180, Items.thorium, 130));
+
+            addBaseTurret(SBullets.artilleryHeal, Items.plastanium,"Fossor");
+            addMountTurret(drillMount, drillMount, massMount);
+            addCustomMountLocation(new Float[]{
+                -3f, 8f,
+                3f, 8f,
+                0f, 0f
+            });
+
+            ammos(MultiTurretMount.MultiTurretMountType.drill);
+            ammos(MultiTurretMount.MultiTurretMountType.drill);
+            ammos(MultiTurretMount.MultiTurretMountType.mass);
+
+            itemCapacity = 150;
+            customMountLocation = true;
+            hasLiquids = true;
+            hasItems = true;
+            hasPower = true;
+            size = 3;
+            shots = 5;
+            inaccuracy = 12f;
+            reloadTime = 2f * 60f;
+            ammoEjectBack = 5f;
+            ammoUseEffect = Fx.casing3Double;
+            ammoPerShot = 3;
+            cooldown = 0.03f;
+            velocityInaccuracy = 0.2f;
+            restitution = 0.02f;
+            recoilAmount = 6f;
+            shootShake = 2f;
+            range = 28 * 8f;
+            burstSpacing = 5f;
+
+            inaccuracy = 20f;
+            health = 100 * size * size;
             shootSound = Sounds.artillery;
         }};
 

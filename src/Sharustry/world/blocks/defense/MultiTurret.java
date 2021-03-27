@@ -77,6 +77,8 @@ public class MultiTurret extends TemplatedTurret {
         for(MultiTurretMount mount : mounts) this.mounts.add(mount);
         this.amount = this.mounts.size;
         this.totalRangeTime = rangeTime * this.mounts.size;
+
+        if(this.mounts.find(m -> m.mountType != MultiTurretMount.MultiTurretMountType.mass) != null){};
     }
 
     public void addBaseTurret(BulletType type, Object ammo, String title){
@@ -993,7 +995,7 @@ public class MultiTurret extends TemplatedTurret {
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.mass){
                     Building link = world.build(this._links.get(i));
                     boolean hasLink = linkValid(i);
-                    Log.info(mounts.indexOf(selectedMount));
+
                     if(hasLink) _links.set(i, link.pos());
                     if(_reloads.get(i) > 0f) _reloads.set(i, Mathf.clamp(_reloads.get(i) - delta() * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) / mounts.get(i).reloadTime));
                     if(!shooterValid(currentShooter(i), i)) _waitingShooterses.get(i).remove(currentShooter(i));
@@ -1485,7 +1487,7 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         public void handlePayload(Bullet bullet, DriverBulletData data){
-            if(mounts.find(m -> m.mountType != MultiTurretMount.MultiTurretMountType.mass) != null) return;
+            if(mounts.find(m -> m.mountType != MultiTurretMount.MultiTurretMountType.mass) == null) return;
 
             int totalItems = items.total();
 
@@ -1591,8 +1593,8 @@ public class MultiTurret extends TemplatedTurret {
                     }
                 }
             }
-
         }
+
         public @Nullable Item iterateMap(Building core, int i){
             if(_proxOreses.get(i) == null || !_proxOreses.get(i).any()) return null;
             Item last = null;
@@ -1611,8 +1613,8 @@ public class MultiTurret extends TemplatedTurret {
             }
 
             return last;
-
         }
+
         public void mountReMap(int mount){
             _proxOreses.set(mount, new Seq<>());
             _proxItemses.set(mount, new Seq<>());

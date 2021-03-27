@@ -103,9 +103,12 @@ public class AttributeDrill extends Drill{
         @Override
         public void updateTile(){
             super.updateTile();
-            attrsum = sumAttribute(attribute, tile.x, tile.y)<0?-baseEfficiency:sumAttribute(attribute, tile.x, tile.y);
+            attrsum = sumAttribute(attribute, tile.x, tile.y) < 0 ? -baseEfficiency : sumAttribute(attribute, tile.x, tile.y);
 
-            if(attribute == Attribute.light) smoothTime = Mathf.lerpDelta(smoothTime, 1f, 0.02f);
+            if(attribute == Attribute.light){
+                attrsum *= maxHeatBoost;
+                smoothTime = Mathf.lerpDelta(smoothTime, 1f, 0.02f);
+            }
             else smoothTime = Mathf.lerpDelta(smoothTime, 0, 0.02f);
         }
         @Override
@@ -195,11 +198,7 @@ public class AttributeDrill extends Drill{
             write.i(attribute.ordinal());
         }
 
-        @Override
-        public void read(Reads read, byte revision){
-            super.read(read, revision);
-            attribute = Attribute.all[read.i()];
-
+        public Attribute attributeInit(Attribute attribute){
             if(attribute == Attribute.oil){
                 attributeColor = Color.valueOf("313131");
                 attributeStr = "oil";
@@ -220,6 +219,16 @@ public class AttributeDrill extends Drill{
                 attributeColor = Color.lightGray;
                 attributeStr = "light";
             }
+            for(Attribute attr : Attribute.all){
+                attributeClicked.set(attr.ordinal(), false);
+                if(attr == attribute) attributeClicked.set(attr.ordinal(), true);
+            }
+            return attribute;
+        }
+        @Override
+        public void read(Reads read, byte revision){
+            super.read(read, revision);
+            attribute = attributeInit(Attribute.all[read.i()]);
         }
     }
 }
