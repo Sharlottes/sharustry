@@ -48,6 +48,8 @@ public class SBlocks implements ContentList{
             instructionsPerTick = 2;
 
             size = 1;
+
+            range = 500 * 8f;
         }};
 
         balkan = new SkillTurret("balkan"){{
