@@ -2,7 +2,6 @@ package Sharustry.entities.bullet;
 
 import Sharustry.world.blocks.defense.DriverBulletData;
 import Sharustry.world.blocks.defense.MultiTurret;
-import Sharustry.world.blocks.storage.BattleCore;
 import arc.graphics.*;
 import arc.math.*;
 import mindustry.content.*;

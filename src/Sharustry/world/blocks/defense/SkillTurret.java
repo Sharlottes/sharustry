@@ -2,9 +2,11 @@ package Sharustry.world.blocks.defense;
 
 import Sharustry.content.SBullets;
 import Sharustry.graphics.SPal;
+import arc.Core;
 import arc.func.Func;
 import arc.graphics.Color;
 import arc.math.Mathf;
+import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.content.Fx;
@@ -12,6 +14,8 @@ import mindustry.content.Items;
 import mindustry.entities.Effect;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.Building;
+import mindustry.graphics.Pal;
+import mindustry.ui.Bar;
 
 import java.util.Objects;
 
@@ -37,6 +41,17 @@ public class SkillTurret extends TemplatedTurret {
         public void created() {
             for(int i = 0; i < skillDelays.size; i++) shotcounters.add(0);
             super.created();
+        }
+
+        @Override
+        public void displayBars(Table bars) {
+            super.displayBars(bars);
+
+            for(int i = 0; i < skillDelays.size; i++) {
+                final int j = i;
+                bars.add(new Bar(() -> Core.bundle.format("stat.shar-skillReload") + shotcounters.get(j) + " / " + skillDelays.get(j), () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotcounters.get(j) / (skillDelays.get(j) * 2.5f)))), () -> (shotcounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
+                bars.row();
+            }
         }
 
         @Override

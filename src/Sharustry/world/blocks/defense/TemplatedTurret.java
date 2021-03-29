@@ -1,10 +1,13 @@
 package Sharustry.world.blocks.defense;
 
 import arc.*;
+import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
+import arc.math.Mathf;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
+import arc.util.Time;
 import arc.util.io.*;
 import mindustry.*;
 import mindustry.annotations.Annotations;
@@ -132,6 +135,15 @@ public class TemplatedTurret extends Turret {
     public class TemplatedTurretBuild extends TurretBuild {
 
         @Override
+        public void drawSelect() {
+            super.drawSelect();
+
+            if(minRange > 0){
+                Drawf.dashCircle(x, y, minRange, team.color.cpy().lerp(Pal.lancerLaser, Mathf.sin(Time.time * 0.05f)));
+            }
+        }
+
+        @Override
         public void draw(){
             super.draw();
             if(Objects.equals(ammoType, "liquid")){
@@ -242,6 +254,8 @@ public class TemplatedTurret extends Turret {
                 bars.add(new Bar("stat.ammo", Pal.ammo, () -> (float) totalAmmo / maxAmmo)).growX();
                 bars.row();
             }
+            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f, () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
+            bars.row();
         }
 
         @Override

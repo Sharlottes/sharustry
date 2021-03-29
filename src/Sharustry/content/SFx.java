@@ -143,6 +143,7 @@ public class SFx {
 
     }
     public static void part1(Effect.EffectContainer ew, float range) {
+        float[] xy = {0f, 0f};
         Groups.unit.each(u -> Mathf.dst(ew.x, ew.y, u.x, u.y) <= range && u.abilities.find(a -> a instanceof ForceFieldAbility) != null, target -> {
             long id = ew.id;
             float tx = target.x;
@@ -150,7 +151,6 @@ public class SFx {
             float x0;
             float y0;
             float radius = target.hitSize * 1.3f;
-            float[] xy = {0f, 0f};
             ew.scaled(30, e1 -> {
                 xy[0] = Mathf.lerp(ew.x, tx, e1.fin(Interp.pow2));
                 xy[1] = Mathf.lerp(ew.y, ty, e1.fin(Interp.pow2));

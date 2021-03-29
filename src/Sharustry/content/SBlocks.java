@@ -109,7 +109,7 @@ public class SBlocks implements ContentList{
             chargeBeginEffect = SFx.balkanChargeBegin;
             heatColor = Color.blue;
             size = 2;
-            health = 340 * size * size;
+            health = 110 * size * size;
             targetAir = true;
             shootSound = Sounds.missile;
 
@@ -206,7 +206,7 @@ public class SBlocks implements ContentList{
             chargeBeginEffect = Fx.lancerLaserChargeBegin;
             heatColor = Color.red;
 
-            health = 280 * size * size;
+            health = 190 * size * size;
             shootSound = Sounds.laser;
 
         }};
@@ -245,7 +245,7 @@ public class SBlocks implements ContentList{
                 Time.run(30, () -> {
                     Groups.unit.each(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range, target -> {
                         if(target.abilities.find(a -> a instanceof ForceFieldAbility) != null) return;
-                        ForceFieldAbility abil = new ForceFieldAbility(Math.min(25 * 8,target.hitSize * 5), Math.min(5000, target.type.health * 0.5f) / 2.5f, Math.min(5000, target.type.health * 0.5f), Math.min(20 * 60f, target.hitSize * 60));
+                        ForceFieldAbility abil = new ForceFieldAbility(Math.min(25 * 8,target.hitSize * 2.5f), Math.min(5000, target.type.health * 0.5f) / (2.5f * 60), Math.min(5000, target.type.health * 0.5f), Math.min(20 * 60f, target.hitSize * 60));
                         target.abilities.add(abil);
                         Time.run(60 * 60 * 60, () -> {
                             target.abilities.remove(abil);
@@ -270,7 +270,7 @@ public class SBlocks implements ContentList{
             rotateSpeed = 10f;
 
 
-            health = 110 * size * size;
+            health = 160 * size * size;
             shootSound = Sounds.shotgun;
         }};
 
@@ -310,10 +310,11 @@ public class SBlocks implements ContentList{
             recoilAmount = 8f;
             shootShake = 3.5f;
             range = 45 * 8f;
+            minRange = 30 * 8f;
             burstSpacing = 7f;
 
             inaccuracy = 25f;
-            health = 240 * size * size;
+            health = 370 * size * size;
             shootSound = Sounds.artillery;
         }};
 
@@ -348,7 +349,7 @@ public class SBlocks implements ContentList{
             burstSpacing = 5f;
 
             inaccuracy = 17f;
-            health = 130 * size * size;
+            health = 170 * size * size;
             shootSound = Sounds.artillery;
         }};
 
@@ -389,7 +390,7 @@ public class SBlocks implements ContentList{
             burstSpacing = 5f;
 
             inaccuracy = 20f;
-            health = 100 * size * size;
+            health = 120 * size * size;
             shootSound = Sounds.artillery;
         }};
 
@@ -420,6 +421,8 @@ public class SBlocks implements ContentList{
             reloadTime = 21;
             ammoPerShot = 2;
             hasPower = true;
+
+            health = 80 * size * size;
         }};
 
         adaptDrill = new AttributeDrill("adapt-drill"){{

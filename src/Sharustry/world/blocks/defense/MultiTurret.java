@@ -77,8 +77,6 @@ public class MultiTurret extends TemplatedTurret {
         for(MultiTurretMount mount : mounts) this.mounts.add(mount);
         this.amount = this.mounts.size;
         this.totalRangeTime = rangeTime * this.mounts.size;
-
-        if(this.mounts.find(m -> m.mountType != MultiTurretMount.MultiTurretMountType.mass) != null){};
     }
 
     public void addBaseTurret(BulletType type, Object ammo, String title){
@@ -497,7 +495,7 @@ public class MultiTurret extends TemplatedTurret {
         public float _heat;
         public Seq<Float> __heats = new Seq<>();
         public Seq<Float> ___heats = new Seq<>();
-        public int shotcounter;
+        public Seq<Integer> shotcounters = new Seq<>();
         public MultiTurretMount selectedMount;
 
 
@@ -510,6 +508,7 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void created(){
             super.created();
+            for(int i = 0; i < skillDelays.size; i++) shotcounters.add(0);
             for(int i = 0; i < mounts.size; i++){
                 _shotcounters.add(0);
                 _totalAmmos.add(0);
@@ -571,6 +570,12 @@ public class MultiTurret extends TemplatedTurret {
                                 e.pack();
                             }));
 
+                            add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2+21+4f);
+                                Bar reloadBar = new Bar(() -> "", () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime), () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                e.add(reloadBar);
+                                e.pack();
+                            }));
                             add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(_ammos.get(i).peek().item.icon(Cicon.tiny)))) : new Table(e -> e.add(itemReq).size(Cicon.tiny.size)));
                         }}).padTop(2*8).padLeft(2*8);
 
@@ -586,6 +591,13 @@ public class MultiTurret extends TemplatedTurret {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
                                 Bar liquidBar = mountHasAmmo(i) ? new Bar("", liquids.current().color, () -> liquids.get(liquids.current()) / liquidCapacity) : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0);
                                 e.add(liquidBar);
+                                e.pack();
+                            }));
+
+                            add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2+21+4f);
+                                Bar reloadBar = new Bar(() -> "", () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime), () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                e.add(reloadBar);
                                 e.pack();
                             }));
                             add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(liquids.current().icon(Cicon.tiny)))) : new Table(e -> e.add(liquidReq).size(Cicon.tiny.size)));
@@ -607,6 +619,16 @@ public class MultiTurret extends TemplatedTurret {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
                                 Bar liquidBar = new Bar("", Pal.powerBar, () -> Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
                                 e.add(liquidBar);
+                                e.pack();
+                            }));
+
+                            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power
+                                || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.point
+                                || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.mass)
+                            add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2+21+4f);
+                                Bar reloadBar = new Bar(() -> "", () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime), () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                e.add(reloadBar);
                                 e.pack();
                             }));
                             add(new Table(e -> e.add(powerReq)));
@@ -635,9 +657,16 @@ public class MultiTurret extends TemplatedTurret {
                     break;
                 }
             }
-
             bars.add(new Bar("stat.ammo", Pal.ammo, () -> Mathf.clamp((float)totalAmmo / maxAmmo, 0f, 1f))).growX();
             bars.row();
+            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f, () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
+            bars.row();
+
+            for(int i = 0; i < skillDelays.size; i++) {
+                final int j = i;
+                bars.add(new Bar(() -> Core.bundle.format("stat.shar-skillReload") + shotcounters.get(j) + " / " + skillDelays.get(j), () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotcounters.get(j) / (skillDelays.get(j) * 2.5f)))), () -> (shotcounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
+                bars.row();
+            }
         }
 
         @Override
@@ -1421,10 +1450,12 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         public void doSkill(){
-            shotcounter++;
-            for(int i = 0; i < skillDelays.size; i++) if(shotcounter % skillDelays.get(i) == 0) {
-                shotcounter = 0;
-                skillSeq.get(i).get(this).run();
+            for(int i = 0; i < skillDelays.size; i++) {
+                shotcounters.set(i, shotcounters.get(i) + 1);
+                if(Objects.equals(shotcounters.get(i), skillDelays.get(i))) {
+                    shotcounters.set(i, 0);
+                    skillSeq.get(i).get(this).run();
+                }
             }
         }
 
