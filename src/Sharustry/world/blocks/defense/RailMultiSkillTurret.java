@@ -5,7 +5,7 @@ import mindustry.entities.Units;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.*;
 
-public class RailMultiSkillTurret extends MultiSkillTurret{
+public class RailMultiSkillTurret extends MultiTurret{
 
     public RailMultiSkillTurret(String name, BulletType type, Object ammo, String title, MultiTurretMount... mounts){
         super(name, type, ammo, title, mounts);
@@ -15,7 +15,7 @@ public class RailMultiSkillTurret extends MultiSkillTurret{
         super(name);
     }
 
-    public class RailMultiSkillTurretBuild extends MultiSkillTurretBuild {
+    public class RailMultiSkillTurretBuild extends MultiTurretBuild {
 
     }
 }

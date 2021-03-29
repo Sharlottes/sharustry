@@ -1,6 +1,5 @@
 package Sharustry.content;
 
-import arc.audio.Sound;
 import arc.graphics.Color;
 import mindustry.content.Fx;
 import mindustry.ctype.ContentList;
