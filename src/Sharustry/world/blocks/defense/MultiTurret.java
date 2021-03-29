@@ -61,7 +61,7 @@ public class MultiTurret extends TemplatedTurret {
     public Seq<ObjectMap<Item, BulletType>> mountAmmoTypes = new Seq<>();
 
     public Seq<Integer> skillDelays = new Seq<>();
-    public Seq<Func<Building, Runnable>> skillSeq = new Seq<>();
+    public Seq<Func<MultiTurretBuild, Runnable>> skillSeq = new Seq<>();
 
     public MultiTurret(String name, BulletType type, Object ammo, String title, MultiTurretMount... mounts){
         this(name);
@@ -118,9 +118,9 @@ public class MultiTurret extends TemplatedTurret {
         for(int iy = 1; iy < amount * 2; iy += 2) customMountLocationsY.add(xy[iy]);
     }
 
-    public <T extends Building> void addSkills(Func<T, Runnable> skill, int delay){
+    public <T extends MultiTurretBuild> void addSkills(Func<T, Runnable> skill, int delay){
         if(skill != null) {
-            skillSeq.add((Func<Building, Runnable>) skill);
+            skillSeq.add((Func<MultiTurretBuild, Runnable>) skill);
             skillDelays.add(delay);
         }
     }
@@ -1345,11 +1345,7 @@ public class MultiTurret extends TemplatedTurret {
         protected void shoot(BulletType type) {
             super.shoot(type);
 
-            shotcounter++;
-            for(int i = 0; i < skillDelays.size; i++) if(shotcounter % skillDelays.get(i) == 0) {
-                shotcounter = 0;
-                skillSeq.get(i).get(this).run();
-            }
+            doSkill();
         }
 
         public void mountEffect(int mount, BulletType type){
@@ -1417,12 +1413,18 @@ public class MultiTurret extends TemplatedTurret {
                 }
             }
 
-            if(!mounts.get(mount).sequential) _shotCounters.set(mount, _shotCounters.get(mount)+1);
-
             if(!mounts.get(mount).sequential) _shotcounters.set(mount, _shotcounters.get(mount)+1);
             for(int i = 0; i < mounts.get(mount).skillDelays.size; i++) if(_shotcounters.get(mount) % mounts.get(mount).skillDelays.get(i) == 0) {
                 _shotcounters.set(mount, 0);
                 mounts.get(mount).skillSeq.get(i).get(this, mounts.get(mount)).run();
+            }
+        }
+
+        public void doSkill(){
+            shotcounter++;
+            for(int i = 0; i < skillDelays.size; i++) if(shotcounter % skillDelays.get(i) == 0) {
+                shotcounter = 0;
+                skillSeq.get(i).get(this).run();
             }
         }
 

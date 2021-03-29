@@ -9,11 +9,9 @@ import Sharustry.content.ModLoader;
 public class Main extends Mod {
     public Main(){
         Events.on(ClientLoadEvent.class, e -> {
-
         });
 
         Events.on(WorldLoadEvent.class, e -> {
-
         });
     }
 

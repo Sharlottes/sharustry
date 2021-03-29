@@ -5,10 +5,15 @@ import Sharustry.graphics.SPal;
 import Sharustry.world.blocks.logic.VariableLogicBlock;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.math.Mathf;
+import arc.struct.Seq;
 import arc.util.Time;
+import arc.util.io.Writes;
+import mindustry.Vars;
+import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.ShrapnelBulletType;
 import mindustry.graphics.Pal;
+import mindustry.io.JsonIO;
 import multilib.Recipe.*;
 import Sharustry.world.blocks.defense.*;
 import Sharustry.world.blocks.production.*;
@@ -19,6 +24,8 @@ import mindustry.type.*;
 import mindustry.content.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
+
+import java.util.Objects;
 
 import static Sharustry.content.SBullets.jumbleBullet;
 import static Sharustry.content.STurretMounts.*;
@@ -230,16 +237,21 @@ public class SBlocks implements ContentList{
             ammos(MultiTurretMount.MultiTurretMountType.tract);
 
             addSkills(entity -> () -> {
-                for(int i = 0; i < 8; i++){
-                    Time.run(0.1f * 60 * i,
-                        () -> {
-                            float ex = entity.x + Mathf.range(16f);
-                            float ey = entity.y + Mathf.range(16f);
-                            SFx.skill.at(ex, ey);
-                            Bullets.artilleryPlastic.create(entity, ex, ey, ((BaseTurretBuild)entity).rotation);
-                        }
-                    );
-                }
+                if(Groups.unit.find(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range) == null
+                        || Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range
+                        && u.abilities.find(a -> a instanceof ForceFieldAbility) != null) == Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range)) return;
+                SFx.shieldSpread.at(entity.x, entity.y, 0, range);
+
+                Time.run(30, () -> {
+                    Groups.unit.each(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range, target -> {
+                        if(target.abilities.find(a -> a instanceof ForceFieldAbility) != null) return;
+                        ForceFieldAbility abil = new ForceFieldAbility(Math.min(25 * 8,target.hitSize * 5), Math.min(5000, target.type.health * 0.5f) / 2.5f, Math.min(5000, target.type.health * 0.5f), Math.min(20 * 60f, target.hitSize * 60));
+                        target.abilities.add(abil);
+                        Time.run(60 * 60 * 60, () -> {
+                            target.abilities.remove(abil);
+                        });
+                    });
+                });
             }, 20);
 
             hasItems = true;
