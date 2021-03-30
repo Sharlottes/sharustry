@@ -38,7 +38,7 @@ public class Drawm {
                         out.draw(x, y, index == -1 ? pixel.set(teamr.getPixel(x, y)) : team.palette[index]);
                     }
                 }
-                Texture texture  = new Texture(new PixmapTextureData(out, null, true, false, true));
+                Texture texture  = new Texture(new PixmapTextureData(out, null, true, false));
                 TextureRegion res = Core.atlas.addRegion(b.name + "-team-" + team.name, new TextureRegion(texture));
 
                 if(team == Team.sharded){
