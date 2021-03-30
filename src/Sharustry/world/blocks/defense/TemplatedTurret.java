@@ -32,6 +32,8 @@ import java.util.Objects;
 import static mindustry.Vars.*;
 
 public class TemplatedTurret extends Turret {
+    public float minRanged = 0f;
+
     public String ammoType; //should be item(ItemTurret) or power(PowerTurret) or liquid(LiquidTurret).
 
     public ObjectMap<Item, BulletType> ammoTypes = new ObjectMap<>();
@@ -138,8 +140,8 @@ public class TemplatedTurret extends Turret {
         public void drawSelect() {
             super.drawSelect();
 
-            if(minRange > 0){
-                Drawf.dashCircle(x, y, minRange, team.color.cpy().lerp(Pal.lancerLaser, Mathf.sin(Time.time * 0.05f)));
+            if(minRanged > 0){
+                Drawf.dashCircle(x, y, minRanged, team.color.cpy().lerp(Pal.lancerLaser, Mathf.sin(Time.time * 0.05f)));
             }
         }
 
@@ -254,7 +256,7 @@ public class TemplatedTurret extends Turret {
                 bars.add(new Bar("stat.ammo", Pal.ammo, () -> (float) totalAmmo / maxAmmo)).growX();
                 bars.row();
             }
-            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f, () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
+            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f + Core.bundle.format("unit.seconds"), () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
             bars.row();
         }
 

@@ -5,15 +5,11 @@ import Sharustry.graphics.SPal;
 import Sharustry.world.blocks.logic.VariableLogicBlock;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.math.Mathf;
-import arc.struct.Seq;
 import arc.util.Time;
-import arc.util.io.Writes;
-import mindustry.Vars;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.ShrapnelBulletType;
 import mindustry.graphics.Pal;
-import mindustry.io.JsonIO;
 import multilib.Recipe.*;
 import Sharustry.world.blocks.defense.*;
 import Sharustry.world.blocks.production.*;
@@ -24,8 +20,6 @@ import mindustry.type.*;
 import mindustry.content.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
-
-import java.util.Objects;
 
 import static Sharustry.content.SBullets.jumbleBullet;
 import static Sharustry.content.STurretMounts.*;
@@ -242,16 +236,12 @@ public class SBlocks implements ContentList{
                         && u.abilities.find(a -> a instanceof ForceFieldAbility) != null) == Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range)) return;
                 SFx.shieldSpread.at(entity.x, entity.y, 0, range);
 
-                Time.run(30, () -> {
-                    Groups.unit.each(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range, target -> {
-                        if(target.abilities.find(a -> a instanceof ForceFieldAbility) != null) return;
-                        ForceFieldAbility abil = new ForceFieldAbility(Math.min(25 * 8,target.hitSize * 2.5f), Math.min(5000, target.type.health * 0.5f) / (2.5f * 60), Math.min(5000, target.type.health * 0.5f), Math.min(20 * 60f, target.hitSize * 60));
-                        target.abilities.add(abil);
-                        Time.run(60 * 60 * 60, () -> {
-                            target.abilities.remove(abil);
-                        });
-                    });
-                });
+                Time.run(30, () -> Groups.unit.each(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range, target -> {
+                    if(target.abilities.find(a -> a instanceof ForceFieldAbility) != null) return;
+                    ForceFieldAbility abil = new ForceFieldAbility(Math.min(25 * 8, target.hitSize * 2.5f), Math.min(5000, target.type.health * 0.5f) / (2.5f * 60), Math.min(5000, target.type.health * 0.5f), Math.min(20 * 60f, target.hitSize * 60));
+                    target.abilities.add(abil);
+                    Time.run(60 * 60 * 60, () -> target.abilities.remove(abil));
+                }));
             }, 20);
 
             hasItems = true;
@@ -275,6 +265,7 @@ public class SBlocks implements ContentList{
         }};
 
         asclepius = new MultiConstructTurret("asclepius"){{
+            configurable = true;
             requirements(Category.turret, ItemStack.with(Items.copper, 820, Items.lead, 430, Items.graphite, 320, Items.silicon, 580, Items.titanium, 120, Items.thorium, 140, Items.plastanium, 85));
 
             addBaseTurret(SBullets.artilleryHealBig, Items.plastanium,"Asclepius");
@@ -310,9 +301,10 @@ public class SBlocks implements ContentList{
             recoilAmount = 8f;
             shootShake = 3.5f;
             range = 45 * 8f;
-            minRange = 30 * 8f;
             burstSpacing = 7f;
 
+
+            minRanged = 30 * 8f;
             inaccuracy = 25f;
             health = 370 * size * size;
             shootSound = Sounds.artillery;
@@ -348,6 +340,7 @@ public class SBlocks implements ContentList{
             range = 32 * 8f;
             burstSpacing = 5f;
 
+            minRanged = 25 * 8f;
             inaccuracy = 17f;
             health = 170 * size * size;
             shootSound = Sounds.artillery;

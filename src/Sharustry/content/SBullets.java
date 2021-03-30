@@ -1,5 +1,6 @@
 package Sharustry.content;
 
+import Sharustry.entities.bullet.construct.AssaultConstructBulletType;
 import Sharustry.entities.bullet.construct.SupportConstructBulletType;
 import Sharustry.graphics.SPal;
 import arc.graphics.Color;
@@ -12,7 +13,7 @@ import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
 public class SBullets implements ContentList{
-    public static BulletType mountDriverBolt, artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
+    public static BulletType mountDriverBolt, assault, artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
 
     @Override
     public void load(){
@@ -33,7 +34,7 @@ public class SBullets implements ContentList{
             pointRange = 35f;
             pointHitEffect = Fx.shootHeal;
             knockback = 2f;
-            lifetime = 4 * 60f;
+            lifetime = 8 * 60f;
             width = height = 9f;
             collidesTiles = false;
             splashDamageRadius = 35f * 0.75f;
@@ -52,6 +53,23 @@ public class SBullets implements ContentList{
             }};
         }};
 
+        assault = new AssaultConstructBulletType(4.25f, 150f){{
+            sprite = "shar-construct";
+            drag = 0.0125f;
+
+            //despawnEffect = Fx.healWave;
+            knockback = 5f;
+            lifetime = 15 * 60f;
+            width = height = 13f;
+            collidesTiles = false;
+            splashDamageRadius = 35f * 0.75f;
+            splashDamage = 45f;
+            backColor = Color.orange;
+            frontColor = Pal.accent;
+            mixColorFrom = Pal.accent.cpy().lerp(Color.orange, 0.5f);
+            mixColorTo = Color.orange;
+        }};
+
         artilleryHealBig = new SupportConstructBulletType(4.25f, 150){{
             sprite = "shar-construct";
             drag = 0.0125f;
@@ -67,7 +85,7 @@ public class SBullets implements ContentList{
             pointRange = 70f;
             pointHitEffect = Fx.shootHeal;
             knockback = 5f;
-            lifetime = 7 * 60f;
+            lifetime = 15 * 60f;
             width = height = 13f;
             collidesTiles = false;
             splashDamageRadius = 35f * 0.75f;

@@ -1,5 +1,6 @@
 package Sharustry.world.blocks.defense;
 
+import Sharustry.entities.bullet.construct.ConstructBulletType;
 import arc.*;
 import arc.graphics.*;
 import arc.math.Mathf;
@@ -7,7 +8,6 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.*;
 import mindustry.type.*;
@@ -15,6 +15,7 @@ import mindustry.ui.*;
 import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
+
 public class MultiConstructTurret extends MultiTurret {
     public int maxConstruct = 10;
 
@@ -35,7 +36,6 @@ public class MultiConstructTurret extends MultiTurret {
 
         @Override
         protected void shoot(BulletType type){
-
             //when charging is enabled, use the charge shoot pattern
             if(chargeTime > 0){
                 useAmmo();
@@ -125,7 +125,7 @@ public class MultiConstructTurret extends MultiTurret {
             for(int i = 0; i < Groups.bullet.size(); i ++) if(Groups.bullet.index(i).owner == self() && Groups.bullet.index(i).type == bullet) totalConstruct++;
 
             super.updateTile();
-            totalConstruct=0;
+            totalConstruct = 0;
         }
 
         @Override
@@ -138,9 +138,9 @@ public class MultiConstructTurret extends MultiTurret {
 
                 w.table(t -> {
                     t.left();
-                    if(bullet instanceof BasicBulletType) t.add(new Stack(){{
+                    if(bullet instanceof ConstructBulletType) t.add(new Stack(){{
                         add(new Table(e -> {
-                            e.add(new Image(((BasicBulletType)bullet).frontRegion));
+                            e.add(new Image(((ConstructBulletType)bullet).frontRegion));
                             e.pack();
                         }));
                         add(new Table(e -> {

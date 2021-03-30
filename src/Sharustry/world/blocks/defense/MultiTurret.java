@@ -322,7 +322,6 @@ public class MultiTurret extends TemplatedTurret {
             if(mainAmmo instanceof Float) icon = Icon.power.getRegion();
             if(main) types.put(of(bullet, mainAmmo), icon);
             else {
-                //tract does put nothing lol
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power) {
                     BulletType bullet = mounts.get(i).bullet;
                     if(bullet != null) types.put(of(bullet, null), Icon.power.getRegion());
@@ -659,7 +658,7 @@ public class MultiTurret extends TemplatedTurret {
             }
             bars.add(new Bar("stat.ammo", Pal.ammo, () -> Mathf.clamp((float)totalAmmo / maxAmmo, 0f, 1f))).growX();
             bars.row();
-            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f, () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
+            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f + Core.bundle.format("unit.seconds"), () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
             bars.row();
 
             for(int i = 0; i < skillDelays.size; i++) {
@@ -1560,7 +1559,7 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         @Override
-        public Point2 config(){
+        public Object config(){
             if(mounts.find(m -> m.mountType != MultiTurretMount.MultiTurretMountType.mass) != null) return null;
             return Point2.unpack(_links.get(mounts.indexOf(selectedMount))).sub(tile.x, tile.y);
         }

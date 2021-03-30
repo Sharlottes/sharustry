@@ -37,6 +37,10 @@ public class AssaultConstructBulletType extends ConstructBulletType {
         Draw.color();
     };
 
+    public AssaultConstructBulletType(float speed, float damage){
+        super(speed, damage);
+    }
+
     @Override
     public void draw(Bullet b) {
         super.draw(b);

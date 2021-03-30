@@ -10,7 +10,7 @@ import mindustry.entities.bullet.BulletType;
 import mindustry.gen.Bullet;
 import mindustry.graphics.Pal;
 
-/** the bullet type for construct turret. all sprite are taken from Nova Drift
+/** the bullet type for construct turret. all sprite & sound taken from Nova Drift
  * do not ever use sprite without their permission.
  * do not ever use sound without their permission.*/
 

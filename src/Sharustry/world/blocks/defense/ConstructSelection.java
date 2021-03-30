@@ -2,20 +2,19 @@ package Sharustry.world.blocks.defense;
 
 import arc.Core;
 import arc.func.*;
+import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
-import arc.scene.ui.layout.Table;
-import arc.struct.Seq;
-import mindustry.gen.Tex;
-import arc.scene.style.*;
 import arc.scene.ui.layout.*;
+import arc.struct.Seq;
+import mindustry.entities.bullet.BulletType;
+import mindustry.gen.Tex;
 import mindustry.ui.*;
+import static mindustry.Vars.control;
 
-import static mindustry.Vars.*;
-
-public class MountSelection {
+public class ConstructSelection {
     private static float scrollPos = 0f;
 
-    public static void buildTable(Table table, Prov<MultiTurretMount> holder, Cons<MultiTurretMount> consumer, boolean closeSelect, Seq<MultiTurretMount> mounts){
+    public static void buildTable(Table table, Prov<BulletType> holder, Cons<BulletType> consumer, boolean closeSelect, Seq<BulletType> constructs){
         ButtonGroup<ImageButton> group = new ButtonGroup<>();
         group.setMinCheckCount(0);
         Table cont = new Table();
@@ -23,14 +22,13 @@ public class MountSelection {
 
         int i = 0;
 
-        for(int h = 0; h < mounts.size; h++){
+        for(BulletType construct : constructs){
             ImageButton button = cont.button(Tex.whiteui, Styles.clearToggleTransi, 24, () -> {
                 if(closeSelect) control.input.frag.config.hideConfig();
             }).group(group).get();
-            final int j = h;
-            button.changed(() -> consumer.get(button.isChecked() ? mounts.get(j) : null));
-            button.getStyle().imageUp = new TextureRegionDrawable(Core.atlas.find("shar-"+mounts.get(h).name+"-full"), Cicon.small.size);
-            button.update(() -> button.setChecked(holder.get() == mounts.get(j)));
+            button.changed(() -> consumer.get(button.isChecked() ? construct : null));
+            button.getStyle().imageUp = new TextureRegionDrawable(Core.atlas.find("shar-construct"), Cicon.small.size);
+            button.update(() -> button.setChecked(holder.get() == construct));
 
             if(i++ % 4 == 3){
                 cont.row();
@@ -53,4 +51,5 @@ public class MountSelection {
         pane.setOverscroll(false, false);
         table.add(pane).maxHeight(Scl.scl(40 * 5));
     }
+
 }
