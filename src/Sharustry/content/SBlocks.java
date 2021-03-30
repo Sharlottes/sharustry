@@ -265,7 +265,6 @@ public class SBlocks implements ContentList{
         }};
 
         asclepius = new MultiConstructTurret("asclepius"){{
-            configurable = true;
             requirements(Category.turret, ItemStack.with(Items.copper, 820, Items.lead, 430, Items.graphite, 320, Items.silicon, 580, Items.titanium, 120, Items.thorium, 140, Items.plastanium, 85));
 
             addBaseTurret(SBullets.artilleryHealBig, Items.plastanium,"Asclepius");
