@@ -1,5 +1,6 @@
-package Sharustry.entities.bullet;
+package Sharustry.entities.bullet.construct;
 
+import Sharustry.entities.bullet.construct.ConstructBulletType;
 import arc.Core;
 import arc.audio.Sound;
 import arc.graphics.Color;
@@ -11,7 +12,6 @@ import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
 import mindustry.entities.Effect;
 import mindustry.entities.Units;
-import mindustry.entities.bullet.BasicBulletType;
 import arc.math.*;
 import arc.util.*;
 import mindustry.entities.bullet.BulletType;
@@ -20,7 +20,7 @@ import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
 import mindustry.type.StatusEffect;
 
-public class HealingBulletType extends BasicBulletType {
+public class SupportConstructBulletType extends ConstructBulletType {
     public BulletType fragBulletType;
     public float rotateAmount = 1, fragSpeed = 0.075f, fragSpacing = 8f;
 
@@ -47,7 +47,7 @@ public class HealingBulletType extends BasicBulletType {
 
     public float shootLength = 3f;
 
-    public HealingBulletType(float speed, float damage){
+    public SupportConstructBulletType(float speed, float damage){
         super(speed, damage);
     }
 
@@ -94,16 +94,7 @@ public class HealingBulletType extends BasicBulletType {
 
     @Override
     public void draw(Bullet b) {
-        Color mix = Tmp.c1.set(mixColorFrom).lerp(mixColorTo, b.fin());
-
-        float offset = -90 + (spin != 0 ? Mathf.randomSeed(b.id, 360f) + b.time * spin : 0f);
-        Draw.mixcol(mix, mix.a);
-        Draw.color(backColor);
-        Draw.rect(backRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[])b.data)[6]);
-        Draw.color(frontColor);
-        Draw.rect(frontRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[])b.data)[6]);
-
-        Draw.reset();
+        super.draw(b);
 
         Unit repairTarget = Units.closest(b.team, b.x, b.y, repairRange, Unit::damaged);
         Building repairTargetbuild = Units.findAllyTile(b.team, b.x, b.y, repairRange, Building::damaged);

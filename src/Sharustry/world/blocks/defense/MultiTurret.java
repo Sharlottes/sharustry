@@ -1684,7 +1684,7 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         @Override
-        public void write(Writes write){ //for some reason, w/r doesn't work well.
+        public void write(Writes write){
             super.write(write);
 
             for(int i = 0; i < mounts.size; i++) {

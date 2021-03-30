@@ -1,5 +1,6 @@
 package Sharustry.content;
 
+import Sharustry.entities.bullet.construct.SupportConstructBulletType;
 import Sharustry.graphics.SPal;
 import arc.graphics.Color;
 import mindustry.ctype.*;
@@ -17,7 +18,7 @@ public class SBullets implements ContentList{
     public void load(){
         mountDriverBolt = new MountDriverBolt();
 
-        artilleryHeal = new HealingBulletType(3.25f, 50){{
+        artilleryHeal = new SupportConstructBulletType(3.25f, 50){{
             sprite = "shar-construct";
             drag = 0.0125f;
 
@@ -51,7 +52,7 @@ public class SBullets implements ContentList{
             }};
         }};
 
-        artilleryHealBig = new HealingBulletType(4.25f, 150){{
+        artilleryHealBig = new SupportConstructBulletType(4.25f, 150){{
             sprite = "shar-construct";
             drag = 0.0125f;
 

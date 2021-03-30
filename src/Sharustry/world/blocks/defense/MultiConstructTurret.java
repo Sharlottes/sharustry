@@ -23,8 +23,15 @@ public class MultiConstructTurret extends MultiTurret {
     }
 
     public class MultiConstructTurretBuild extends MultiTurretBuild {
+        public boolean selected;
         public int totalConstruct;
         public int h;
+
+        @Override
+        public void drawSelect() {
+            selected = true;
+            super.drawSelect();
+        }
 
         @Override
         protected void shoot(BulletType type){
