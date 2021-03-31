@@ -91,6 +91,8 @@ JDK 15.
 
 ### Building through Github Actions / 깃헙 Actions 를 통해 빌드하는 방법
 
+**오직 PC만 사용 가능. PC로만 다운로드 경로가 열리는 이상한 버그가 있습니다. 모드 파일은 안드로이드/PC 호환이므로 안심하세요 **
+
 This repository is set up with Github Actions CI to automatically build the mod for you every commit. This requires a Github repository, for obvious reasons.
 To get a jar file that works for every platform, do the following:
 
