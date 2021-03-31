@@ -16,6 +16,9 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 
 public class AssaultConstructBulletType extends ConstructBulletType {
+    public BulletType fragBulletType;
+    public float fragSpeed = 10f;
+
     public float range = 45f, minRange = 0, reloadTime = 60;
     public BulletType bullet = Bullets.standardDense;
     public float burstSpacing = 5f, spread = 0f, velocityInaccuracy = 0f;
@@ -39,12 +42,21 @@ public class AssaultConstructBulletType extends ConstructBulletType {
 
     public AssaultConstructBulletType(float speed, float damage){
         super(speed, damage);
+        sprite = "shar-sGemini";
     }
 
     @Override
     public void draw(Bullet b) {
-        super.draw(b);
+        Color mix = Tmp.c1.set(mixColorFrom).lerp(mixColorTo, b.fin());
 
+        float offset = -90 + (spin != 0 ? Mathf.randomSeed(b.id, 360f) + b.time * spin : 0f);
+        Draw.mixcol(mix, mix.a);
+        Draw.color(backColor);
+        Draw.rect(backRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[3]);
+        Draw.color(frontColor);
+        Draw.rect(frontRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[3]);
+
+        Draw.reset();
         if(heatRegion != Core.atlas.find("error")){
             heatDrawer.get(b);
         }
@@ -58,7 +70,7 @@ public class AssaultConstructBulletType extends ConstructBulletType {
     public void init(Bullet b) {
         super.init(b);
 
-        b.data = new Float[]{0f, 0f, 0f}; //reload, shotCounter, heat for drawing
+        b.data = new Float[]{0f, 0f, 0f, Mathf.random(0.5f, 1), 0f}; //reload, shotCounter, heat for drawing, rotRand, frag
     }
 
     @Override
@@ -69,14 +81,20 @@ public class AssaultConstructBulletType extends ConstructBulletType {
         if(target != null){
             shooting(bullet, b);
         }
+        ((Float[])b.data)[4] += fragSpeed * Time.delta;
+        if(fragBulletType != null){
+            final float j = ((Float[])b.data)[4];
+            Time.run(((Float[])b.data)[4] / 60f, ()-> fragBulletType.create(b, b.x + Angles.trnsx(j, 10), b.y + Angles.trnsy(j, 10), j, 0.25f, 1));
+        }
     }
 
     public void shooting(BulletType type, Bullet b){
+        Unit target = Units.closestEnemy(b.team, b.x, b.y, range, u -> u.checkTarget(collidesAir, collidesGround));
         if(((Float[])b.data)[0] >= reloadTime){
             if(burstSpacing > 0.0001f){
                 for(int i = 0; i < shots; i++){
                     Time.run(burstSpacing * i, () -> {
-                        bullet(type, Mathf.range(inaccuracy), b);
+                        bullet(type, Angles.angle(b.x, b.y, target.x, target.y) + Mathf.range(inaccuracy), b);
                         ((Float[])b.data)[2] = 1f;
                     });
                 }
@@ -87,15 +105,15 @@ public class AssaultConstructBulletType extends ConstructBulletType {
                     bullet(type, Mathf.range(inaccuracy), b);
                 }else{
                     for(int i = 0; i < shots; i++){
-                        bullet(type, Mathf.range(inaccuracy + type.inaccuracy) + (i - (int)(shots / 2f)) * spread, b);
+                        bullet(type, Angles.angle(b.x, b.y, target.x, target.y) + Mathf.range(inaccuracy + type.inaccuracy) + (i - (int)(shots / 2f)) * spread, b);
                     }
                 }
                 ((Float[])b.data)[1]++;
                 ((Float[])b.data)[2] = 1f;
             }
-            ((Float[])b.data)[3] = 0f;
+            ((Float[])b.data)[0] = 0f;
         }else{
-            ((Float[])b.data)[3] += Time.delta * type.reloadMultiplier;
+            ((Float[])b.data)[0] += Time.delta * type.reloadMultiplier;
         }
     }
 
@@ -106,12 +124,12 @@ public class AssaultConstructBulletType extends ConstructBulletType {
         //slow bullets never intersect
         if(speed < 0.1f) speed = 9999999f;
 
-        targetPos.set(Predict.intercept((Position) this, pos, speed));
+        targetPos.set(Predict.intercept((Position) b, pos, speed));
         if(targetPos.isZero()){
             targetPos.set(pos);
         }
         float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(b.x, b.y, targetPos.x, targetPos.y) / type.range(), minRange / type.range(), range / type.range()) : 1f;
 
-        type.create((Entityc) this, b.team, b.x, b.y, angle, 1f + Mathf.range(velocityInaccuracy), lifeScl);
+        type.create((Entityc) b, b.team, b.x, b.y, angle, 1f + Mathf.range(velocityInaccuracy), lifeScl);
     }
 }

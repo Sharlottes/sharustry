@@ -8,6 +8,7 @@ import arc.graphics.g2d.Lines;
 import arc.math.Mathf;
 import arc.math.geom.Intersector;
 import arc.util.Time;
+import arc.util.Tmp;
 import mindustry.content.Fx;
 import mindustry.gen.Bullet;
 import mindustry.gen.Groups;
@@ -16,10 +17,12 @@ import mindustry.graphics.Layer;
 import static arc.graphics.g2d.Fill.*;
 
 public class ForceShieldConstructBulletType extends ConstructBulletType {
+    public boolean skipCol = false;
     public float radius = 60f;
-    public float regen = 0.1f;
-    public float max = 200f;
-    public float cooldown = 60f * 5;
+    public float regen = 0.4f;
+    public float max = 500f;
+    public float cooldown = 60f * 3;
+    public Color shieldColor;
 
     public static Bullet paramBullet;
     public static ForceShieldConstructBulletType paramField;
@@ -43,38 +46,47 @@ public class ForceShieldConstructBulletType extends ConstructBulletType {
     @Override
     public void update(Bullet b) {
         super.update(b);
-        float realRad = ((Float[])paramBullet.data)[2];
-        if(((Float[])paramBullet.data)[0] < max){
-            ((Float[])paramBullet.data)[0] += Time.delta * regen;
+        float realRad = ((Float[])b.data)[2];
+        if(((Float[])b.data)[0] < max){
+            ((Float[])b.data)[0] += Time.delta * regen;
         }
 
-        ((Float[])paramBullet.data)[1] = Math.max(((Float[])paramBullet.data)[1] - Time.delta/10f, 0f);
+        ((Float[])b.data)[1] = Math.max(((Float[])b.data)[1] - Time.delta/10f, 0f);
 
-        if(((Float[])paramBullet.data)[0] > 0){
-            ((Float[])paramBullet.data)[3] = Mathf.lerpDelta(((Float[])paramBullet.data)[3], 1f, 0.06f);
+        if(((Float[])b.data)[0] > 0){
+            ((Float[])b.data)[3] = Mathf.lerpDelta(((Float[])b.data)[3], 1f, 0.06f);
             paramBullet = b;
             paramField = this;
             checkRadius(b);
 
             Groups.bullet.intersect(b.x - realRad, b.y - realRad, realRad * 2f, realRad * 2f, shieldConsumer);
         }else{
-            ((Float[])paramBullet.data)[3] = 0f;
+            ((Float[])b.data)[3] = 0f;
         }
     }
 
     @Override
     public void draw(Bullet b) {
-        super.draw(b);
+        Color mix = Tmp.c1.set(mixColorFrom).lerp(mixColorTo, b.fin());
+
+        float offset = -90 + (spin != 0 ? Mathf.randomSeed(b.id, 360f) + b.time * spin : 0f);
+        Draw.mixcol(mix, mix.a);
+        if(!skipCol) Draw.color(backColor);
+        Draw.rect(backRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[4]);
+        if(!skipCol) Draw.color(frontColor);
+        Draw.rect(frontRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[4]);
+
+        Draw.reset();
 
         checkRadius(b);
 
-        if(((Float[])paramBullet.data)[0] > 0){
+        if(((Float[])b.data)[0] > 0){
             Draw.z(Layer.shields);
 
-            Draw.color(b.team.color, Color.white, Mathf.clamp(((Float[])paramBullet.data)[1]));
+            Draw.color(shieldColor, Color.white, Mathf.clamp(((Float[])b.data)[1]));
 
             if(Core.settings.getBool("animatedshields")){
-                poly(b.x, b.y, 6, ((Float[])paramBullet.data)[2]);
+                poly(b.x, b.y, 6, ((Float[])b.data)[2]);
             }else{
                 Lines.stroke(1.5f);
                 Draw.alpha(0.09f);
@@ -86,10 +98,17 @@ public class ForceShieldConstructBulletType extends ConstructBulletType {
     }
 
     @Override
+    public void hit(Bullet b) {
+        super.hit(b);
+        checkRadius(b);
+        Fx.forceShrink.at(b.x, b.y, ((Float[])b.data)[2], shieldColor);
+    }
+
+    @Override
     public void init(Bullet b) {
         super.init(b);
 
-        b.data = new Float[]{0f, 0f, 0f, 0f}; //shield, shield alpha for drawing, realRad, radScl
+        b.data = new Float[]{0f, 0f, 0f, 0f, Mathf.random(0.5f, 1)}; //shield, shield alpha for drawing, realRad, radScl
     }
 
     public void checkRadius(Bullet b){

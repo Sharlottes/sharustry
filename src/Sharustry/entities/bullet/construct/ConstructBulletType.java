@@ -50,9 +50,9 @@ public class ConstructBulletType extends BulletType {
         float offset = -90 + (spin != 0 ? Mathf.randomSeed(b.id, 360f) + b.time * spin : 0f);
         Draw.mixcol(mix, mix.a);
         Draw.color(backColor);
-        Draw.rect(backRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[6]);
+        Draw.rect(backRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * Mathf.random(0.5f, 1));
         Draw.color(frontColor);
-        Draw.rect(frontRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[6]);
+        Draw.rect(frontRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * Mathf.random(0.5f, 1));
 
         Draw.reset();
     }

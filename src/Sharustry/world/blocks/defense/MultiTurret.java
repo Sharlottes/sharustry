@@ -658,7 +658,7 @@ public class MultiTurret extends TemplatedTurret {
             }
             bars.add(new Bar("stat.ammo", Pal.ammo, () -> Mathf.clamp((float)totalAmmo / maxAmmo, 0f, 1f))).growX();
             bars.row();
-            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f + Core.bundle.format("unit.seconds"), () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
+            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f + " " + Core.bundle.format("unit.seconds"), () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
             bars.row();
 
             for(int i = 0; i < skillDelays.size; i++) {
@@ -1686,6 +1686,8 @@ public class MultiTurret extends TemplatedTurret {
         public void write(Writes write){
             super.write(write);
 
+            for(int i = 0; i < skillDelays.size; i++)
+                write.i(shotcounters.get(i));
             for(int i = 0; i < mounts.size; i++) {
                 try{
                     write.f(_reloads.get(i));
@@ -1711,6 +1713,8 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void read(Reads read, byte revision){
             super.read(read, revision);
+            for(int i = 0; i < skillDelays.size; i++)
+                shotcounters.set(i, read.i());
 
             for(int h = 0; h < mounts.size; h++) {
                 try{
@@ -1737,6 +1741,10 @@ public class MultiTurret extends TemplatedTurret {
                     _massStates.set(h, DriverState.all[read.b()]);
                 }
             }
+        }
+
+        public void bullet(BulletType type, float angle, float h) {
+            bullet(type, angle);
         }
     }
 

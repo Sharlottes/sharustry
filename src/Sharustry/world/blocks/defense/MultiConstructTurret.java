@@ -105,6 +105,8 @@ public class MultiConstructTurret extends MultiTurret {
                 effects();
                 useAmmo();
             }
+
+            doSkill();
         }
 
         @Override

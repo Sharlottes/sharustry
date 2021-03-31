@@ -1,6 +1,7 @@
 package Sharustry.content;
 
 import Sharustry.entities.bullet.construct.AssaultConstructBulletType;
+import Sharustry.entities.bullet.construct.ForceShieldConstructBulletType;
 import Sharustry.entities.bullet.construct.SupportConstructBulletType;
 import Sharustry.graphics.SPal;
 import arc.graphics.Color;
@@ -13,7 +14,7 @@ import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
 public class SBullets implements ContentList{
-    public static BulletType mountDriverBolt, assault, artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
+    public static BulletType mountDriverBolt, force, assault, artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
 
     @Override
     public void load(){
@@ -53,21 +54,38 @@ public class SBullets implements ContentList{
             }};
         }};
 
-        assault = new AssaultConstructBulletType(4.25f, 150f){{
-            sprite = "shar-construct";
-            drag = 0.0125f;
+        force = new ForceShieldConstructBulletType(){{
+            speed = 3.25f;
+            damage = 120;
+            sprite = "shar-sEclipseCore";
+            skipCol = true;
+            drag = 0.015f;
 
-            //despawnEffect = Fx.healWave;
-            knockback = 5f;
-            lifetime = 15 * 60f;
-            width = height = 13f;
+            lifetime = 10 * 60f;
+            width = height = 10f;
             collidesTiles = false;
             splashDamageRadius = 35f * 0.75f;
-            splashDamage = 45f;
+            splashDamage = 12 * 8f;
             backColor = Color.orange;
             frontColor = Pal.accent;
-            mixColorFrom = Pal.accent.cpy().lerp(Color.orange, 0.5f);
-            mixColorTo = Color.orange;
+
+            shieldColor = Color.valueOf("D6FFE4");
+        }};
+
+        assault = new AssaultConstructBulletType(3.75f, 200f){{
+            sprite = "shar-sGemini";
+            drag = 0.015f;
+
+            fragBulletType = Bullets.standardIncendiary;
+            lifetime = 12 * 60f;
+            width = height = 17f;
+            collidesTiles = false;
+            splashDamageRadius = 35f * 0.75f;
+            splashDamage = 12 * 8f;
+            backColor = Color.orange;
+            frontColor = Pal.accent;
+            mixColorFrom = Pal.accent.cpy().lerp(Pal.lightOrange, 0.5f);
+            mixColorTo = Pal.lightOrange;
         }};
 
         artilleryHealBig = new SupportConstructBulletType(4.25f, 150){{

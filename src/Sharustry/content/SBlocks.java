@@ -7,6 +7,7 @@ import Sharustry.world.blocks.storage.BattleCore;
 import arc.math.Mathf;
 import arc.util.Time;
 import mindustry.entities.abilities.ForceFieldAbility;
+import mindustry.entities.bullet.BulletType;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.ShrapnelBulletType;
 import mindustry.graphics.Pal;
@@ -281,6 +282,24 @@ public class SBlocks implements ContentList{
             ammos(MultiTurretMount.MultiTurretMountType.power);
             ammos(MultiTurretMount.MultiTurretMountType.power);
             ammos(MultiTurretMount.MultiTurretMountType.repair);
+
+            addSkills(entity -> () -> {
+                final float shotAmount = 4;
+                BulletType type = SBullets.force;
+                for(int i = 0; i < shotAmount; i++) {
+                    float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
+                    entity.bullet(type, angle, 0);
+                }
+            }, 5);
+
+            addSkills(entity -> () -> {
+                final float shotAmount = 2;
+                BulletType type = SBullets.assault;
+                for(int i = 0; i < shotAmount; i++) {
+                    float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
+                    entity.bullet(type, angle, 0);
+                }
+            }, 10);
 
             customMountLocation = true;
             hasLiquids = true;

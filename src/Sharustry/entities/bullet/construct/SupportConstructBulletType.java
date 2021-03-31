@@ -65,7 +65,7 @@ public class SupportConstructBulletType extends ConstructBulletType {
     public void init(Bullet b) {
         super.init(b);
 
-        b.data = new Float[]{0f, 0f, 0f, 0f, 0f, 0f, Mathf.random(0.5f, 1)}; //tract, repair, repairbuild, lastX, lastY, reload, rotrand
+        b.data = new Float[]{0f, 0f, 0f, 0f, 0f, 0f, Mathf.random(0.5f, 1)}; //tract, repair, repairbuild, lastX, lastY, reload, rotRand
     }
 
     @Override
@@ -94,7 +94,16 @@ public class SupportConstructBulletType extends ConstructBulletType {
 
     @Override
     public void draw(Bullet b) {
-        super.draw(b);
+        Color mix = Tmp.c1.set(mixColorFrom).lerp(mixColorTo, b.fin());
+
+        float offset = -90 + (spin != 0 ? Mathf.randomSeed(b.id, 360f) + b.time * spin : 0f);
+        Draw.mixcol(mix, mix.a);
+        Draw.color(backColor);
+        Draw.rect(backRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[6]);
+        Draw.color(frontColor);
+        Draw.rect(frontRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[6]);
+
+        Draw.reset();
 
         Unit repairTarget = Units.closest(b.team, b.x, b.y, repairRange, Unit::damaged);
         Building repairTargetbuild = Units.findAllyTile(b.team, b.x, b.y, repairRange, Building::damaged);
