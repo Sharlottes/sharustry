@@ -1,3 +1,9 @@
 /.gradle/
 /.idea/
+/bin/
+/bin/main/
 /build/
+/.settings/
+.vscode/
+.classpath
+.project
