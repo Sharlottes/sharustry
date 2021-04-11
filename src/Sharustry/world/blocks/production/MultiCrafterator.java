@@ -1,6 +1,6 @@
 package Sharustry.world.blocks.production;
 
-import arc.Core;
+import arc.*;
 import arc.graphics.g2d.*;
 import arc.scene.ui.layout.*;
 import mindustry.type.*;
@@ -8,7 +8,9 @@ import multilib.Recipe.*;
 import mindustry.ui.*;
 import multilib.*;
 
-public class MultiCrafterator extends MultiCrafter {
+public class MultiCrafterator extends MultiCrafter{
+    
+    protected TextureRegion bottomRegion;
 
     public MultiCrafterator(String name, Recipe[] recs){
         super(name, recs);
@@ -18,12 +20,25 @@ public class MultiCrafterator extends MultiCrafter {
         super(name, recLen);
     }
 
+    @Override
+    public void load(){
+        super.load();
+        bottomRegion = Core.atlas.find(name + "-bottom");
+    }
+    
+    @Override
+    public TextureRegion[] icons(){
+        return new TextureRegion[]{
+            bottomRegion,
+            region
+        };
+    }
 
     public class MultiCrafteratorBuild extends MultiCrafterBuild {
 
         @Override
         public void draw() {
-            Draw.rect(Core.atlas.find(name+"-bottom"), x, y);
+            Draw.rect(bottomRegion, x, y);
             super.draw();
         }
 
