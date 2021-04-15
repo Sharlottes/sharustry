@@ -35,7 +35,7 @@ public class ForceShieldConstructBulletType extends ConstructBulletType {
             if(((Float[])paramBullet.data)[0] <= trait.damage()){
                 ((Float[])paramBullet.data)[0] -= paramField.cooldown * paramField.regen;
 
-                Fx.shieldBreak.at(paramBullet.x, paramBullet.y, paramField.radius, paramBullet.team.color);
+                Fx.forceShrink.at(paramBullet.x, paramBullet.y, ((Float[])paramBullet.data)[2], paramField.shieldColor);
             }
 
             ((Float[])paramBullet.data)[0] -= trait.damage();

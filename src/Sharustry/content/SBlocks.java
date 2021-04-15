@@ -281,22 +281,22 @@ public class SBlocks implements ContentList{
             ammos(MultiTurretMount.MultiTurretMountType.repair);
 
             addSkills(entity -> () -> {
-                final float shotAmount = 4;
+                final float shotAmount = 5;
                 BulletType type = SBullets.force;
                 for(int i = 0; i < shotAmount; i++) {
                     float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
-                    entity.bullet(type, angle, 0);
+                    Time.run(10 * i, () -> entity.bullet(type, angle, 0));
                 }
-            }, 5);
+            }, 3);
 
             addSkills(entity -> () -> {
-                final float shotAmount = 2;
+                final float shotAmount = 3;
                 BulletType type = SBullets.assault;
                 for(int i = 0; i < shotAmount; i++) {
                     float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
-                    entity.bullet(type, angle, 0);
+                    Time.run(20 * i, () -> entity.bullet(type, angle, 0));
                 }
-            }, 10);
+            }, 5);
 
             customMountLocation = true;
             hasLiquids = true;
