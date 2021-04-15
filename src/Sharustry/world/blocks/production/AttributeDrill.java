@@ -125,7 +125,7 @@ public class AttributeDrill extends Drill{
             super.buildConfiguration(table);
 
             Log.info(attributeClicked.get(Attribute.water.ordinal()));
-            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-tarred")).tint(attributeClicked.get(Attribute.oil.ordinal()) ? Color.valueOf("313131") : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-tarred")).tint(attributeClicked.get(Attribute.oil.ordinal()) ? Color.valueOf("313131") : Color.white), 40, () -> {
                 configure(Attribute.oil);
                 for(Attribute attr : Attribute.all){
                     attributeClicked.set(attr.ordinal(), false);
@@ -137,7 +137,7 @@ public class AttributeDrill extends Drill{
                 attributeColor = Color.valueOf("313131");
                 attributeStr = "oil";
             }).size(40).color(Color.valueOf("313131"));
-            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-burning")).tint(attributeClicked.get(Attribute.heat.ordinal()) ? Color.valueOf("ffc455") : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-burning")).tint(attributeClicked.get(Attribute.heat.ordinal()) ? Color.valueOf("ffc455") : Color.white), 40, () -> {
                 configure(Attribute.heat);
                 for(Attribute attr : Attribute.all){
                     attributeClicked.set(attr.ordinal(), false);
@@ -149,7 +149,7 @@ public class AttributeDrill extends Drill{
                 attributeColor = Color.valueOf("ffc455");
                 attributeStr = "heat";
             }).size(40).color(Color.valueOf("ffc455"));
-            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-spore-slowed")).tint(attributeClicked.get(Attribute.spores.ordinal()) ? Pal.spore : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-spore-slowed")).tint(attributeClicked.get(Attribute.spores.ordinal()) ? Pal.spore : Color.white), 40, () -> {
                 configure(Attribute.spores);
                 for(Attribute attr : Attribute.all){
                     attributeClicked.set(attr.ordinal(), false);
@@ -161,7 +161,7 @@ public class AttributeDrill extends Drill{
                 attributeColor = Pal.spore;
                 attributeStr = "spores";
             }).size(40).color(Pal.spore);
-            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-wet")).tint(attributeClicked.get(Attribute.water.ordinal()) ? Color.royal : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-wet")).tint(attributeClicked.get(Attribute.water.ordinal()) ? Color.royal : Color.white), 40, () -> {
                 configure(Attribute.water);
                 for(Attribute attr : Attribute.all){
                     attributeClicked.set(attr.ordinal(), false);
@@ -173,7 +173,7 @@ public class AttributeDrill extends Drill{
                 attributeColor = Color.royal;
                 attributeStr = "water";
             }).size(40).color(Color.royal);
-            table.button(new TextureRegionDrawable(Core.atlas.find("shar-status-blasted")).tint(attributeClicked.get(Attribute.light.ordinal()) ? Color.lightGray : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-blasted")).tint(attributeClicked.get(Attribute.light.ordinal()) ? Color.lightGray : Color.white), 40, () -> {
                 configure(Attribute.light);
                 for(Attribute attr : Attribute.all){
                     attributeClicked.set(attr.ordinal(), false);
