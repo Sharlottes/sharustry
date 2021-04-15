@@ -1,16 +1,11 @@
 package Sharustry.content;
 
-import mindustry.graphics.*;
-import mindustry.ctype.*;
-import mindustry.type.*;
+import mindustry.ctype.ContentList;
 
-public class SLiquids implements ContentList{
-    public static Liquid boostLiquid;
+public class SLiquids implements ContentList {
 
     @Override
     public void load() {
-        boostLiquid = new Liquid("boost-liquid", Pal.lancerLaser){{
-            effect = SStatusEffects.boost;
-        }};
+
     }
 }

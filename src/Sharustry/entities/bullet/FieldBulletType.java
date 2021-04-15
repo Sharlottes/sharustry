@@ -75,8 +75,8 @@ public class FieldBulletType extends BasicBulletType {
         if(b.time() % 80 <= 1 && b.lifetime() - b.time() > 100) SFx.distSplashFx.at(b.x, b.y, 0, mainColor, subColor);
 
         Units.nearbyEnemies(b.team, b.x - radius, b.y - radius, b.x + radius, b.y + radius, e -> {
-            e.apply(status, statusDuration);
-            e.damage(damage);
+            if(status != StatusEffects.none && statusDuration >= 0.001f) e.apply(status, statusDuration);
+            if(damage >= 0.001f) e.damage(damage);
         });
     }
 

@@ -78,6 +78,7 @@ public class SBlocks implements ContentList{
                 else new FieldBulletType(0, -1, 897, 85){{
                     mainColor = SPal.cryoium;
                     subColor = Items.titanium.color;
+                    status = SStatusEffects.overFreezing;
                 }}.create(entity, entity.x, entity.y, 0);
             }, 20);
 
