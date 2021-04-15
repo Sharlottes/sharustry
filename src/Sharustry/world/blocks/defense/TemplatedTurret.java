@@ -7,6 +7,7 @@ import arc.graphics.g2d.TextureRegion;
 import arc.math.Mathf;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
+import arc.util.Strings;
 import arc.util.Time;
 import arc.util.io.*;
 import mindustry.*;
@@ -135,6 +136,7 @@ public class TemplatedTurret extends Turret {
 
 
     public class TemplatedTurretBuild extends TurretBuild {
+        float charge;
 
         @Override
         public void drawSelect() {
@@ -172,6 +174,9 @@ public class TemplatedTurret extends Turret {
             if(Objects.equals(ammoType, "item")) unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);
             if(Objects.equals(ammoType, "power")) unit.ammo(power.status * unit.type().ammoCapacity);
             if(Objects.equals(ammoType, "liquid")) unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
+
+            if(chargeTime >= 0.001 && charging && hasAmmo() && consValid()) charge = Mathf.clamp(charge + Time.delta / chargeTime);
+            else charge = 0;
 
             super.updateTile();
         }
@@ -256,7 +261,23 @@ public class TemplatedTurret extends Turret {
                 bars.add(new Bar("stat.ammo", Pal.ammo, () -> (float) totalAmmo / maxAmmo)).growX();
                 bars.row();
             }
-            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f + Core.bundle.format("unit.seconds"), () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
+
+            bars.add(new Bar(
+                    () -> {
+                        float value = Mathf.clamp(reload / reloadTime) * 100f;
+                        return Core.bundle.format("bar.shar-reload", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
+                    },
+                    () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime),
+                    () -> reload / reloadTime)).growX();
+            bars.row();
+
+            if(chargeTime >= 0.001) bars.add(new Bar(
+                    () -> {
+                        float value = Mathf.clamp(charge) * 100f;
+                        return Core.bundle.format("bar.shar-charge", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
+                    },
+                    () -> Pal.surge.cpy().lerp(Pal.accent, charge / chargeTime),
+                    () -> charge)).growX();
             bars.row();
         }
 

@@ -6,8 +6,6 @@ import arc.math.Mathf;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Time;
-import mindustry.content.Fx;
-import mindustry.entities.Effect;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.Building;
 import mindustry.graphics.Pal;
@@ -45,7 +43,7 @@ public class SkillTurret extends TemplatedTurret {
 
             for(int i = 0; i < skillDelays.size; i++) {
                 final int j = i;
-                bars.add(new Bar(() -> Core.bundle.format("stat.shar-skillReload") + shotcounters.get(j) + " / " + skillDelays.get(j), () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotcounters.get(j) / (skillDelays.get(j) * 2.5f)))), () -> (shotcounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
+                bars.add(new Bar(() -> Core.bundle.format("bar.shar-skillReload") + shotcounters.get(j) + " / " + skillDelays.get(j), () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotcounters.get(j) / (skillDelays.get(j) * 2.5f)))), () -> (shotcounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
                 bars.row();
             }
         }
@@ -95,8 +93,6 @@ public class SkillTurret extends TemplatedTurret {
                 }
 
             }else{
-                //otherwise, use the normal shot pattern(s)
-
                 if(alternate){
                     float i = (shotCounter % shots) - (shots-1)/2f;
 
@@ -105,19 +101,16 @@ public class SkillTurret extends TemplatedTurret {
                 }else{
                     tr.trns(rotation, shootLength, Mathf.range(xRand));
 
-                    for(int i = 0; i < shots; i++){
+                    for(int i = 0; i < shots; i++)
                         bullet(type, rotation + Mathf.range(inaccuracy + type.inaccuracy) + (i - (int)(shots / 2f)) * spread);
-                    }
                 }
 
                 shotCounter++;
-
                 recoil = recoilAmount;
                 heat = 1f;
                 effects();
                 useAmmo();
             }
-
 
             for(int i = 0; i < skillDelays.size; i++) {
                 shotcounters.set(i, shotcounters.get(i) + 1);
@@ -126,20 +119,6 @@ public class SkillTurret extends TemplatedTurret {
                     skillSeq.get(i).get(this).run();
                 }
             }
-        }
-
-        @Override
-        protected void effects(){
-            Effect fshootEffect = shootEffect == Fx.none ? peekAmmo().shootEffect : shootEffect;
-            Effect fsmokeEffect = smokeEffect == Fx.none ? peekAmmo().smokeEffect : smokeEffect;
-
-            fshootEffect.at(x + tr.x, y + tr.y, rotation);
-            fsmokeEffect.at(x + tr.x, y + tr.y, rotation);
-            shootSound.at(x + tr.x, y + tr.y, Mathf.random(0.9f, 1.1f));
-
-            if(shootShake > 0) Effect.shake(shootShake, shootShake, this);
-
-            recoil = recoilAmount;
         }
     }
 }

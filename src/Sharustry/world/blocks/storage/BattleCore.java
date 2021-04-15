@@ -356,9 +356,11 @@ public class BattleCore extends CoreBlock {
         public Seq<Float> _lastXs = new Seq<>();
         public Seq<Float> _lastYs = new Seq<>();
         public Seq<Float> _strengths = new Seq<>();
+        public Seq<Float> _charges = new Seq<>();
         public Seq<Boolean> _wasShootings = new Seq<>();
         public Seq<Boolean> _chargings = new Seq<>();
         public Seq<Boolean> _anys = new Seq<>();
+
         public Seq<Posc> _targets = new Seq<>();
         public Seq<Unit> _tractTargets = new Seq<>();
         public Seq<Unit> _repairTargets = new Seq<>();
@@ -366,6 +368,7 @@ public class BattleCore extends CoreBlock {
         public Seq<Building> _healTargets = new Seq<>();
         public Seq<Vec2> _targetPoses = new Seq<>();
         public Seq<Seq<BattleCore.ItemEntry>> _ammos = new Seq<>();
+
         public float logicControlTime = -1;
         public boolean logicShooting = false;
 
@@ -386,6 +389,7 @@ public class BattleCore extends CoreBlock {
                 _recoils.add(0f);
                 _shotCounters.add(0f);
                 _rotations.add(90f);
+                _charges.add(0f);
                 _targets.add(null);
                 _tractTargets.add(null);
                 _pointTargets.add(null);
@@ -401,8 +405,10 @@ public class BattleCore extends CoreBlock {
                 _anys.add(false);
             }
         }
+
         public void tf(Table table, int i){
             if(mounts.size > 3 && i % 3 == 0) table.row();
+
             table.add(new Stack(){{
                 add(new Table(o -> {
                     o.left();
@@ -418,11 +424,38 @@ public class BattleCore extends CoreBlock {
                         h.add(new Stack(){{
                             add(new Table(e -> {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
-                                Bar itemBar = mountHasAmmo(i) ? new Bar("", _ammos.get(i).peek().item.color, () -> _totalAmmos.get(i) / mounts.get(i).maxAmmo) : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0);
+                                Bar itemBar = mountHasAmmo(i) ?
+                                        new Bar(
+                                                "",
+                                                _ammos.get(i).peek().item.color,
+                                                () -> _totalAmmos.get(i) / mounts.get(i).maxAmmo) :
+                                        new Bar(
+                                                "",
+                                                new Color(0.1f, 0.1f, 0.1f, 1),
+                                                () -> 0);
                                 e.add(itemBar);
                                 e.pack();
                             }));
 
+                            add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
+                                Bar reloadBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                e.add(reloadBar);
+                                e.pack();
+                            }));
+
+                            if(mounts.get(i).chargeTime >= 0.001) add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
+                                Bar chargeBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _charges.get(i));
+                                e.add(chargeBar);
+                                e.pack();
+                            }));
                             add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(_ammos.get(i).peek().item.icon(Cicon.tiny)))) : new Table(e -> e.add(itemReq).size(Cicon.tiny.size)));
                         }}).padTop(2*8).padLeft(2*8);
 
@@ -436,8 +469,31 @@ public class BattleCore extends CoreBlock {
                         h.add(new Stack(){{
                             add(new Table(e -> {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
-                                Bar liquidBar = mountHasAmmo(i) ? new Bar("", liquids.current().color, () -> liquids.get(liquids.current()) / liquidCapacity) : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0);
+                                Bar liquidBar = mountHasAmmo(i) ? new Bar(
+                                        "",
+                                        liquids.current().color,
+                                        () -> liquids.get(liquids.current()) / liquidCapacity) : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0);
                                 e.add(liquidBar);
+                                e.pack();
+                            }));
+
+                            add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
+                                Bar reloadBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                e.add(reloadBar);
+                                e.pack();
+                            }));
+
+                            if(mounts.get(i).chargeTime >= 0.001) add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
+                                Bar chargeBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _charges.get(i));
+                                e.add(chargeBar);
                                 e.pack();
                             }));
                             add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(liquids.current().icon(Cicon.tiny)))) : new Table(e -> e.add(liquidReq).size(Cicon.tiny.size)));
@@ -448,15 +504,43 @@ public class BattleCore extends CoreBlock {
                     if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power
                             || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract
                             || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.point
-                            || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair) {
+                            || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair
+                            || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.mass
+                            || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.drill) {
                         MultiReqImage powerReq = new MultiReqImage();
 
                         powerReq.add(new ReqImage(Icon.powerSmall.getRegion(), () -> Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) >= 0.001f));
                         h.add(new Stack(){{
                             add(new Table(e -> {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
-                                Bar liquidBar = new Bar("", Pal.powerBar, () -> Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
+                                Bar liquidBar = new Bar(
+                                        "",
+                                        Pal.powerBar,
+                                        () -> Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
                                 e.add(liquidBar);
+                                e.pack();
+                            }));
+
+                            if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.power
+                                    || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.point
+                                    || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.mass)
+                                add(new Table(e -> {
+                                    e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
+                                    Bar reloadBar = new Bar(
+                                            () -> "",
+                                            () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime),
+                                            () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                    e.add(reloadBar);
+                                    e.pack();
+                                }));
+
+                            if(mounts.get(i).chargeTime >= 0.001) add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
+                                Bar chargeBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _charges.get(i));
+                                e.add(chargeBar);
                                 e.pack();
                             }));
                             add(new Table(e -> e.add(powerReq)));
@@ -467,6 +551,7 @@ public class BattleCore extends CoreBlock {
                 }));
             }}).left();
         }
+
         @Override
         public void displayConsumption(Table table){
             for(int i = 0; i < mounts.size; i++){
@@ -718,6 +803,9 @@ public class BattleCore extends CoreBlock {
                 unit.ammo((float)unit.type().ammoCapacity * _totalAmmos.get(i) /  mounts.get(i).maxAmmo);
                 unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
                 unit.ammo(power.status * unit.type().ammoCapacity);
+
+                if(mounts.get(i).chargeTime >= 0.001 && _chargings.get(i) && mountHasAmmo(i)) _charges.set(i, Mathf.clamp(_charges.get(i) + Time.delta / mounts.get(i).chargeTime));
+                else _charges.set(i, 0f);
             }
 
             unit.health(health);

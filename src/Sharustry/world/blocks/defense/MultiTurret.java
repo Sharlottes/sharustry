@@ -465,6 +465,7 @@ public class MultiTurret extends TemplatedTurret {
         public Seq<Integer> _totalAmmos = new Seq<>();
         public Seq<Integer> _links = new Seq<>();
         public Seq<Integer> _targetIDs = new Seq<>();
+        public Seq<Integer> shotcounters = new Seq<>();
         public Seq<Float> _reloads = new Seq<>();
         public Seq<Float> _heats = new Seq<>();
         public Seq<Float> _recoils = new Seq<>();
@@ -474,27 +475,29 @@ public class MultiTurret extends TemplatedTurret {
         public Seq<Float> _lastYs = new Seq<>();
         public Seq<Float> _strengths = new Seq<>();
         public Seq<Float> _mineTimers = new Seq<>();
+        public Seq<Float> __heats = new Seq<>();
+        public Seq<Float> ___heats = new Seq<>();
+        public Seq<Float> _charges = new Seq<>();
         public Seq<Boolean> _wasShootings = new Seq<>();
         public Seq<Boolean> _chargings = new Seq<>();
         public Seq<Boolean> _anys = new Seq<>();
+
         public Seq<Posc> _targets = new Seq<>();
         public Seq<Unit> _tractTargets = new Seq<>();
         public Seq<Unit> _repairTargets = new Seq<>();
         public Seq<Bullet> _pointTargets = new Seq<>();
         public Seq<Building> _healTargets = new Seq<>();
         public Seq<Vec2> _targetPoses = new Seq<>();
-        public Seq<Seq<ItemEntry>> _ammos = new Seq<>();
         public Seq<MassDriver.DriverState> _massStates = new Seq<>();
         public Seq<OrderedSet<Tile>> _waitingShooterses = new Seq<>();
         public Seq<Tile> _mineTiles = new Seq<>();
         public Seq<Tile> _ores = new Seq<>();
         public Seq<Item> _targetItems = new Seq<>();
+        public Seq<Seq<ItemEntry>> _ammos = new Seq<>();
         public Seq<Seq<Tile>> _proxOreses = new Seq<>();
         public Seq<Seq<Item>> _proxItemses = new Seq<>();
+
         public float _heat;
-        public Seq<Float> __heats = new Seq<>();
-        public Seq<Float> ___heats = new Seq<>();
-        public Seq<Integer> shotcounters = new Seq<>();
         public MultiTurretMount selectedMount;
 
 
@@ -524,6 +527,7 @@ public class MultiTurret extends TemplatedTurret {
                 _lastXs.add(0f);
                 _lastYs.add(0f);
                 _strengths.add(0f);
+                _charges.add(0f);
                 _wasShootings.add(false);
                 _chargings.add(false);
                 _anys.add(false);
@@ -564,15 +568,36 @@ public class MultiTurret extends TemplatedTurret {
                         h.add(new Stack(){{
                             add(new Table(e -> {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
-                                Bar itemBar = mountHasAmmo(i) ? new Bar("", _ammos.get(i).peek().item.color, () -> _totalAmmos.get(i) / mounts.get(i).maxAmmo) : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0);
+                                Bar itemBar = mountHasAmmo(i) ?
+                                    new Bar(
+                                        "",
+                                        _ammos.get(i).peek().item.color,
+                                        () -> _totalAmmos.get(i) / mounts.get(i).maxAmmo) :
+                                    new Bar(
+                                        "",
+                                        new Color(0.1f, 0.1f, 0.1f, 1),
+                                        () -> 0);
                                 e.add(itemBar);
                                 e.pack();
                             }));
 
                             add(new Table(e -> {
-                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2+21+4f);
-                                Bar reloadBar = new Bar(() -> "", () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime), () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
+                                Bar reloadBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _reloads.get(i) / mounts.get(i).reloadTime);
                                 e.add(reloadBar);
+                                e.pack();
+                            }));
+
+                            if(mounts.get(i).chargeTime >= 0.001) add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
+                                Bar chargeBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _charges.get(i));
+                                e.add(chargeBar);
                                 e.pack();
                             }));
                             add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(_ammos.get(i).peek().item.icon(Cicon.tiny)))) : new Table(e -> e.add(itemReq).size(Cicon.tiny.size)));
@@ -588,15 +613,31 @@ public class MultiTurret extends TemplatedTurret {
                         h.add(new Stack(){{
                             add(new Table(e -> {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
-                                Bar liquidBar = mountHasAmmo(i) ? new Bar("", liquids.current().color, () -> liquids.get(liquids.current()) / liquidCapacity) : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0);
+                                Bar liquidBar = mountHasAmmo(i) ? new Bar(
+                                        "",
+                                        liquids.current().color,
+                                        () -> liquids.get(liquids.current()) / liquidCapacity) : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0);
                                 e.add(liquidBar);
                                 e.pack();
                             }));
 
                             add(new Table(e -> {
-                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2+21+4f);
-                                Bar reloadBar = new Bar(() -> "", () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime), () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
+                                Bar reloadBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _reloads.get(i) / mounts.get(i).reloadTime);
                                 e.add(reloadBar);
+                                e.pack();
+                            }));
+
+                            if(mounts.get(i).chargeTime >= 0.001) add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
+                                Bar chargeBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _charges.get(i));
+                                e.add(chargeBar);
                                 e.pack();
                             }));
                             add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(liquids.current().icon(Cicon.tiny)))) : new Table(e -> e.add(liquidReq).size(Cicon.tiny.size)));
@@ -616,7 +657,10 @@ public class MultiTurret extends TemplatedTurret {
                         h.add(new Stack(){{
                             add(new Table(e -> {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
-                                Bar liquidBar = new Bar("", Pal.powerBar, () -> Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
+                                Bar liquidBar = new Bar(
+                                        "",
+                                        Pal.powerBar,
+                                        () -> Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
                                 e.add(liquidBar);
                                 e.pack();
                             }));
@@ -625,9 +669,22 @@ public class MultiTurret extends TemplatedTurret {
                                 || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.point
                                 || mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.mass)
                             add(new Table(e -> {
-                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2+21+4f);
-                                Bar reloadBar = new Bar(() -> "", () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime), () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
+                                Bar reloadBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _reloads.get(i) / mounts.get(i).reloadTime);
                                 e.add(reloadBar);
+                                e.pack();
+                            }));
+
+                            if(mounts.get(i).chargeTime >= 0.001) add(new Table(e -> {
+                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
+                                Bar chargeBar = new Bar(
+                                        () -> "",
+                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> _charges.get(i));
+                                e.add(chargeBar);
                                 e.pack();
                             }));
                             add(new Table(e -> e.add(powerReq)));
@@ -658,12 +715,28 @@ public class MultiTurret extends TemplatedTurret {
             }
             bars.add(new Bar("stat.ammo", Pal.ammo, () -> Mathf.clamp((float)totalAmmo / maxAmmo, 0f, 1f))).growX();
             bars.row();
-            bars.add(new Bar(() -> Core.bundle.format("stat.shar-reload") + Mathf.round(((reloadTime - reload) / 60f) * 100f) / 100f + " " + Core.bundle.format("unit.seconds"), () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime), () -> reload / reloadTime)).growX();
+
+            bars.add(new Bar(
+                    () -> {
+                        float value = Mathf.clamp(reload / reloadTime) * 100f;
+                        return Core.bundle.format("bar.shar-reload", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
+                    },
+                    () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime),
+                    () -> reload / reloadTime)).growX();
+            bars.row();
+
+            if(chargeTime >= 0.001) bars.add(new Bar(
+                    () -> {
+                        float value = Mathf.clamp(charge) * 100f;
+                        return Core.bundle.format("bar.shar-charge", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
+                    },
+                    () -> Pal.surge.cpy().lerp(Pal.accent, charge / chargeTime),
+                    () -> charge)).growX();
             bars.row();
 
             for(int i = 0; i < skillDelays.size; i++) {
                 final int j = i;
-                bars.add(new Bar(() -> Core.bundle.format("stat.shar-skillReload") + shotcounters.get(j) + " / " + skillDelays.get(j), () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotcounters.get(j) / (skillDelays.get(j) * 2.5f)))), () -> (shotcounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
+                bars.add(new Bar(() -> Core.bundle.format("bar.shar-skillReload") + shotcounters.get(j) + " / " + skillDelays.get(j), () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotcounters.get(j) / (skillDelays.get(j) * 2.5f)))), () -> (shotcounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
                 bars.row();
             }
         }
@@ -975,6 +1048,12 @@ public class MultiTurret extends TemplatedTurret {
                 unit.ammo((float)unit.type().ammoCapacity * _totalAmmos.get(i) /  mounts.get(i).maxAmmo);
                 unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
                 unit.ammo(power.status * unit.type().ammoCapacity);
+
+                if(mounts.get(i).chargeTime >= 0.001 && _chargings.get(i) && mountHasAmmo(i)) {
+                    _charges.set(i, Mathf.clamp(_charges.get(i) + Time.delta / mounts.get(i).chargeTime));
+                    Log.info(_charges.get(i));
+                }
+                else _charges.set(i, 0f);
             }
 
             super.updateTile();
