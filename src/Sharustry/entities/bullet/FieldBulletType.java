@@ -14,11 +14,14 @@ import mindustry.entities.Units;
 import mindustry.entities.bullet.BasicBulletType;
 import mindustry.gen.Bullet;
 import mindustry.graphics.Pal;
+import mindustry.type.StatusEffect;
 
 public class FieldBulletType extends BasicBulletType {
-    public float distDamage = 1;
+    public float damage = 1;
     public float radius;
     public Color mainColor = Items.pyratite.color, subColor = Pal.lightOrange;
+    public StatusEffect status = StatusEffects.none;
+    public float statusDuration = 3 * 60;
 
     public FieldBulletType(float speed, float damage, float duration, float radius){
         super(speed, damage);
@@ -72,8 +75,8 @@ public class FieldBulletType extends BasicBulletType {
         if(b.time() % 80 <= 1 && b.lifetime() - b.time() > 100) SFx.distSplashFx.at(b.x, b.y, 0, mainColor, subColor);
 
         Units.nearbyEnemies(b.team, b.x - radius, b.y - radius, b.x + radius, b.y + radius, e -> {
-            e.apply(StatusEffects.burning, 2);
-            e.damage(distDamage);
+            e.apply(status, statusDuration);
+            e.damage(damage);
         });
     }
 
