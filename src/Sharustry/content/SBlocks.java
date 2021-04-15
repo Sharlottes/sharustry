@@ -55,7 +55,6 @@ public class SBlocks implements ContentList{
         }};
 
         balkan = new SkillTurret("balkan"){{
-
             addSkills(entity -> () -> {
                 final Color data;
                 if(((TemplatedTurretBuild)entity).hasAmmo() && ((TemplatedTurretBuild)entity).peekAmmo() == SBullets.testLaser) data = Items.pyratite.color;
@@ -83,10 +82,7 @@ public class SBlocks implements ContentList{
             }, 20);
 
             ammoType = "item";
-            ammo(
-                Items.titanium, SBullets.accelMissile,
-                Items.pyratite, SBullets.testLaser
-            );
+            ammo(Items.titanium, SBullets.accelMissile);
 
 
             hasPower = true;

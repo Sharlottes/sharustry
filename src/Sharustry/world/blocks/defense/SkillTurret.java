@@ -1,16 +1,12 @@
 package Sharustry.world.blocks.defense;
 
-import Sharustry.content.SBullets;
-import Sharustry.graphics.SPal;
 import arc.Core;
 import arc.func.Func;
-import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.content.Fx;
-import mindustry.content.Items;
 import mindustry.entities.Effect;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.Building;
@@ -57,20 +53,15 @@ public class SkillTurret extends TemplatedTurret {
         @Override
         protected void shoot(BulletType type) {
             if(chargeTime > 0){
-                final Color data;
-                if(useAmmo() == SBullets.testLaser) data = Items.pyratite.color;
-                else data = null;
                 tr.trns(rotation, shootLength);
-                if(data == null) chargeBeginEffect.at(x + tr.x, y + tr.y, rotation, SPal.cryoium); //i want to die
-                else chargeBeginEffect.at(x + tr.x, y + tr.y, rotation, data);
+                chargeBeginEffect.at(x + tr.x, y + tr.y, rotation);
                 chargeSound.at(x + tr.x, y + tr.y, 1);
 
                 for(int i = 0; i < chargeEffects; i++){
                     Time.run(Mathf.random(chargeMaxDelay), () -> {
                         if(!isValid()) return;
                         tr.trns(rotation, shootLength);
-                        if(data == null) chargeEffect.at(x + tr.x, y + tr.y, rotation, SPal.cryoium);
-                        else chargeEffect.at(x + tr.x, y + tr.y, rotation, data);
+                        chargeEffect.at(x + tr.x, y + tr.y, rotation);
                     });
                 }
 
@@ -139,20 +130,14 @@ public class SkillTurret extends TemplatedTurret {
 
         @Override
         protected void effects(){
-            Color data = null;
-            if(useAmmo() == SBullets.testLaser) data = Items.pyratite.color;
-
             Effect fshootEffect = shootEffect == Fx.none ? peekAmmo().shootEffect : shootEffect;
             Effect fsmokeEffect = smokeEffect == Fx.none ? peekAmmo().smokeEffect : smokeEffect;
 
-            if(data == null) fshootEffect.at(x + tr.x, y + tr.y, rotation, SPal.cryoium);
-            else fshootEffect.at(x + tr.x, y + tr.y, rotation, data);
+            fshootEffect.at(x + tr.x, y + tr.y, rotation);
             fsmokeEffect.at(x + tr.x, y + tr.y, rotation);
             shootSound.at(x + tr.x, y + tr.y, Mathf.random(0.9f, 1.1f));
 
-            if(shootShake > 0){
-                Effect.shake(shootShake, shootShake, this);
-            }
+            if(shootShake > 0) Effect.shake(shootShake, shootShake, this);
 
             recoil = recoilAmount;
         }

@@ -39,28 +39,17 @@ public class SFx {
         }
     }),
     boost = new Effect(50f, e -> {
-        if(e.color == null) color(SPal.cryoium(e));
-        else if(e.color == Color.white) color(SPal.cryoium(e));
-        else color(e.color);
-
+        color(SPal.cryoium(e));
         Fill.square(e.x, e.y, e.fslope() * 4f, 45f);
     }),
 
     balkanShoot = new Effect(21f, e -> {
-        if(e.color == null) color(SPal.cryoium(e));
-        else if(e.color == Color.white) color(SPal.cryoium(e));
-        else color(e.color);
-
-        for(int i : Mathf.signs){
+        color(SPal.cryoium(e));
+        for(int i : Mathf.signs)
             Drawf.tri(e.x, e.y, 4f * e.fout(), 29*1.5f, e.rotation + 90f * i);
-        }
     }),
     balkanChargeBegin = new Effect(60f, 100f, e -> {
-        if(e.color == null) color(SPal.cryoium(e));
-        else if(e.color == Color.white) color(SPal.cryoium(e));
-        else color(e.color);
-
-        stroke(e.fin());
+        stroke(e.fin(), SPal.cryoium(e));
         Lines.circle(e.x, e.y, 4f + e.fout() * 6f);
 
         Fill.circle(e.x, e.y, e.fin() * 3f);
@@ -69,9 +58,7 @@ public class SFx {
         Fill.circle(e.x, e.y, e.fin() * 2f);
     }),
     balkanChargeCircles = new Effect(50, e -> {
-        if(e.color == null) color(SPal.cryoium(e));
-        else if(e.color == Color.white) color(SPal.cryoium(e));
-        else color(e.color);
+        color(SPal.cryoium(e));
         Fill.square(e.x, e.y, e.fslope() * 4f, 45f);
         stroke(e.fin());
         e.scaled(38, e1 -> randLenVectors(e.id, 2, 1 +20f * e1.fout(), (x, y) -> Fill.circle(e1.x + x, e1.y + y,  e1.fslope() * 2f + 0.5f)));
