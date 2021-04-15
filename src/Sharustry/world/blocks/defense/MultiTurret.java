@@ -2,6 +2,7 @@ package Sharustry.world.blocks.defense;
 
 import Sharustry.content.SBullets;
 import arc.*;
+import arc.func.Cons;
 import arc.func.Func;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
@@ -62,6 +63,9 @@ public class MultiTurret extends TemplatedTurret {
 
     public Seq<Integer> skillDelays = new Seq<>();
     public Seq<Func<MultiTurretBuild, Runnable>> skillSeq = new Seq<>();
+    public Seq<String> skillNames = new Seq<>();
+    public Seq<String> skillDescriptions = new Seq<>();
+    public Seq<Cons<Table>> skillStats = new Seq<>();
 
     public MultiTurret(String name, BulletType type, Object ammo, String title, MultiTurretMount... mounts){
         this(name);
@@ -116,10 +120,11 @@ public class MultiTurret extends TemplatedTurret {
         for(int iy = 1; iy < amount * 2; iy += 2) customMountLocationsY.add(xy[iy]);
     }
 
-    public <T extends MultiTurretBuild> void addSkills(Func<T, Runnable> skill, int delay){
+    public <T extends MultiTurretBuild> void addSkills(Func<T, Runnable> skill, int delay, String name){
         if(skill != null) {
             skillSeq.add((Func<MultiTurretBuild, Runnable>) skill);
             skillDelays.add(delay);
+            skillNames.add(name);
         }
     }
 
@@ -419,6 +424,24 @@ public class MultiTurret extends TemplatedTurret {
     @Override
     public void setStats(){
         super.setStats();
+
+        for(int i = 0; i < skillSeq.size; i++) {
+            final int j = i;
+            stats.add(Stat.abilities, table -> {
+                if(skillDescriptions.size >= skillSeq.size) table.table(Tex.underline, e -> {
+                    e.left().defaults().padRight(3).left();
+                    e.add("[white]" + skillNames.get(j) + "[]").fillX();
+                    e.row();
+                    e.add(Core.bundle.format("stat.shar.skillreload", ""+skillDelays.get(j)));
+                    e.row();
+                    if(skillStats.size >= skillSeq.size) {
+                        skillStats.get(j).get(e);
+                        e.row();
+                    }
+                    e.add("[lightgray]"+ Core.bundle.get("category.purpose") + ": " + skillDescriptions.get(j)+"");
+                }).left();
+            });
+        }
 
         try {
             stats.remove(Stat.shootRange);

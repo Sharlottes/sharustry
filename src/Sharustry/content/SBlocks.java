@@ -4,6 +4,7 @@ import Sharustry.entities.bullet.FieldBulletType;
 import Sharustry.graphics.SPal;
 import Sharustry.world.blocks.logic.VariableLogicBlock;
 import Sharustry.world.blocks.storage.BattleCore;
+import arc.Core;
 import arc.math.Mathf;
 import arc.util.Time;
 import mindustry.entities.abilities.ForceFieldAbility;
@@ -56,9 +57,6 @@ public class SBlocks implements ContentList{
 
         balkan = new SkillTurret("balkan"){{
             addSkills(entity -> () -> {
-                final Color data;
-                if(((TemplatedTurretBuild)entity).hasAmmo() && ((TemplatedTurretBuild)entity).peekAmmo() == SBullets.testLaser) data = Items.pyratite.color;
-                else data = null;
                 for(int i = 0; i < 8; i++){
                     Time.run(0.1f * 60 * i, () -> {
                         final float ex = entity.x + Mathf.range(16f);
@@ -66,11 +64,11 @@ public class SBlocks implements ContentList{
                         SFx.skill.at(ex, ey, ammoTypes.findKey(((TemplatedTurretBuild)entity).peekAmmo(), true).color);
                         for(int ii = 0; ii < 3; ii++) Time.run(15 * ii, () -> {
                             Sounds.missile.at(ex, ey);
-                            (data == null ? SBullets.miniAccelMissile : SBullets.miniAccelMissilePyra).create(entity, ex, ey, ((BaseTurretBuild) entity).rotation);
+                            SBullets.miniAccelMissile.create(entity, ex, ey, ((BaseTurretBuild) entity).rotation);
                         });
                     });
                 }
-            }, 5);
+            }, 5, Core.bundle.get("stat.shar.burstshoot-name"));
 
             addSkills(entity -> () -> {
                 Sounds.unlock.at(entity.x, entity.y, 0.75f);
@@ -80,8 +78,16 @@ public class SBlocks implements ContentList{
                     subColor = Items.titanium.color;
                     status = SStatusEffects.overFreezing;
                 }}.create(entity, entity.x, entity.y, 0);
-            }, 20);
-
+            }, 20, Core.bundle.get("stat.shar.overfreezing-name"));
+            skillDescriptions.add(Core.bundle.get("stat.shar.burstshoot-description"), Core.bundle.get("stat.shar.overfreezing-description"));
+            skillStats.add(
+                table -> {
+                    table.add(Core.bundle.format("stat.shar.burstamount", 24));
+                },
+                table -> {
+                    table.add(Core.bundle.format("stat.shar.fieldstatus", (SStatusEffects.overFreezing.minfo.mod == null ? SStatusEffects.overFreezing.emoji() : "") + "[stat]" + SStatusEffects.overFreezing.localizedName));
+                }
+            );
             ammoType = "item";
             ammo(Items.titanium, SBullets.accelMissile);
 
@@ -240,7 +246,8 @@ public class SBlocks implements ContentList{
                     target.abilities.add(abil);
                     Time.run(60 * 60 * 60, () -> target.abilities.remove(abil));
                 }));
-            }, 20);
+            }, 20, Core.bundle.get("stat.shar.shieldreceive-name"));
+            skillDescriptions.add(Core.bundle.get("stat.shar.shieldreceive-description"));
 
             hasItems = true;
             itemCapacity = 150;
@@ -287,7 +294,7 @@ public class SBlocks implements ContentList{
                     float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
                     Time.run(10 * i, () -> entity.bullet(type, angle, 0));
                 }
-            }, 3);
+            }, 3, Core.bundle.get("stat.shar.fireforce-name"));
 
             addSkills(entity -> () -> {
                 final float shotAmount = 3;
@@ -296,7 +303,8 @@ public class SBlocks implements ContentList{
                     float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
                     Time.run(20 * i, () -> entity.bullet(type, angle, 0));
                 }
-            }, 5);
+            }, 5, Core.bundle.get("stat.shar.fireassault-name"));
+            skillDescriptions.add(Core.bundle.get("stat.shar.fireforce-description"), Core.bundle.get("stat.shar.fireassault-description"));
 
             customMountLocation = true;
             hasLiquids = true;
