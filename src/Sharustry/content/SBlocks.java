@@ -6,9 +6,7 @@ import Sharustry.world.blocks.logic.VariableLogicBlock;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.Core;
 import arc.math.Mathf;
-import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.Image;
-import arc.scene.ui.Label;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
 import arc.util.Time;
@@ -87,16 +85,17 @@ public class SBlocks implements ContentList{
             skillDescriptions.add(Core.bundle.get("stat.shar.burstshoot-description"), Core.bundle.get("stat.shar.overfreezing-description"));
             skillStats.add(
                 table -> {
+                    table.top();
                     table.add(Core.bundle.format("stat.shar.burstamount", 24));
                 },
                 table -> {
+                    table.top();
                     table.add(new Stack(){{
                         add(new Table(h -> {
                             h.left();
                             h.add(Core.bundle.format("stat.shar.fieldstatus"));
                         }));
                         add(new Table(q -> {
-
                             q.right();
                             q.add(new Image(Core.atlas.find("shar-over-freezing"))).padLeft(15 * 8f);
                             q.add("[stat]" + SStatusEffects.overFreezing.localizedName +"[]");

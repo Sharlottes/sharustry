@@ -4,7 +4,6 @@ import arc.Core;
 import arc.func.Cons;
 import arc.func.Func;
 import arc.math.Mathf;
-import arc.scene.ui.Label;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Time;
@@ -16,8 +15,6 @@ import mindustry.ui.Bar;
 import mindustry.world.meta.Stat;
 
 import java.util.Objects;
-
-import static mindustry.graphics.Pal.stat;
 
 public class SkillTurret extends TemplatedTurret {
     public Seq<Integer> skillDelays = new Seq<>();

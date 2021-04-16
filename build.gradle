@@ -8,6 +8,9 @@ version '1.0'
 
 sourceCompatibility = 8
 
+wrapper {
+    gradleVersion = "7.0-rc-2"
+}
 
 sourceSets.main {
     java.srcDir("src/")

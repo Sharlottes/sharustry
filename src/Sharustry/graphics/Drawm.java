@@ -16,7 +16,6 @@ package Sharustry.graphics;
 import arc.Core;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
-import arc.graphics.gl.*;
 import arc.util.*;
 import mindustry.game.*;
 import mindustry.world.*;
@@ -29,7 +28,8 @@ public class Drawm {
 
         for(Team team : Team.all){
             if(team.hasPalette){
-                Pixmap out = new Pixmap(teamr.width, teamr.height);
+                Pixmap out = new Pixmap(teamr.width, teamr.height, teamr.pixmap.getFormat());
+                out.setBlending(Pixmap.Blending.none);
                 Color pixel = new Color();
                 for(int x = 0; x < teamr.width; x++){
                     for(int y = 0; y < teamr.height; y++){
@@ -38,7 +38,7 @@ public class Drawm {
                         out.draw(x, y, index == -1 ? pixel.set(teamr.getPixel(x, y)) : team.palette[index]);
                     }
                 }
-                Texture texture  = new Texture(new PixmapTextureData(out, null, true, false));
+                Texture texture  = new Texture(out);
                 TextureRegion res = Core.atlas.addRegion(b.name + "-team-" + team.name, new TextureRegion(texture));
 
                 if(team == Team.sharded){
