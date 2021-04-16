@@ -19,7 +19,7 @@ repositories {
 }
 
 wrapper {
-    gradleVersion = "6.5"
+    gradleVersion = "7.0-rc-2"
 }
 
 jar {
