@@ -8,6 +8,7 @@ version '1.0'
 
 sourceCompatibility = 8
 
+
 sourceSets.main {
     java.srcDir("src/")
     resources.srcDir("assets/")
@@ -16,10 +17,6 @@ sourceSets.main {
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }
-}
-
-wrapper {
-    gradleVersion = "7.0-rc-2"
 }
 
 jar {
@@ -38,8 +35,7 @@ dependencies {
 
     compileOnly "com.github.Anuken.Arc:arc-core:$pMindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$pMindustryVersion"
-    compileOnly "com.github.Anuken.Mindustry:annotations:$pMindustryVersion"
-    annotationProcessor "com.github.Anuken.Mindustry:annotations:$pMindustryVersion"
+    compileOnly files('libs/annotations-122.jar')
 
 }
 
