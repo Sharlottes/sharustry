@@ -263,6 +263,12 @@ public class SBlocks implements ContentList{
                 }));
             }, 20, Core.bundle.get("stat.shar.shieldreceive-name"));
             skillDescriptions.add(Core.bundle.get("stat.shar.shieldreceive-description"));
+            skillStats.add(
+                    table -> {
+                        table.top();
+                        table.add(Core.bundle.format("stat.shar.receiveRange", range));
+                    }
+            );
 
             hasItems = true;
             itemCapacity = 150;
@@ -320,7 +326,16 @@ public class SBlocks implements ContentList{
                 }
             }, 5, Core.bundle.get("stat.shar.fireassault-name"));
             skillDescriptions.add(Core.bundle.get("stat.shar.fireforce-description"), Core.bundle.get("stat.shar.fireassault-description"));
-
+            skillStats.add(
+                    table -> {
+                        table.top();
+                        table.add(Core.bundle.format("stat.shar.constructamount", 5));
+                    },
+                    table -> {
+                        table.top();
+                        table.add(Core.bundle.format("stat.shar.constructamount", 3));
+                    }
+            );
             customMountLocation = true;
             hasLiquids = true;
             hasItems = true;
