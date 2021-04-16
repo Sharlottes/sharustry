@@ -18,6 +18,10 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 
+wrapper {
+    gradleVersion = "6.5"
+}
+
 jar {
     archiveFileName.set pArtifactFilename
 
