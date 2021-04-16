@@ -36,6 +36,8 @@ dependencies {
     compileOnly "com.github.Anuken.Arc:arc-core:$pMindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$pMindustryVersion"
 
+    compileOnly "com.github.Anuken.Mindustry:annotations:$pMindustryVersion"
+    annotationProcessor "com.github.Anuken.Mindustry:annotations:$pMindustryVersion"
 }
 
 task dexify(type: Jar) {

@@ -1,23 +1,18 @@
 package Sharustry.world.blocks.defense;
 
-import arc.Core;
 import arc.audio.Sound;
 import arc.func.Func2;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.geom.Rect;
 import arc.struct.Seq;
-import mindustry.annotations.Annotations;
 import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
-import mindustry.ctype.Content;
-import mindustry.ctype.ContentType;
 import mindustry.entities.*;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.*;
 import mindustry.graphics.Pal;
 import mindustry.type.StatusEffect;
-import mindustry.ui.Cicon;
 
 public class MultiTurretMount {
     public int shots = 1;
