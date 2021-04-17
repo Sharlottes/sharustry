@@ -11,11 +11,9 @@ import mindustry.Vars;
 import mindustry.graphics.*;
 import mindustry.ui.Bar;
 import mindustry.world.blocks.defense.Wall;
-import mindustry.annotations.Annotations.*;
 
 import static mindustry.Vars.minArmorDamage;
 
-@Component
 public class ShieldWall extends Wall {
     public boolean drawShields = true;
     public float armor = 0;

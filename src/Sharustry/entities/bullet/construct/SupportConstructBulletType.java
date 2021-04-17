@@ -157,7 +157,10 @@ public class SupportConstructBulletType extends ConstructBulletType {
         Unit repairTarget = Units.closest(b.team, b.x, b.y, repairRange, Unit::damaged);
         Building repairTargetbuild = Units.findAllyTile(b.team, b.x, b.y, repairRange, Building::damaged);
 
-        if(tractTarget != null && tractTarget.within(b, tractRange + tractTarget.hitSize/2f) && tractTarget.team() != b.team && tractTarget.checkTarget(collidesGround, collidesAir)){
+        if(tractTarget != null
+                && tractTarget.within(b, tractRange + tractTarget.hitSize/2f)
+                && tractTarget.team() != b.team
+                && tractTarget.checkTarget(collidesGround, collidesAir)){
 
             float dest = b.angleTo(tractTarget);
             ((Float[])b.data)[3] = tractTarget.x;

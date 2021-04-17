@@ -7,9 +7,10 @@ import mindustry.ctype.*;
 public class ModLoader implements ContentList{
     private final ContentList[] contents = {
         new SItems(),
-        new SLiquids(),
         new SStatusEffects(),
+        new SLiquids(),
         new SBullets(),
+        new SUnitTypes(),
         new STurretMounts(),
         new SBlocks(),
         new STechTree()
