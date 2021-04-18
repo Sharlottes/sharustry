@@ -40,7 +40,7 @@ public class TractorAI extends FlyingAI {
         Unit target = Units.closestEnemy(unit.team, unit.x, unit.y, tractRange, u -> true);
 
         if(target != null && command() == UnitCommand.attack){
-            moveTo(target, Math.max(approach, Math.max(tractRange, target.hitSize())) - 16f, 16);
+            moveTo(target, Math.max(approach, Math.max(approach, target.hitSize())) - 16f, 16);
             unit.lookAt(target);
         }
 
