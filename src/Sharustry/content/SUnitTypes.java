@@ -63,7 +63,7 @@ public class SUnitTypes implements ContentList {
             mineTier = 2;
             mineSpeed = 3.5f;
 
-            damage = 0.1f;
+            damage = 0.05f;
             BulletType beam = new LaserBoltBulletType(5.8f, 7){{
                 lifetime = 48f;
                 backColor = paradium;
