@@ -87,48 +87,54 @@ public class SFx {
 
         e.scaled(60, e1 -> part1(e1, range));
         part2(e, range);
+    }),
+
+    hitLaserS = new Effect(8, e -> {
+        color(Color.white, SPal.paradium, e.fin());
+        stroke(0.25f + e.fout());
+        Lines.circle(e.x, e.y, e.fin() * 2f);
     });
 
     public static void part2(Effect.EffectContainer eh, float range) {
         Color toCol = Pal.lancerLaser;
 
         eh.scaled(360, ea -> {
-        ea.lifetime = 360;
-        Draw.color(Pal.accent);
-
-        ea.scaled(40, e1 -> Lines.polySeg(60, 0, Mathf.round(70 * (e1.fin(Interp.pow2))), eh.x, eh.y, range, 0));
-        if(ea.time >= 40){
-            ea.scaled(40 + 20, e1 ->{
-                    Draw.color(Pal.accent, 1);
-            Lines.circle(eh.x, eh.y, range * e1.fout(20/60f));
+            ea.lifetime = 360;
             Draw.color(Pal.accent);
-        });
-        }
-        if(ea.time >= 60){
-            ea.scaled(60 + 60, e1 -> {
+
+            ea.scaled(40, e1 -> Lines.polySeg(60, 0, Mathf.round(70 * (e1.fin(Interp.pow2))), eh.x, eh.y, range, 0));
+            if(ea.time >= 40){
+                ea.scaled(40 + 20, e1 ->{
+                    Draw.color(Pal.accent, 1);
+                    Lines.circle(eh.x, eh.y, range * e1.fout(20/60f));
+                    Draw.color(Pal.accent);
+                });
+            }
+            if(ea.time >= 60){
+                ea.scaled(60 + 60, e1 -> {
                     Draw.alpha(0.1f);
-            Color col = Pal.accent.cpy();
-            Color col1 = Pal.accent.cpy();
+                    Color col = Pal.accent.cpy();
+                    Color col1 = Pal.accent.cpy();
 
-            col.a = ea.fin();
-            col1.a = 0.7f * e1.fin() + 0.25f * Mathf.sin(ea.fin() * 30);
+                    col.a = ea.fin();
+                    col1.a = 0.7f * e1.fin() + 0.25f * Mathf.sin(ea.fin() * 30);
 
-            col.lerp(toCol, 1- Mathf.sin(ea.fin() * 60));
-            col1.lerp(toCol,Mathf.sin(ea.fin() * 60));
+                    col.lerp(toCol, 1- Mathf.sin(ea.fin() * 60));
+                    col1.lerp(toCol,Mathf.sin(ea.fin() * 60));
 
-            Lines.circle(eh.x, eh.y, range * (e1.fout(30/40f)));
-            Fill.light(eh.x, eh.y, Lines.circleVertices(range), range * ((0.5f - Math.abs((1 - e1.fout(30/40f)) - 0.5f)) * 2),  col,  col1);
+                    Lines.circle(eh.x, eh.y, range * (e1.fout(30/40f)));
+                    Fill.light(eh.x, eh.y, Lines.circleVertices(range), range * ((0.5f - Math.abs((1 - e1.fout(30/40f)) - 0.5f)) * 2),  col,  col1);
+                });
+            }
+            ea.scaled(60 + 180, e2 -> Groups.unit.each(u -> Mathf.dst(ea.x, ea.y, u.x, u.y) <= range && u.abilities.find(a -> a instanceof ForceFieldAbility) != null, u -> {
+                Color col1 = Pal.accent.cpy();
+                col1.a = 0.7f * e2.fin() + 0.25f *  Mathf.sin(e2.fin() * 15);
+                Draw.color(Pal.accent, col1, Mathf.sin(e2.fin() * 15));
+                Lines.circle(u.x, u.y, u.hitSize + 8 * Mathf.sin(e2.fin() * 15));
+            }));
         });
-        }
-        ea.scaled(60 + 180, e2 -> Groups.unit.each(u -> Mathf.dst(ea.x, ea.y, u.x, u.y) <= range && u.abilities.find(a -> a instanceof ForceFieldAbility) != null, u -> {
-            Color col1 = Pal.accent.cpy();
-            col1.a = 0.7f * e2.fin() + 0.25f *  Mathf.sin(e2.fin() * 15);
-            Draw.color(Pal.accent, col1, Mathf.sin(e2.fin() * 15));
-            Lines.circle(u.x, u.y, u.hitSize + 8 * Mathf.sin(e2.fin() * 15));
-        }));
-});
+    };
 
-    }
     public static void part1(Effect.EffectContainer ew, float range) {
         float[] xy = {0f, 0f};
         Groups.unit.each(u -> Mathf.dst(ew.x, ew.y, u.x, u.y) <= range && u.abilities.find(a -> a instanceof ForceFieldAbility) != null, target -> {
@@ -159,5 +165,4 @@ public class SFx {
             }
         });
     }
-
 }
