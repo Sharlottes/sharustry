@@ -13,7 +13,7 @@ import static mindustry.Vars.*;
 
 public class TractorAI extends FlyingAI {
     public float tractRange = 50 * 8;
-    public float approach = 2 * 8;
+    public float approach = 20 * 8;
     @Override
     protected void moveTo(Position target, float circleLength, float smooth){
         if(target == null) return;
@@ -40,7 +40,7 @@ public class TractorAI extends FlyingAI {
         Unit target = Units.closestEnemy(unit.team, unit.x, unit.y, tractRange, u -> true);
 
         if(target != null && command() == UnitCommand.attack){
-            moveTo(target, Math.max(unit.range(), Math.max(unit.range(), target.hitSize())) - 16f, approach);
+            moveTo(target, Math.max(approach, Math.max(tractRange, target.hitSize())) - 16f, 16);
             unit.lookAt(target);
         }
 

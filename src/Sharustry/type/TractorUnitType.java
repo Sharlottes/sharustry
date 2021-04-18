@@ -24,6 +24,7 @@ public class TractorUnitType extends UnitType {
     public float tractScaledForce = 3f;
     public float tractStatusDuration = 300;
     public float shootLength = 3f;
+    public float damage = 0f;
 
     public Color tractColor = Color.white;
     public StatusEffect tractStatus = StatusEffects.none;
@@ -79,6 +80,7 @@ public class TractorUnitType extends UnitType {
             float dest = unit.angleTo(tractTarget);
             unit.rotation(Angles.moveToward(unit.rotation, dest, rotateSpeed * Time.delta));
             unit.shieldAlpha = Mathf.lerpDelta(unit.shieldAlpha, 1f, 0.1f);
+            if(damage > 0) tractTarget.damageContinuous(damage);
 
             if(tractStatus != StatusEffects.none) tractTarget.apply(tractStatus, tractStatusDuration);
             tractTarget.impulseNet(Tmp.v1.set(unit).sub(tractTarget).limit((tractForce + (1f - tractTarget.dst(unit) / tractRange) * tractScaledForce)));
