@@ -871,6 +871,7 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public void handleItem(Building source, Item item){
+            boolean usedforammo = false;
             for(int h = 0; h < mounts.size; h++) {
                 if(mountAmmoTypes.get(h) == null) continue;
 
@@ -894,17 +895,21 @@ public class MultiTurret extends TemplatedTurret {
                         entry.amount += (int)type.ammoMultiplier;
                         _ammos.get(h).swap(i, _ammos.get(h).size - 1);
                         asdf = false;
+                        usedforammo = true;
                         break;
                     }
                 }
 
-                if(asdf) _ammos.get(h).add(new ItemEntry(item, (int)type.ammoMultiplier < mounts.get(h).ammoPerShot ? (int)type.ammoMultiplier + mounts.get(h).ammoPerShot : (int)type.ammoMultiplier));
+                if(asdf) {
+                    _ammos.get(h).add(new ItemEntry(item, (int)type.ammoMultiplier < mounts.get(h).ammoPerShot ? (int)type.ammoMultiplier + mounts.get(h).ammoPerShot : (int)type.ammoMultiplier));
+                    usedforammo = true;
+                }
             }
 
-            if(selectedMount != null && selectedMount.mountType == MultiTurretMount.MultiTurretMountType.mass) {
+            if(!usedforammo && selectedMount != null && selectedMount.mountType == MultiTurretMount.MultiTurretMountType.mass) {
                 items.add(item, 1);
             }
-            if(ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo) super.handleItem(source, item);
+            if(!usedforammo && ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo) super.handleItem(source, item);
         }
 
         @Override

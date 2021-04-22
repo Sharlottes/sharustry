@@ -4,6 +4,7 @@ import arc.Core;
 import arc.graphics.Blending;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
@@ -61,11 +62,27 @@ public class MultiItemConstructTurret extends MultiConstructTurret{
             Draw.rect(outline, Tmp.v4.x, Tmp.v4.y, rotation - 90);
             Draw.rect(region, Tmp.v4.x, Tmp.v4.y, rotation - 90);
 
+            float x1 = 5;
+            float y1 = 8;
+
+            Tmp.v6.set(0, 0);
+            Tmp.v6.trns(rotation - 90, -x1, y1);
+            Tmp.v6.add(x, y);
+            Draw.color(Color.valueOf("D4816B"));
+            Fill.rect(Tmp.v6.x, Tmp.v6.y, 4, 6 * reload / reloadTime, rotation - 90);
+            Draw.color();
             Tmp.v5.set(0, 0);
             Tmp.v5.trns(rotation, -offsetX, offsetY);
             Tmp.v5.trns(rotation, -recoil);
             Tmp.v5.add(x, y);
             Draw.rect(leftRegion, Tmp.v5.x, Tmp.v5.y, rotation - 90);
+
+            Tmp.v6.set(0, 0);
+            Tmp.v6.trns(rotation - 90, x1, y1);
+            Tmp.v6.add(x, y);
+            Draw.color(Color.valueOf("FFD37F"));
+            Fill.rect(Tmp.v6.x, Tmp.v6.y, 4,  6 * reload / reloadTime, rotation - 90);
+            Draw.color();
             Tmp.v5.set(0, 0);
             Tmp.v5.trns(rotation, offsetX, offsetY);
             Tmp.v5.trns(rotation, -recoil);
@@ -154,7 +171,6 @@ public class MultiItemConstructTurret extends MultiConstructTurret{
 
         @Override
         protected void shoot(BulletType type){
-
             //when charging is enabled, use the charge shoot pattern
             if(chargeTime > 0){
                 useAmmo();
