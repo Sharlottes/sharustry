@@ -7,6 +7,15 @@
 [![GitHub all releases](https://img.shields.io/github/downloads/anuken/mindustry/total?label=Made%20on%20Mindustry&style=flat-square)](https://github.com/Anuken/Mindustry/)
 [![GitHub Repo stars](https://img.shields.io/github/stars/sharlottes/Sharustry?label=Please%20star%20me%21&style=social)](https://github.com/sharlottes/Sharustry/stargazers)
 
+## TODO / 할 일
+- [ ] finish the fosser, the mass multi turret
+- [x] finish accel processor
+- [ ] add 8 * 8 turret
+- [ ] add units
+  - [x] add t1 unit
+  - [x] add t2 unit
+  - [ ] add t3 unit
+  
 ## Mod Browser / 모드 브라우저로 다운로드하기
 **Only possible with 124 or higher, only can download "latest" release**   
 **124 버전 이상에서만 가능하고, 오직 가장 최근의 정식 릴리즈만 다운로드 가능** 
