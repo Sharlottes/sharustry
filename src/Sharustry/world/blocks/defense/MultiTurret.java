@@ -1690,7 +1690,7 @@ public class MultiTurret extends TemplatedTurret {
             if(_links.get(mounts.indexOf(selectedMount)) == other.pos()){
                 configure(-1);
                 return false;
-            }else if(other.block instanceof MultiTurret && other.dst(tile) <= selectedMount.range && other.team == team){
+            }else if(other.block instanceof MultiTurret && ((MultiTurret)other.block).mounts.find(m -> m.mountType == MultiTurretMount.MultiTurretMountType.mass) != null && other.dst(tile) <= selectedMount.range && other.team == team){
                 configure(other.pos());
                 return false;
             }
