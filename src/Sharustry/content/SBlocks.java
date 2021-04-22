@@ -399,16 +399,16 @@ public class SBlocks implements ContentList{
             shootSound = Sounds.artillery;
         }};
 
-        fossor = new MultiConstructTurret("fossor"){{
+        fossor = new MultiItemConstructTurret("fossor"){{
             configurable = true;
             requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 180, Items.graphite, 140, Items.silicon, 200, Items.titanium, 180, Items.thorium, 130));
 
-            addBaseTurret(SBullets.artilleryHeal, Items.plastanium,"Fossor");
+            addBaseTurret(SBullets.fossers, Items.plastanium,"Fossor");
             addMountTurret(drillMount, drillMount, massMount);
             addCustomMountLocation(new Float[]{
-                -3f, 8f,
-                3f, 8f,
-                0f, 0f
+                -3f, -4f,
+                3f, -4f,
+                0f, -5f
             });
 
             ammos(MultiTurretMount.MultiTurretMountType.drill);

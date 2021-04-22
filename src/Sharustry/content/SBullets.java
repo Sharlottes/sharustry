@@ -14,11 +14,29 @@ import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
 public class SBullets implements ContentList{
-    public static BulletType mountDriverBolt, force, assault, artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
+    public static BulletType fossers, mountDriverBolt, force, assault, artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
 
     @Override
     public void load(){
         mountDriverBolt = new MountDriverBolt();
+
+        fossers = new ForceShieldConstructBulletType(){{
+            speed = 3.25f;
+            damage = 120;
+            sprite = "shar-sMineMortar";
+            skipCol = true;
+            drag = 0.015f;
+
+            lifetime = 10 * 60f;
+            width = height = 10f;
+            collidesTiles = false;
+            splashDamageRadius = 35f * 0.75f;
+            splashDamage = 12 * 8f;
+            backColor = Color.orange;
+            frontColor = Pal.accent;
+
+            shieldColor = Color.valueOf("D6FFE4");
+        }};
 
         artilleryHeal = new SupportConstructBulletType(3.25f, 50){{
             sprite = "shar-construct";

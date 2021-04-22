@@ -774,9 +774,14 @@ public class MultiTurret extends TemplatedTurret {
                 Draw.alpha(fade);
 
                 if(_mineTiles.get(i) != null){
+                    Lines.dashCircle(loc[0], loc[1], mounts.get(i).range);
+                    Lines.stroke(1, this.team.color);
+                    Draw.alpha(fade);
+                    Lines.dashCircle(loc[0], loc[1], mounts.get(i).range);
+
                     Lines.stroke(1f, Pal.accent);
                     Lines.poly(_mineTiles.get(i).worldx(), _mineTiles.get(i).worldy(), 4, tilesize / 2f * Mathf.sqrt2, Time.time);
-                    Draw.color();
+                    Draw.alpha(fade);
                 }
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair){
                     Lines.dashCircle(loc[0], loc[1], mounts.get(i).repairRadius);

@@ -51,6 +51,12 @@ public class SupportConstructBulletType extends ConstructBulletType {
         super(speed, damage);
     }
 
+
+    public SupportConstructBulletType(float speed, float damage, String bulletSprite){
+        super(speed, damage);
+        this.sprite = bulletSprite;
+    }
+
     @Override
     public void load() {
         super.load();
@@ -99,9 +105,9 @@ public class SupportConstructBulletType extends ConstructBulletType {
         float offset = -90 + (spin != 0 ? Mathf.randomSeed(b.id, 360f) + b.time * spin : 0f);
         Draw.mixcol(mix, mix.a);
         Draw.color(backColor);
-        Draw.rect(backRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[6]);
+        if(backRegion != Core.atlas.find("error"))  Draw.rect(backRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[6]);
         Draw.color(frontColor);
-        Draw.rect(frontRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[6]);
+        if(frontRegion != Core.atlas.find("error"))  Draw.rect(frontRegion, b.x, b.y, width, height, b.rotation() + offset + b.vel.len() * 200 * ((Float[]) b.data)[6]);
 
         Draw.reset();
 
