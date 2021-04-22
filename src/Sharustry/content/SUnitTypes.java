@@ -64,7 +64,11 @@ public class SUnitTypes implements ContentList {
             mineSpeed = 3.5f;
 
             damage = 0.05f;
-            BulletType beam = new LaserBoltBulletType(5.8f, 7){{
+
+            targetAmount = 2;
+            tractLaserWidth = 0.4f;
+
+            BulletType beam = new LaserBoltBulletType(5.8f, 9){{
                 lifetime = 48f;
                 backColor = paradium;
                 frontColor = Color.white;
@@ -75,6 +79,8 @@ public class SUnitTypes implements ContentList {
 
                 width *= 0.75f;
                 height *= 0.75f;
+
+                recoil = 0.3f;
             }};
 
             weapons.add(

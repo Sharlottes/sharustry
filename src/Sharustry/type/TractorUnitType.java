@@ -6,6 +6,7 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
+import arc.struct.Seq;
 import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.Vars;
@@ -25,6 +26,7 @@ public class TractorUnitType extends UnitType {
     public float tractStatusDuration = 300;
     public float shootLength = 3f;
     public float damage = 0f;
+    public int targetAmount = 1;
 
     public Color tractColor = Color.white;
     public StatusEffect tractStatus = StatusEffects.none;
@@ -45,23 +47,34 @@ public class TractorUnitType extends UnitType {
     public void draw(Unit unit) {
         super.draw(unit);
 
-        Unit tractTarget = Units.closestEnemy(unit.team, unit.x, unit.y, tractRange, u -> true);
+        Seq<Unit> tractTargets = new Seq<>();
+        for(int i = 0; i < targetAmount; i++){
+            final int j = i;
+            tractTargets.add(Units.closestEnemy(unit.team, unit.x, unit.y, tractRange, u -> {
+                boolean istarget = true;
+                if(j >= 1) istarget = u != tractTargets.get(j - 1);
 
-        if(!unit.disarmed()
-                && (unit.ammo > 0 || !Vars.state.rules.unitAmmo || unit.team().rules().infiniteAmmo)
-                && tractTarget != null
-                && tractTarget.within(unit, tractRange + tractTarget.hitSize/2f)
-                && tractTarget.team() != unit.team
-                && Angles.within(unit.rotation(), unit.angleTo(tractTarget), 25)) {
-            Draw.z(Layer.bullet);
-            float ang = unit.angleTo(tractTarget.x, tractTarget.y);
+                return istarget;
+            }));
+        }
 
-            Draw.mixcol(tractColor, Mathf.absin(4f, 0.6f));
+        for(int i = 0; i < tractTargets.size; i++) {
+            if (!unit.disarmed()
+                    && (unit.ammo > 0 || !Vars.state.rules.unitAmmo || unit.team().rules().infiniteAmmo)
+                    && tractTargets.get(i) != null
+                    && tractTargets.get(i).within(unit, tractRange + tractTargets.get(i).hitSize / 2f)
+                    && tractTargets.get(i).team() != unit.team
+                    && Angles.within(unit.rotation(), unit.angleTo(tractTargets.get(i)), 25)) {
+                Draw.z(Layer.bullet);
+                float ang = unit.angleTo(tractTargets.get(i).x, tractTargets.get(i).y);
 
-            Drawf.laser(unit.team, tractLaser, tractLaserEnd,
-                    unit.x + Angles.trnsx(ang, shootLength), unit.y + Angles.trnsy(ang, shootLength),
-                    tractTarget.x, tractTarget.y, unit.shieldAlpha * tractLaserWidth);
-            Draw.mixcol();
+                Draw.mixcol(tractColor, Mathf.absin(4f, 0.6f));
+
+                Drawf.laser(unit.team, tractLaser, tractLaserEnd,
+                        unit.x + Angles.trnsx(ang, shootLength), unit.y + Angles.trnsy(ang, shootLength),
+                        tractTargets.get(i).x, tractTargets.get(i).y, unit.shieldAlpha * tractLaserWidth);
+                Draw.mixcol();
+            }
         }
     }
 
@@ -69,25 +82,36 @@ public class TractorUnitType extends UnitType {
     public void update(Unit unit) {
         super.update(unit);
 
-        Unit tractTarget = Units.closestEnemy(unit.team, unit.x, unit.y, tractRange, u -> true);
+        Seq<Unit> tractTargets = new Seq<>();
+        for(int i = 0; i < targetAmount; i++){
+            final int j = i;
+            tractTargets.add(Units.closestEnemy(unit.team, unit.x, unit.y, tractRange, u -> {
+                boolean istarget = true;
+                if(j >= 1) istarget = u != tractTargets.get(j - 1);
 
-        if(!unit.disarmed()
-                && (unit.ammo > 0 || !Vars.state.rules.unitAmmo || unit.team().rules().infiniteAmmo)
-                && tractTarget != null
-                && tractTarget.within(unit, tractRange + tractTarget.hitSize/2f)
-                && tractTarget.team() != unit.team
-                && Angles.within(unit.rotation(), unit.angleTo(tractTarget), 25)){
-            float dest = unit.angleTo(tractTarget);
-            unit.rotation(Angles.moveToward(unit.rotation, dest, rotateSpeed * Time.delta));
-            unit.shieldAlpha = Mathf.lerpDelta(unit.shieldAlpha, 1f, 0.1f);
-            if(damage > 0) tractTarget.damageContinuous(damage);
-
-            if(tractStatus != StatusEffects.none) tractTarget.apply(tractStatus, tractStatusDuration);
-            tractTarget.impulseNet(Tmp.v1.set(unit).sub(tractTarget).limit((tractForce + (1f - tractTarget.dst(unit) / tractRange) * tractScaledForce)));
-        }else {
-            unit.shieldAlpha = Mathf.lerpDelta(unit.shieldAlpha, 0, 0.1f);
+                return istarget;
+            }));
         }
-        unit.ammo--;
-        if(unit.ammo < 0) unit.ammo = 0;
+
+        for(int i = 0; i < tractTargets.size; i++) {
+            if (!unit.disarmed()
+                    && (unit.ammo > 0 || !Vars.state.rules.unitAmmo || unit.team().rules().infiniteAmmo)
+                    && tractTargets.get(i) != null
+                    && tractTargets.get(i).within(unit, tractRange + tractTargets.get(i).hitSize / 2f)
+                    && tractTargets.get(i).team() != unit.team
+                    && Angles.within(unit.rotation(), unit.angleTo(tractTargets.get(i)), 25)) {
+                float dest = unit.angleTo(tractTargets.get(i));
+                unit.rotation(Angles.moveToward(unit.rotation, dest, rotateSpeed * Time.delta));
+                unit.shieldAlpha = Mathf.lerpDelta(unit.shieldAlpha, 1f, 0.1f);
+                if (damage > 0) tractTargets.get(i).damageContinuous(damage);
+
+                if (tractStatus != StatusEffects.none) tractTargets.get(i).apply(tractStatus, tractStatusDuration);
+                tractTargets.get(i).impulseNet(Tmp.v1.set(unit).sub(tractTargets.get(i)).limit((tractForce + (1f - tractTargets.get(i).dst(unit) / tractRange) * tractScaledForce)));
+            } else {
+                unit.shieldAlpha = Mathf.lerpDelta(unit.shieldAlpha, 0, 0.1f);
+            }
+            unit.ammo--;
+            if (unit.ammo < 0) unit.ammo = 0;
+        }
     }
 }
