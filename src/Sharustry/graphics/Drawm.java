@@ -19,7 +19,7 @@ import arc.graphics.g2d.*;
 import arc.util.*;
 import mindustry.game.*;
 import mindustry.world.*;
-
+/** @author sk7726 */
 public class Drawm {
     /** Generates all team regions and returns the sharded team region for icon. */
     public static @Nullable TextureRegion generateTeamRegion(Block b){
