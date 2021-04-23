@@ -404,11 +404,11 @@ public class SBlocks implements ContentList{
             requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 180, Items.graphite, 140, Items.silicon, 200, Items.titanium, 180, Items.thorium, 130));
 
             addBaseTurret(SBullets.fossers, Items.plastanium,"Fossor");
-            addMountTurret(drillMount, drillMount, massMount);
+            addMountTurret(miniDrillMount, miniDrillMount, miniMassMount);
             addCustomMountLocation(new Float[]{
-                -3f, -4f,
-                3f, -4f,
-                0f, -5f
+                -7f, -8f,
+                7f, -8f,
+                0f, 0f
             });
 
             ammos(MultiTurretMount.MultiTurretMountType.drill);
@@ -420,7 +420,7 @@ public class SBlocks implements ContentList{
             hasLiquids = true;
             hasItems = true;
             hasPower = true;
-            size = 3;
+            size = 4;
             shots = 5;
             inaccuracy = 12f;
             reloadTime = 2f * 60f;

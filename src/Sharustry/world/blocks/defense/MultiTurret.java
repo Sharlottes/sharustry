@@ -1185,6 +1185,7 @@ public class MultiTurret extends TemplatedTurret {
                                         data.massMount = i;
                                         data.from = this;
                                         data.to = other;
+
                                         int totalUsed = 0;
                                         for(int h = 0; h < content.items().size; h++){
                                             int maxTransfer = Math.min(items.get(content.item(h)), tile.block().itemCapacity - totalUsed);
@@ -1192,21 +1193,15 @@ public class MultiTurret extends TemplatedTurret {
                                             totalUsed += maxTransfer;
                                             items.remove(content.item(h), maxTransfer);
                                         }
-
                                         float angle = tile.angleTo(other);
 
                                         SBullets.mountDriverBolt.create(this, team,
                                                 loc[4] + Angles.trnsx(angle, mounts.get(i).translation), loc[5] + Angles.trnsy(angle, mounts.get(i).translation),
                                                 angle, -1f, mounts.get(i).bulletSpeed, mounts.get(i).bulletLifetime, data);
 
-                                        mounts.get(i).shootEffect.at(loc[4] + Angles.trnsx(angle, mounts.get(i).translation),
-                                                loc[5] + Angles.trnsy(angle, mounts.get(i).translation), angle);
-
-                                        mounts.get(i).smokeEffect.at(loc[4] + Angles.trnsx(angle, mounts.get(i).translation),
-                                                loc[5] + Angles.trnsy(angle, mounts.get(i).translation), angle);
-
+                                        mounts.get(i).shootEffect.at(loc[4] + Angles.trnsx(angle, mounts.get(i).translation), loc[5] + Angles.trnsy(angle, mounts.get(i).translation), angle);
+                                        mounts.get(i).smokeEffect.at(loc[4] + Angles.trnsx(angle, mounts.get(i).translation), loc[5] + Angles.trnsy(angle, mounts.get(i).translation), angle);
                                         Effect.shake(mounts.get(i).shake, mounts.get(i).shake, new Vec2(loc[4], loc[5]));
-
                                         mounts.get(i).shootSound.at(tile, Mathf.random(0.9f, 1.1f));
 
                                         float timeToArrive = Math.min(mounts.get(i).bulletLifetime, dst(other) / mounts.get(i).bulletSpeed);
@@ -1667,7 +1662,11 @@ public class MultiTurret extends TemplatedTurret {
         protected boolean linkValid(int mount){
             if(_links.get(mount) == -1) return false;
             Building link = world.build(this._links.get(mount));
-            return link instanceof MultiTurretBuild && link.team == team && within(link, mounts.get(mount).range);
+            return link instanceof MultiTurretBuild
+                    && link.team == team
+                    && within(link, mounts.get(mount).range)
+                    && ((MultiTurret)link.block).mounts.size - 1 <= mount
+                    && ((MultiTurret)link.block).mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.mass;
         }
 
         @Override

@@ -17,7 +17,7 @@ import mindustry.graphics.Layer;
 import static mindustry.Vars.tilesize;
 
 public class MultiItemConstructTurret extends MultiConstructTurret{
-    public TextureRegion leftRegion, rightRegion;
+    public TextureRegion leftRegion, rightRegion, leftOutline, rightOutline;
     public float offsetX = 1.5f, offsetY = 0;
     public MultiItemConstructTurret(String name){
         super(name);
@@ -29,15 +29,17 @@ public class MultiItemConstructTurret extends MultiConstructTurret{
 
         leftRegion = Core.atlas.find(name + "-left");
         rightRegion = Core.atlas.find(name + "-right");
+        leftOutline = Core.atlas.find(name + "-left" + "-outline");
+        rightOutline = Core.atlas.find(name + "-right" + "-outline");
     }
 
     public class MultiItemConstructTurretBuild extends MultiConstructTurretBuild {
 
         @Override
         public float[] mountLocations(int mount){
-            Tmp.v1.trns(this.rotation - 90, (customMountLocation ? customMountLocationsX.get(mount) : mounts.get(mount).x), (customMountLocation ? customMountLocationsY.get(mount) : mounts.get(mount).y) - offsetY);
+            Tmp.v1.trns(this.rotation - 90, (customMountLocation ? customMountLocationsX.get(mount) : mounts.get(mount).x), (customMountLocation ? customMountLocationsY.get(mount) : mounts.get(mount).y));
             Tmp.v1.add(x, y);
-            Tmp.v2.trns(_rotations.get(mount), -offsetY);
+            Tmp.v2.trns(_rotations.get(mount), 0);
             float i = (_shotCounters.get(mount) % mounts.get(mount).barrels) - (mounts.get(mount).barrels - 1) / 2;
             Tmp.v3.trns(_rotations.get(mount) - 90, mounts.get(mount).shootX + mounts.get(mount).barrelSpacing * i + mounts.get(mount).xRand, mounts.get(mount).shootY + mounts.get(mount).yRand);
 
@@ -56,38 +58,24 @@ public class MultiItemConstructTurret extends MultiConstructTurret{
             Draw.rect(baseRegion, x, y);
 
             Draw.z(Layer.turret);
-            Tmp.v4.trns(rotation, -offsetY);
+            Tmp.v4.trns(rotation, 0);
             Tmp.v4.add(x, y);
             Drawf.shadow(outline, Tmp.v4.x - (size / 2f), Tmp.v4.y - (size / 2f), rotation - 90);
             Draw.rect(outline, Tmp.v4.x, Tmp.v4.y, rotation - 90);
+            for(int i : Mathf.signs) {
+                Tmp.v5.set(0, 0);
+                Tmp.v5.trns(rotation, offsetX - recoil, i * offsetY);
+                Tmp.v5.add(x, y);
+                Drawf.shadow(i == -1 ? leftOutline : rightOutline, Tmp.v5.x - (size / 2f), Tmp.v5.y - (size / 2f), rotation - 90);
+                Draw.rect(i == -1 ? leftOutline : rightOutline, Tmp.v5.x, Tmp.v5.y, rotation - 90);
+            }
             Draw.rect(region, Tmp.v4.x, Tmp.v4.y, rotation - 90);
-
-            float x1 = 5;
-            float y1 = 8;
-
-            Tmp.v6.set(0, 0);
-            Tmp.v6.trns(rotation - 90, -x1, y1);
-            Tmp.v6.add(x, y);
-            Draw.color(Color.valueOf("D4816B"));
-            Fill.rect(Tmp.v6.x, Tmp.v6.y, 4, 6 * reload / reloadTime, rotation - 90);
-            Draw.color();
-            Tmp.v5.set(0, 0);
-            Tmp.v5.trns(rotation, -offsetX, offsetY);
-            Tmp.v5.trns(rotation, -recoil);
-            Tmp.v5.add(x, y);
-            Draw.rect(leftRegion, Tmp.v5.x, Tmp.v5.y, rotation - 90);
-
-            Tmp.v6.set(0, 0);
-            Tmp.v6.trns(rotation - 90, x1, y1);
-            Tmp.v6.add(x, y);
-            Draw.color(Color.valueOf("FFD37F"));
-            Fill.rect(Tmp.v6.x, Tmp.v6.y, 4,  6 * reload / reloadTime, rotation - 90);
-            Draw.color();
-            Tmp.v5.set(0, 0);
-            Tmp.v5.trns(rotation, offsetX, offsetY);
-            Tmp.v5.trns(rotation, -recoil);
-            Tmp.v5.add(x, y);
-            Draw.rect(rightRegion, Tmp.v5.x, Tmp.v5.y, rotation - 90);
+            for(int i : Mathf.signs) {
+                Tmp.v5.set(0, 0);
+                Tmp.v5.trns(rotation, offsetX - recoil, i * offsetY);
+                Tmp.v5.add(x, y);
+                Draw.rect(i == -1 ? leftRegion : rightRegion, Tmp.v5.x, Tmp.v5.y, rotation - 90);
+            }
 
             if(heatRegion != Core.atlas.find("error") && _heat > 0.00001){
                 Draw.color(heatColor, _heat);

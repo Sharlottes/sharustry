@@ -14,13 +14,49 @@ import mindustry.graphics.Pal;
 import static Sharustry.content.SBullets.*;
 
 public class STurretMounts implements ContentList {
-    public static MultiTurretMount drillMount, massMount, electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
+    public static MultiTurretMount miniDrillMount, miniMassMount, drillMount, massMount, electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
 
 
     @Override
     public void load() {
+        miniDrillMount = new MultiTurretMount("mineM"){{
+            title = "Mini Minor";
+            mountType = MultiTurretMountType.drill;
+
+            laserWidth = 0.75f;
+            shootSound = Sounds.minebeam;
+            shootSoundVolume = 0.9f;
+
+            minDrillTier = 0;
+            maxDrillTier = 3;
+            mineSpeed = 0.75f;
+            laserOffset = 4f;
+            shootCone = 6f;
+
+            range = 60f;
+        }};
+        miniMassMount = new MultiTurretMount("massM"){{
+            rotateSpeed = 0.04f;
+            translation = 7f;
+            minDistribute = 10;
+            knockback = 4f;
+            bulletSpeed = 5.5f;
+            bulletLifetime = 200f;
+            shootEffect = Fx.shootBig2;
+            smokeEffect = Fx.shootBigSmoke2;
+            receiveEffect = Fx.mineBig;
+            shootSound = Sounds.shootBig;
+            shake = 3f;
+            powerUse = 3f;
+            title = "Mini MassDriver";
+            reloadTime = 200f;
+            range = 440f;
+
+            mountType = MultiTurretMountType.mass;
+        }};
+
         drillMount = new MultiTurretMount("DrillM"){{
-            title = "Mini Miner";
+            title = "Minor";
             mountType = MultiTurretMountType.drill;
 
             laserWidth = 0.75f;
@@ -48,7 +84,7 @@ public class STurretMounts implements ContentList {
             shootSound = Sounds.shootBig;
             shake = 3f;
             powerUse = 3f;
-            title = "Mini MassDriver";
+            title = "MassDriver";
             reloadTime = 200f;
             range = 440f;
 
