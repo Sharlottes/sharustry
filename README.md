@@ -27,7 +27,7 @@
 
 
 ## Releases  / 깃허브 릴리즈로 다운로드하기
-[![Download](https://img.shields.io/github/v/release/sharlottes/Sharustry?color=green&include_prereleases&label=DOWNLOAD%20LATEST%20RELEASE&logo=github&logoColor=green&style=for-the-badge)](https://github.com/sharlottes/Sharustry/releases)
+[![Download](https://img.shields.io/github/v/release/sharlottes/Sharustry?color=ffd700&include_prereleases&label=DOWNLOAD%20LATEST%20RELEASE&logo=github&logoColor=green&style=for-the-badge)](https://github.com/sharlottes/Sharustry/releases)
 
 There isn't actually difference between downloading through Releases and downloading Mod Browser. I'm just grateful to you for coming all the way here.   
 Releases를 통해 다운로드하는 방법과 Mod Browser를 다운로드하는 방법은 사실 별 차이가 없습니다. 그냥 여기까지 온 당신에게 감사하다구요.   
