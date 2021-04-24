@@ -313,7 +313,11 @@ public class SBlocks implements ContentList{
                 BulletType type = SBullets.force;
                 for(int i = 0; i < shotAmount; i++) {
                     float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
-                    Time.run(10 * i, () -> entity.bullet(type, angle, 0));
+                    Time.run(10 * i, () -> {
+                        float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(entity.x + tr.x, entity.y + tr.y, entity.targetPos.x, entity.targetPos.y) / type.range(), minRange / type.range(), range / type.range()) : 1f;
+
+                        type.create(entity, entity.team, entity.x + tr.x, entity.y + tr.y, angle, 1f + Mathf.range(velocityInaccuracy), lifeScl);
+                    });
                 }
             }, 3, Core.bundle.get("stat.shar.fireforce-name"));
 
@@ -322,7 +326,11 @@ public class SBlocks implements ContentList{
                 BulletType type = SBullets.assault;
                 for(int i = 0; i < shotAmount; i++) {
                     float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
-                    Time.run(20 * i, () -> entity.bullet(type, angle, 0));
+                    Time.run(20 * i, () -> {
+                        float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(entity.x + tr.x, entity.y + tr.y, entity.targetPos.x, entity.targetPos.y) / type.range(), minRange / type.range(), range / type.range()) : 1f;
+
+                        type.create(entity, entity.team, entity.x + tr.x, entity.y + tr.y, angle, 1f + Mathf.range(velocityInaccuracy), lifeScl);
+                    });
                 }
             }, 5, Core.bundle.get("stat.shar.fireassault-name"));
             skillDescriptions.add(Core.bundle.get("stat.shar.fireforce-description"), Core.bundle.get("stat.shar.fireassault-description"));

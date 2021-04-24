@@ -49,7 +49,7 @@ public class STurretMounts implements ContentList {
             shake = 3f;
             powerUse = 3f;
             title = "Mini MassDriver";
-            reloadTime = 200f;
+            reloadTime = 100f;
             range = 440f;
 
             mountType = MultiTurretMountType.mass;
@@ -77,7 +77,7 @@ public class STurretMounts implements ContentList {
             minDistribute = 10;
             knockback = 4f;
             bulletSpeed = 5.5f;
-            bulletLifetime = 200f;
+            bulletLifetime = 100f;
             shootEffect = Fx.shootBig2;
             smokeEffect = Fx.shootBigSmoke2;
             receiveEffect = Fx.mineBig;
