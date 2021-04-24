@@ -2,8 +2,10 @@ package Sharustry.entities.bullet;
 
 import Sharustry.world.blocks.defense.DriverBulletData;
 import Sharustry.world.blocks.defense.MultiTurret;
+import Sharustry.world.blocks.storage.BattleCore;
 import arc.graphics.*;
 import arc.math.*;
+import arc.util.Log;
 import mindustry.content.*;
 import mindustry.entities.bullet.MassDriverBolt;
 import mindustry.gen.*;
@@ -19,13 +21,10 @@ public class MountDriverBolt extends MassDriverBolt {
             return;
         }
         DriverBulletData data = ((DriverBulletData) b.data());
-
         float hitDst = 7f;
 
         //if the target is dead, just keep flying until the bullet explodes
-        if(data.to.dead()){
-            return;
-        }
+        if(data.to.dead()) return;
 
         float baseDst = data.from.dst(data.to);
         float dst1 = b.dst(data.from);
@@ -45,7 +44,7 @@ public class MountDriverBolt extends MassDriverBolt {
                 b.set(data.to.x + Angles.trnsx(baseAngle, hitDst), data.to.y + Angles.trnsy(baseAngle, hitDst));
             }
         }
-
+        Log.info(Math.abs(dst1 + dst2 - baseDst) < 4f && dst2 <= hitDst);
         //if on course and it's in range of the target
         if(Math.abs(dst1 + dst2 - baseDst) < 4f && dst2 <= hitDst){
             intersect = true;
@@ -53,6 +52,7 @@ public class MountDriverBolt extends MassDriverBolt {
 
         if(intersect){
             if(data.to instanceof MultiTurret.MultiTurretBuild) ((MultiTurret.MultiTurretBuild)data.to).handlePayload(b, data);
+            if(data.to instanceof BattleCore.BattleCoreBuild) ((BattleCore.BattleCoreBuild)data.to).handlePayload(b, data);
         }
     }
 

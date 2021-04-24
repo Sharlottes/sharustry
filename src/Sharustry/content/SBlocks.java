@@ -547,19 +547,21 @@ public class SBlocks implements ContentList{
             health = 3500;
             itemCapacity = 9000;
             size = 4;
-
+            configurable = true;
             unitCapModifier = 16;
             researchCostMultiplier = 0.02f;
 
-            addMountTurret(healLaserMount2, healBeamMountR, healBeamMountL);
+            addMountTurret(healBeamMountR, healBeamMountL, massMount, healLaserMount2);
             addCustomMountLocation(new Float[]{
-                0f,0f,
                 0f, -10f,
-                0f, 10f
+                0f, 10f,
+                -5f, -5f,
+                0f,0f
             });
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MultiTurretMount.MultiTurretMountType.mass);
             ammos(MultiTurretMount.MultiTurretMountType.repair);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
         }};
 
         armedNucleus = new BattleCore("armedNucleus"){{

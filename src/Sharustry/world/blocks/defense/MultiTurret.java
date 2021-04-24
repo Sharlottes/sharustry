@@ -1,6 +1,7 @@
 package Sharustry.world.blocks.defense;
 
 import Sharustry.content.SBullets;
+import Sharustry.world.blocks.storage.BattleCore;
 import arc.*;
 import arc.func.Cons;
 import arc.func.Func;
@@ -31,6 +32,7 @@ import mindustry.logic.LAccess;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.Tile;
+import mindustry.world.blocks.distribution.MassDriver;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 import mindustry.world.blocks.distribution.MassDriver.*;
@@ -76,6 +78,15 @@ public class MultiTurret extends TemplatedTurret {
 
     public MultiTurret(String name){
         super(name);
+
+        config(Point2.class, (Building tile, Point2 point) -> {
+            if(tile instanceof MultiTurret.MultiTurretBuild) ((MultiTurret.MultiTurretBuild)tile).link = Point2.pack(point.x + tile.tileX(), point.y + tile.tileY());
+            if(tile instanceof BattleCore.BattleCoreBuild) ((BattleCore.BattleCoreBuild)tile).link = Point2.pack(point.x + tile.tileX(), point.y + tile.tileY());
+        });
+        config(Integer.class, (Building tile, Integer point) -> {
+            if(tile instanceof MultiTurret.MultiTurretBuild) ((MultiTurret.MultiTurretBuild)tile).link = point;
+            if(tile instanceof BattleCore.BattleCoreBuild) ((BattleCore.BattleCoreBuild)tile).link = point;
+        });
     }
 
     public void addMountTurret(MultiTurretMount... mounts){
@@ -106,12 +117,6 @@ public class MultiTurret extends TemplatedTurret {
 
         this.bullet = type;
         this.title = title;
-
-
-        if(configurable) {
-            config(Point2.class, (MultiTurretBuild tile, Point2 point) -> tile.link = Point2.pack(point.x + tile.tileX(), point.y + tile.tileY()));
-            config(Integer.class, (MultiTurretBuild tile, Integer point) -> tile.link = point);
-        }
     }
 
     public void addCustomMountLocation(Float[] xy){
@@ -521,7 +526,6 @@ public class MultiTurret extends TemplatedTurret {
 
         public float _heat;
 
-
         public int link = -1;
         public DriverState massState = DriverState.idle;
         public OrderedSet<Tile> waitingShooters = new OrderedSet<>();
@@ -717,6 +721,7 @@ public class MultiTurret extends TemplatedTurret {
                 }));
             }}).left();
         }
+
         @Override
         public void displayConsumption(Table table){
             for(int i = 0; i < mounts.size; i++){
@@ -832,40 +837,6 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public int removeStack(Item item, int amount){
             return 0;
-        }
-
-        @Override
-        public void control(LAccess type, double p1, double p2, double p3, double p4){
-            if(type == LAccess.shoot && !unit.isPlayer()){
-                for(int i = 0; i < mounts.size; i++) _targetPoses.get(i).set(World.unconv((float)p1), World.unconv((float)p2));
-                logicControlTime = logicControlCooldown;
-                logicShooting = !Mathf.zero(p3);
-            }
-
-            super.control(type, p1, p2, p3, p4);
-        }
-
-        @Override
-        public void control(LAccess type, Object p1, double p2, double p3, double p4){
-            if(type == LAccess.shootp && !unit.isPlayer()){
-                logicControlTime = logicControlCooldown;
-                logicShooting = !Mathf.zero(p2);
-
-                if(p1 instanceof Posc){
-                    for(int i = 0; i < mounts.size; i++){
-                        if(!mountHasAmmo(i)) return;
-                        BulletType bullet = mountPeekAmmo(i);
-                        float speed = bullet.speed;
-                        //slow bullets never intersect
-                        if(speed < 0.1f) speed = 9999999f;
-
-                        _targetPoses.get(i).set(Predict.intercept(this, (Posc)p1, speed));
-                        if(_targetPoses.get(i).isZero()) _targetPoses.get(i).set((Posc)p1);
-                    }
-                }
-            }
-
-            super.control(type, p1, p2, p3, p4);
         }
 
         @Override
@@ -1079,6 +1050,40 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         @Override
+        public void control(LAccess type, double p1, double p2, double p3, double p4){
+            if(type == LAccess.shoot && !unit.isPlayer()){
+                for(int i = 0; i < mounts.size; i++) _targetPoses.get(i).set(World.unconv((float)p1), World.unconv((float)p2));
+                logicControlTime = logicControlCooldown;
+                logicShooting = !Mathf.zero(p3);
+            }
+
+            super.control(type, p1, p2, p3, p4);
+        }
+
+        @Override
+        public void control(LAccess type, Object p1, double p2, double p3, double p4){
+            if(type == LAccess.shootp && !unit.isPlayer()){
+                logicControlTime = logicControlCooldown;
+                logicShooting = !Mathf.zero(p2);
+
+                if(p1 instanceof Posc){
+                    for(int i = 0; i < mounts.size; i++){
+                        if(!mountHasAmmo(i)) return;
+                        BulletType bullet = mountPeekAmmo(i);
+                        float speed = bullet.speed;
+                        //slow bullets never intersect
+                        if(speed < 0.1f) speed = 9999999f;
+
+                        _targetPoses.get(i).set(Predict.intercept(this, (Posc)p1, speed));
+                        if(_targetPoses.get(i).isZero()) _targetPoses.get(i).set((Posc)p1);
+                    }
+                }
+            }
+
+            super.control(type, p1, p2, p3, p4);
+        }
+
+        @Override
         public void update() {
             super.update();
             for(int i = 0; i < mounts.size; i++)
@@ -1182,6 +1187,7 @@ public class MultiTurret extends TemplatedTurret {
         public void mountUpdateMass(int i){
             Building link = world.build(this.link);
             boolean hasLink = linkValid(i);
+            float[] loc = this.mountLocations(i);
 
             if(hasLink) this.link = link.pos();
 
@@ -1205,7 +1211,7 @@ public class MultiTurret extends TemplatedTurret {
             }
 
             //dump when idle or accepting
-            if(massState == DriverState.idle || massState == DriverState.accepting) dump();
+            if((massState == MassDriver.DriverState.idle || massState == MassDriver.DriverState.accepting) && mounts.find(m -> m.mountType == MultiTurretMount.MultiTurretMountType.drill && _mineTiles.get(mounts.indexOf(m)) != null) == null) dump();
             //skip when there's no power
             if(Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) <= 0.001f) return;
 
@@ -1230,34 +1236,61 @@ public class MultiTurret extends TemplatedTurret {
                         items.total() >= mounts.get(i).minDistribute && //must shoot minimum amount of items
                         link.block.itemCapacity - link.items.total() >= mounts.get(i).minDistribute //must have minimum amount of space
                 ){
-                    MultiTurretBuild other = (MultiTurretBuild)link;
-                    other.waitingShooters.add(tile);
+                    if(link instanceof BattleCore.BattleCoreBuild){
+                        BattleCore.BattleCoreBuild other = (BattleCore.BattleCoreBuild)link;
+                        other.waitingShooters.add(tile);
 
-                    if(_reloads.get(i) >= mounts.get(i).reloadTime && !_chargings.get(i)){
-                        _rotations.set(i, Mathf.slerpDelta(_rotations.get(i), targetRotation, mounts.get(i).rotateSpeed * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1)));
+                        if(_reloads.get(i) >= mounts.get(i).reloadTime && !_chargings.get(i)){
+                            _rotations.set(i, Mathf.slerpDelta(_rotations.get(i), targetRotation, mounts.get(i).rotateSpeed * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1)));
 
-                        //fire when it's the first in the queue and angles are ready.
-                        if(other.currentShooter() == tile &&
-                                other.massState == DriverState.accepting
-                                && Angles.near(_rotations.get(i), targetRotation, 2f)
-                                && Angles.near(other._rotations.get(i), targetRotation + 180f, 2f)){
-                            fire(i, other);
+                            //fire when it's the first in the queue and angles are ready.
+                            if(other.currentShooter() == tile &&
+                                    other.massState == MassDriver.DriverState.accepting
+                                    && Angles.near(_rotations.get(i), targetRotation, 2f)
+                                    && Angles.near(other._rotations.get(i), targetRotation + 180f, 2f)){
+                                fire(i, other);
 
-                            float timeToArrive = Math.min(mounts.get(i).bulletLifetime, dst(other) / mounts.get(i).bulletSpeed);
-                            Time.run(timeToArrive, () -> {
-                                //remove waiting shooters, it's done firing
-                                other.waitingShooters.remove(tile);
-                                other.massState = DriverState.idle;
-                            });
-                            //driver is immediately idle
-                            massState = DriverState.idle;
+                                float timeToArrive = Math.min(mounts.get(i).bulletLifetime, Mathf.dst(loc[4], loc[5], other.x, other.y) / mounts.get(i).bulletSpeed);
+                                Time.run(timeToArrive, () -> {
+                                    //remove waiting shooters, it's done firing
+                                    other.waitingShooters.remove(tile);
+                                    other.massState = MassDriver.DriverState.idle;
+                                });
+                                //driver is immediately idle
+                                massState = MassDriver.DriverState.idle;
+                            }
+                        }
+                    }
+                    else if(link instanceof MultiTurret.MultiTurretBuild){
+                        MultiTurret.MultiTurretBuild other = (MultiTurret.MultiTurretBuild)link;
+                        other.waitingShooters.add(tile);
+
+                        if(_reloads.get(i) >= mounts.get(i).reloadTime && !_chargings.get(i)){
+                            _rotations.set(i, Mathf.slerpDelta(_rotations.get(i), targetRotation, mounts.get(i).rotateSpeed * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1)));
+
+                            //fire when it's the first in the queue and angles are ready.
+                            if(other.currentShooter() == tile &&
+                                    other.massState == MassDriver.DriverState.accepting
+                                    && Angles.near(_rotations.get(i), targetRotation, 2f)
+                                    && Angles.near(other._rotations.get(i), targetRotation + 180f, 2f)){
+                                fire(i, other);
+
+                                float timeToArrive = Math.min(mounts.get(i).bulletLifetime, Mathf.dst(loc[4], loc[5], other.x, other.y) / mounts.get(i).bulletSpeed);
+                                Time.run(timeToArrive, () -> {
+                                    //remove waiting shooters, it's done firing
+                                    other.waitingShooters.remove(tile);
+                                    other.massState = MassDriver.DriverState.idle;
+                                });
+                                //driver is immediately idle
+                                massState = MassDriver.DriverState.idle;
+                            }
                         }
                     }
                 }
             }
         }
 
-        public void fire(int i, MultiTurretBuild other){
+        public void fire(int i, Building other){
             float[] loc = this.mountLocations(i);
 
             _reloads.set(i, 0f);
@@ -1275,6 +1308,8 @@ public class MultiTurret extends TemplatedTurret {
                 items.remove(content.item(h), maxTransfer);
             }
             float angle = tile.angleTo(other);
+            if(other instanceof BattleCore.BattleCoreBuild) angle = Angles.angle(mountLocations(massIndex)[0], mountLocations(massIndex)[1], ((BattleCore.BattleCoreBuild)other).mountLocations(((BattleCore)((BattleCore.BattleCoreBuild)other).block).massIndex)[0], ((BattleCore.BattleCoreBuild)other).mountLocations(((BattleCore)((BattleCore.BattleCoreBuild)other).block).massIndex)[1]);
+            if(other instanceof MultiTurret.MultiTurretBuild) angle = Angles.angle(mountLocations(massIndex)[0], mountLocations(massIndex)[1], ((MultiTurret.MultiTurretBuild)other).mountLocations(((MultiTurret)((MultiTurret.MultiTurretBuild)other).block).massIndex)[0], ((MultiTurret.MultiTurretBuild)other).mountLocations(((MultiTurret)((MultiTurret.MultiTurretBuild)other).block).massIndex)[1]);
 
             SBullets.mountDriverBolt.create(this, team,
                     loc[4] + Angles.trnsx(angle, mounts.get(i).translation), loc[5] + Angles.trnsy(angle, mounts.get(i).translation),
@@ -1316,18 +1351,19 @@ public class MultiTurret extends TemplatedTurret {
 
         public boolean shooterValid(Tile other, int mount){
             if(other == null) return true;
-            if(!(other.build instanceof MultiTurretBuild)) return false;
-            return ((MultiTurretBuild)other.build).link == tile.pos() && tile.dst(other) <= mounts.get(mount).range;
+            return (other.build instanceof BattleCore.BattleCoreBuild && ((BattleCore.BattleCoreBuild)other.build).link == tile.pos()) || (other.build instanceof MultiTurret.MultiTurretBuild && ((MultiTurret.MultiTurretBuild)other.build).link == tile.pos()) && tile.dst(other) <= mounts.get(mount).range;
         }
 
         public boolean linkValid(int mount){
             if(link == -1) return false;
             Building link = world.build(this.link);
-            return link instanceof MultiTurretBuild
-                    && link.team == team
-                    && within(link, mounts.get(mount).range)
+            return ((link instanceof MultiTurret.MultiTurretBuild
                     && ((MultiTurret)link.block).mounts.size - 1 >= mount
-                    && ((MultiTurret)link.block).mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.mass;
+                    && ((MultiTurret)link.block).mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.mass) || (link instanceof BattleCore.BattleCoreBuild
+                    && ((BattleCore)link.block).mounts.size - 1 >= mount
+                    && ((BattleCore)link.block).mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.mass))
+                && link.team == team
+                && within(link, mounts.get(mount).range);
         }
 
         @Override
@@ -1338,18 +1374,19 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public boolean onConfigureTileTapped(Building other){
-        if(this == other){
+            if(this == other){
                 configure(-1);
                 return false;
             }
             if(link == other.pos()){
                 configure(-1);
                 return false;
-            }else if(other.block instanceof MultiTurret && ((MultiTurret)other.block).mounts.find(m -> m.mountType == MultiTurretMount.MultiTurretMountType.mass) != null && other.dst(tile) <= mounts.get(massIndex).range && other.team == team){
+            }else if(((other.block instanceof MultiTurret && ((MultiTurret)other.block).mounts.find(m -> m.mountType == MultiTurretMount.MultiTurretMountType.mass) != null)
+                        || (other.block instanceof BattleCore && ((BattleCore)other.block).mounts.find(m -> m.mountType == MultiTurretMount.MultiTurretMountType.mass) != null))
+                    && other.dst(tile) <= mounts.get(massIndex).range && other.team == team){
                 configure(other.pos());
                 return false;
             }
-
             return true;
         }
 
