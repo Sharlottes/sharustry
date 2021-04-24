@@ -100,8 +100,7 @@ public class MultiTurretMount {
     public Color laserColor = Color.white;
     public StatusEffect status = StatusEffects.none;
 
-    public TextureRegion laser;
-    public TextureRegion laserEnd;
+    public TextureRegion tractLaser, tractLaserEnd;
     //region end
 
     //point region, mountType: point only
@@ -117,6 +116,8 @@ public class MultiTurretMount {
 
     public float repairRadius = 50f;
     public float repairSpeed = 0.3f;
+
+    public TextureRegion laser, laserEnd;
     //region end
 
     //mass region, mountType: mass only

@@ -220,6 +220,8 @@ public class MultiTurret extends TemplatedTurret {
                 //for some unknown reason, mounts cannot use @Load annotations...hmm
                 mounts.get(i).laser = Core.atlas.find("shar-repair-laser");
                 mounts.get(i).laserEnd = Core.atlas.find("shar-repair-laser-end");
+                mounts.get(i).tractLaser = Core.atlas.find("shar-tlaser");
+                mounts.get(i).tractLaserEnd = Core.atlas.find("shar-tlaser-end");
             }
         });
         for(int i = 0; i < mounts.size; i++) loopSounds.add(new SoundLoop(mounts.get(i).loopSound, mounts.get(i).loopVolume));
@@ -1015,12 +1017,10 @@ public class MultiTurret extends TemplatedTurret {
                     float ang = angleTo(_lastXs.get(i), _lastYs.get(i));
 
                     Draw.mixcol(mounts.get(i).laserColor, Mathf.absin(4f, 0.6f));
-
-                    Drawf.laser(team, mounts.get(i).laser, mounts.get(i).laserEnd,
+                    Drawf.laser(team, mounts.get(i).tractLaser, mounts.get(i).tractLaserEnd,
                             loc[0] + Angles.trnsx(ang, mounts.get(i).shootLength), loc[1] + Angles.trnsy(ang, mounts.get(i).shootLength),
                             _lastXs.get(i), _lastYs.get(i), _strengths.get(i) * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) * mounts.get(i).laserWidth);
 
-                    Draw.mixcol();
                     Draw.reset();
                 }
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair
@@ -1034,7 +1034,7 @@ public class MultiTurret extends TemplatedTurret {
                     Drawf.laser(team, mounts.get(i).laser, mounts.get(i).laserEnd,
                             loc[0] + Angles.trnsx(ang, len), loc[1] + Angles.trnsy(ang, len),
                             _repairTargets.get(i).x(), _repairTargets.get(i).y(), _strengths.get(i));
-                    Draw.color();
+
                     Draw.reset();
                 }
                 if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.drill
@@ -1050,12 +1050,10 @@ public class MultiTurret extends TemplatedTurret {
                     float ey = _mineTiles.get(i).worldy() + Mathf.sin(Time.time + 48, swingScl + 2f, swingMag);
 
                     Draw.z(Layer.flyingUnit + 0.1f);
-
                     Draw.color(Color.lightGray, Color.white, 1f - flashScl + Mathf.absin(Time.time, 0.5f, flashScl));
-
                     Drawf.laser(team(), mounts.get(i).laser, mounts.get(i).laserEnd, px, py, ex, ey, mounts.get(i).laserWidth);
 
-                    Draw.color();
+                    Draw.reset();
                 }
             }
 
@@ -1310,7 +1308,7 @@ public class MultiTurret extends TemplatedTurret {
             return link instanceof MultiTurretBuild
                     && link.team == team
                     && within(link, mounts.get(mount).range)
-                    && ((MultiTurret)link.block).mounts.size - 1 <= mount
+                    && ((MultiTurret)link.block).mounts.size - 1 >= mount
                     && ((MultiTurret)link.block).mounts.get(mount).mountType == MultiTurretMount.MultiTurretMountType.mass;
         }
 
@@ -1322,8 +1320,7 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public boolean onConfigureTileTapped(Building other){
-            Log.info(other.dst(tile) <= mounts.get(massIndex).range);
-            if(this == other){
+        if(this == other){
                 configure(-1);
                 return false;
             }
