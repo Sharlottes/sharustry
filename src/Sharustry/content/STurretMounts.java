@@ -29,10 +29,11 @@ public class STurretMounts implements ContentList {
 
             minDrillTier = 0;
             maxDrillTier = 3;
-            mineSpeed = 0.75f;
+            mineSpeed = 1.5f;
             laserOffset = 4f;
             shootCone = 6f;
 
+            powerUse = 2f;
             range = 60f;
         }};
         miniMassMount = new MultiTurretMount("massM"){{
@@ -63,6 +64,7 @@ public class STurretMounts implements ContentList {
             shootSound = Sounds.minebeam;
             shootSoundVolume = 0.9f;
 
+            powerUse = 2f;
             minDrillTier = 0;
             maxDrillTier = 3;
             mineSpeed = 0.75f;

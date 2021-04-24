@@ -1345,10 +1345,14 @@ public class MultiTurret extends TemplatedTurret {
 
             //target ore
             targetMine(core, i);
-            if(core == null || _mineTiles.get(i) == null || Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) < 0.2f || !Angles.within(_rotations.get(i), angleTo(_mineTiles.get(i)), mounts.get(i).shootCone) || items.get(_mineTiles.get(i).drop()) >= itemCapacity){
+            if(core == null || _mineTiles.get(i) == null || Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) <= 0.001f || !Angles.within(_rotations.get(i), angleTo(_mineTiles.get(i)), mounts.get(i).shootCone) || items.get(_mineTiles.get(i).drop()) >= itemCapacity){
+                if(_mineTiles.get(i) != null) Log.info(items.get(_mineTiles.get(i).drop()));
                 _mineTiles.set(i, null);
                 _mineTimers.set(i, 0f);
             }
+
+
+            Log.info(_mineTimers.get(i));
 
             if(_mineTiles.get(i) != null){
                 //mine tile
