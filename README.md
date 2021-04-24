@@ -1,6 +1,6 @@
 # Sharustry   
 ![template](https://user-images.githubusercontent.com/60801210/110486164-bd0b1c00-812f-11eb-99d8-b3ccdf304bb6.png)
-
+[![GitHub all releases](https://img.shields.io/github/downloads/sharlottes/sharustry/total?color=ffd700&label=Sharustry&style=flat-square)](https://github.com/Sharlottes/sharustry/)
 
 [![Java CI with Gradle](https://github.com/sharlottes/Sharustry/workflows/Java%20CI%20with%20Gradle/badge.svg)](https://github.com/sharlottes/Sharustry/actions) 
 [![Discord](https://img.shields.io/discord/704355237246402721.svg?logo=discord&logoColor=white&logoWidth=20&labelColor=7289DA&label=Discord)](https://discord.gg/RCCVQFW)
