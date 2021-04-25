@@ -196,9 +196,9 @@ public class SBlocks implements ContentList{
                 0f, 1.5f
             });
 
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
 
             hasPower = true;
             size = 3;
@@ -244,10 +244,10 @@ public class SBlocks implements ContentList{
                     8f, 0f
             });
 
-            ammos(MultiTurretMount.MultiTurretMountType.repair);
-            ammos(MultiTurretMount.MultiTurretMountType.point);
-            ammos(MultiTurretMount.MultiTurretMountType.mass);
-            ammos(MultiTurretMount.MultiTurretMountType.tract);
+            ammos(MountTurretType.MultiTurretMountType.repair);
+            ammos(MountTurretType.MultiTurretMountType.point);
+            ammos(MountTurretType.MultiTurretMountType.mass);
+            ammos(MountTurretType.MultiTurretMountType.tract);
 
             addSkills(entity -> () -> {
                 if(Groups.unit.find(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range) == null
@@ -302,11 +302,11 @@ public class SBlocks implements ContentList{
                     10f, -4.5f,
                     0f, 1.5f});
 
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.repair);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.repair);
 
             addSkills(entity -> () -> {
                 final float shotAmount = 5;
@@ -378,9 +378,9 @@ public class SBlocks implements ContentList{
             addMountTurret(healBeamMount, healBeamMount, healLaserMount);
             addCustomMountLocation(new Float[]{6.75f, -2.5f, -6.5f, -2.5f, 0f, 1f});
 
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.repair);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.repair);
 
             customMountLocation = true;
             hasLiquids = true;
@@ -419,9 +419,9 @@ public class SBlocks implements ContentList{
                 0f, 0f
             });
 
-            ammos(MultiTurretMount.MultiTurretMountType.drill);
-            ammos(MultiTurretMount.MultiTurretMountType.drill);
-            ammos(MultiTurretMount.MultiTurretMountType.mass);
+            ammos(MountTurretType.MultiTurretMountType.drill);
+            ammos(MountTurretType.MultiTurretMountType.drill);
+            ammos(MountTurretType.MultiTurretMountType.mass);
 
             itemCapacity = 150;
             customMountLocation = true;
@@ -454,14 +454,14 @@ public class SBlocks implements ContentList{
             addBaseTurret(jumbleBullet, Items.graphite, "Aggregate");
             addMountTurret(unoMount, waveMount, hailMount);
 
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.liquid,
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.liquid,
                 Liquids.water, SBullets.miniWater,
                 Liquids.slag, SBullets.miniSlag,
                 Liquids.cryofluid, SBullets.miniCryo,
                 Liquids.oil, SBullets.miniOil
             );
-            ammos(MultiTurretMount.MultiTurretMountType.item,
+            ammos(MountTurretType.MultiTurretMountType.item,
                 Items.graphite, Bullets.artilleryDense,
                 Items.silicon, Bullets.artilleryHoming,
                 Items.pyratite, Bullets.artilleryIncendiary
@@ -558,10 +558,10 @@ public class SBlocks implements ContentList{
                 -5f, -5f,
                 0f,0f
             });
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.mass);
-            ammos(MultiTurretMount.MultiTurretMountType.repair);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.mass);
+            ammos(MountTurretType.MultiTurretMountType.repair);
         }};
 
         armedNucleus = new BattleCore("armedNucleus"){{
@@ -592,16 +592,16 @@ public class SBlocks implements ContentList{
             });
 
             for(int i = 0; i < 4; i++) {
-                ammos(MultiTurretMount.MultiTurretMountType.item,
+                ammos(MountTurretType.MultiTurretMountType.item,
                     Items.graphite, Bullets.artilleryDense,
                     Items.silicon, Bullets.artilleryHoming,
                     Items.pyratite, Bullets.artilleryIncendiary
                 );
             }
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
+            ammos(MountTurretType.MultiTurretMountType.power);
         }};
     }
 }

@@ -1,20 +1,26 @@
 package Sharustry.world.blocks.defense;
 
+import arc.Core;
 import arc.audio.Sound;
 import arc.func.Func2;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.geom.Rect;
+import arc.struct.ObjectMap;
+import arc.struct.OrderedMap;
 import arc.struct.Seq;
+import mindustry.audio.SoundLoop;
 import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
 import mindustry.entities.*;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.*;
 import mindustry.graphics.Pal;
+import mindustry.type.Item;
+import mindustry.type.Liquid;
 import mindustry.type.StatusEffect;
 
-public class MultiTurretMount {
+public class MountTurretType {
     public int shots = 1;
     public int ammoPerShot = 2;
 
@@ -142,20 +148,64 @@ public class MultiTurretMount {
 
     //skill
     public Seq<Integer> skillDelays = new Seq<>();
-    public Seq<Func2<Building, MultiTurretMount, Runnable>> skillSeq = new Seq<>();
+    public Seq<Func2<Building, MountTurretType, Runnable>> skillSeq = new Seq<>();
 
-    public MultiTurretMount(String name) {
+    public ObjectMap<Liquid, BulletType> liquidMountAmmoType = new ObjectMap<>();
+    public ObjectMap<Item, BulletType> mountAmmoType = new ObjectMap<>();
+
+    public TextureRegion[] turrets = new TextureRegion[]{};
+
+    public boolean customMountLocation = false;
+    public float customMountLocationsX = 0f;
+    public float customMountLocationsY = 0f;
+
+    public SoundLoop loopSoundLoop;
+
+    public MountTurretType(String name) {
         this.name = name;
     }
 
-    public MultiTurretMount(String name, BulletType bullet){
+    public MountTurretType(String name, BulletType bullet){
         this.name = name;
         this.bullet = bullet;
     }
 
-    public <T1 extends Building, T2 extends MultiTurretMount> void addSkills(Func2<T1, T2, Runnable> skill, int delay){
+    public void ammos(MultiTurretMountType ammotype, Object... objects){
+        if(ammotype == MultiTurretMountType.item) {
+            mountAmmoType = OrderedMap.of(objects);
+            liquidMountAmmoType = null;
+        }
+        if(ammotype == MultiTurretMountType.liquid) {
+            mountAmmoType = null;
+            liquidMountAmmoType = OrderedMap.of(objects);
+        } else {
+            liquidMountAmmoType = null;
+            mountAmmoType = null;
+        }
+    }
+
+    public void load(){
+        //[Sprite, Outline, Heat, Fade Mask]
+        TextureRegion[] sprites = {
+                Core.atlas.find("shar-" + name + ""),
+                Core.atlas.find("shar-" + name + "-outline"),
+                Core.atlas.find("shar-" + name + "-heat"),
+                Core.atlas.find("shar-" + name + "-mask")
+        };
+        turrets = sprites;
+
+        //for some unknown reason, mounts cannot use @Load annotations...hmm
+        laser = Core.atlas.find("shar-repair-laser");
+        laserEnd = Core.atlas.find("shar-repair-laser-end");
+        tractLaser = Core.atlas.find("shar-tlaser");
+        tractLaserEnd = Core.atlas.find("shar-tlaser-end");
+
+        loopSoundLoop = new SoundLoop(loopSound, loopVolume);
+    }
+
+    public <T1 extends Building, T2 extends MountTurretType> void addSkills(Func2<T1, T2, Runnable> skill, int delay){
         if(skill != null) {
-            skillSeq.add((Func2<Building, MultiTurretMount, Runnable>) skill);
+            skillSeq.add((Func2<Building, MountTurretType, Runnable>) skill);
             skillDelays.add(delay);
         }
     }

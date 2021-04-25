@@ -15,7 +15,7 @@ import static mindustry.Vars.*;
 public class MountSelection {
     private static float scrollPos = 0f;
 
-    public static void buildTable(Table table, Prov<MultiTurretMount> holder, Cons<MultiTurretMount> consumer, boolean closeSelect, Seq<MultiTurretMount> mounts){
+    public static void buildTable(Table table, Prov<MountTurretType> holder, Cons<MountTurretType> consumer, boolean closeSelect, Seq<MountTurretType> mounts){
         ButtonGroup<ImageButton> group = new ButtonGroup<>();
         group.setMinCheckCount(0);
         Table cont = new Table();

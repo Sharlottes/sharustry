@@ -4,7 +4,6 @@ import arc.Core;
 import arc.graphics.Blending;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
@@ -105,7 +104,7 @@ public class MultiItemConstructTurret extends MultiConstructTurret{
                     Draw.color();
                 }
 
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.tract && _anys.get(i)){
+                if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.tract && _anys.get(i)){
                     Draw.z(Layer.bullet);
                     float ang = angleTo(_lastXs.get(i), _lastYs.get(i));
 
@@ -118,7 +117,7 @@ public class MultiItemConstructTurret extends MultiConstructTurret{
                     Draw.mixcol();
                     Draw.reset();
                 }
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.repair
+                if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.repair
                         && _repairTargets.get(i) != null
                         && Angles.angleDist(angleTo(_repairTargets.get(i)), _rotations.get(i)) < 30f){
                     Draw.z(Layer.flyingUnit + 1); //above all units
@@ -132,7 +131,7 @@ public class MultiItemConstructTurret extends MultiConstructTurret{
                     Draw.color();
                     Draw.reset();
                 }
-                if(mounts.get(i).mountType == MultiTurretMount.MultiTurretMountType.drill
+                if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.drill
                         && _mineTiles.get(i) != null){
                     float focusLen = mounts.get(i).laserOffset / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);
                     float swingScl = 12f, swingMag = tilesize / 8f;
