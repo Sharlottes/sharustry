@@ -842,18 +842,16 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void handleItem(Building source, Item item){
             for(int h = 0; h < mounts.size; h++) {
-                if(mountAmmoTypes.get(h) == null) continue;
-
                 if(!((mountAmmoTypes.get(h) != null
                         && mountAmmoTypes.get(h).get(item) != null
                         && _totalAmmos.get(h) + mountAmmoTypes.get(h).get(item).ammoMultiplier <= mounts.get(h).maxAmmo)
                     || (ammoTypes.get(item) != null
                         && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo))) continue;
-
-                if (item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
-
                 BulletType type = mountAmmoTypes.get(h).get(item);
                 if(type == null) continue;
+
+                if(item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
+
                 _totalAmmos.set(h, (int)(_totalAmmos.get(h) + type.ammoMultiplier));
 
                 boolean asdf = true;
@@ -926,9 +924,15 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public int acceptStack(Item item, int amount, Teamc source){
-            for(int i = 0; i < mounts.size; i++)
-                if(mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null)
-                    return Math.max(Math.min((int)(( mounts.get(i).maxAmmo - _totalAmmos.get(i)) / mountAmmoTypes.get(i).get(item).ammoMultiplier), amount), Math.min((int)((maxAmmo - totalAmmo) / ammoTypes.get(item).ammoMultiplier), amount));
+            boolean h = false;
+            int past1 = 0;
+
+            for(int i = 0; i < mounts.size; i++) {
+                h = mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null
+                        && _totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo;
+                past1 = Math.min(past1, (int)((mounts.get(i).maxAmmo - _totalAmmos.get(i)) / mountAmmoTypes.get(i).get(item).ammoMultiplier));
+            }
+            if(h) return Math.min(past1, amount);
             return 0;
         }
 

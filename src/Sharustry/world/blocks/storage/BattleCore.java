@@ -716,21 +716,13 @@ public class BattleCore extends CoreBlock {
 
         @Override
         public void handleItem(Building source, Item item){
-            boolean ammoFull = false;
             for(int h = 0; h < mounts.size; h++) {
-                ammoFull = false;
-
-                if(!(mountAmmoTypes.get(h) != null
-                        && mountAmmoTypes.get(h).get(item) != null
-                        && _totalAmmos.get(h) + mountAmmoTypes.get(h).get(item).ammoMultiplier <= mounts.get(h).maxAmmo)){
-                    ammoFull = true;
-                    continue;
-                }
-
-                if (item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
-
+                if(!(mountAmmoTypes.get(h) != null && mountAmmoTypes.get(h).get(item) != null
+                        && _totalAmmos.get(h) + mountAmmoTypes.get(h).get(item).ammoMultiplier <= mounts.get(h).maxAmmo)) continue;
                 BulletType type = mountAmmoTypes.get(h).get(item);
                 if(type == null) continue;
+
+                if(item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
                 _totalAmmos.set(h, (int)(_totalAmmos.get(h) + type.ammoMultiplier));
 
                 boolean asdf = true;
@@ -749,12 +741,17 @@ public class BattleCore extends CoreBlock {
                     _ammos.get(h).add(new BattleCore.ItemEntry(item, (int)type.ammoMultiplier < mounts.get(h).ammoPerShot ? (int)type.ammoMultiplier + mounts.get(h).ammoPerShot : (int)type.ammoMultiplier));
                 }
             }
-            if(ammoFull) super.handleItem(source, item);
+            super.handleItem(source, item);
         }
 
         @Override
         public boolean acceptItem(Building source, Item item){
-            return super.acceptItem(source, item);
+            boolean h = false;
+            for(int i = 0; i < mounts.size; i++) {
+                h = mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null
+                        && _totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo;
+            }
+            return h || super.acceptItem(source, item);
         }
 
         @Override
@@ -770,6 +767,15 @@ public class BattleCore extends CoreBlock {
 
         @Override
         public int acceptStack(Item item, int amount, Teamc source){
+            boolean h = false;
+            int past1 = 0;
+
+            for(int i = 0; i < mounts.size; i++) {
+                h = mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null
+                        && _totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo;
+                past1 = Math.min(past1, (int)((mounts.get(i).maxAmmo - _totalAmmos.get(i)) / mountAmmoTypes.get(i).get(item).ammoMultiplier));
+            }
+            if(h) return Math.min(past1, amount);
             return super.acceptStack(item, amount, source);
         }
 
@@ -1677,6 +1683,7 @@ public class BattleCore extends CoreBlock {
                     write.i(link);
                     write.b((byte) massState.ordinal());
                 }
+
                 if(mounts.get(i).mountType != MultiTurretMount.MultiTurretMountType.item) continue;
 
                 write.b(_ammos.get(i).size);
@@ -1698,24 +1705,30 @@ public class BattleCore extends CoreBlock {
                 } catch(Throwable e){
                     Log.warn(String.valueOf(e));
                 }
+
                 if(mounts.get(h).mountType == MultiTurretMount.MultiTurretMountType.mass) {
                     link = read.i();
                     massState = MassDriver.DriverState.all[read.b()];
                 }
+
                 if(mounts.get(h).mountType != MultiTurretMount.MultiTurretMountType.item) continue;
 
                 int amount = read.ub();
                 for(int i = 0; i < amount; i++) {
                     Item item = content.item(revision < 2 ? read.ub() : read.s());
                     short a = read.s();
-                    _totalAmmos.set(i, _totalAmmos.get(i) + a);
+                    _totalAmmos.set(h, _totalAmmos.get(h) + a);
 
-                    if(item != null && mountAmmoTypes.get(h) != null && mountAmmoTypes.get(h).containsKey(item)) _ammos.get(i).add(new ItemEntry(item, a));
+                    if(item != null && mountAmmoTypes.get(h) != null && mountAmmoTypes.get(h).containsKey(item)) _ammos.get(h).add(new ItemEntry(item, a));
                 }
             }
         }
-    }
 
+        @Override
+        public byte version(){
+            return 2;
+        }
+    }
     public class ItemEntry {
         protected Item item;
         public int amount;

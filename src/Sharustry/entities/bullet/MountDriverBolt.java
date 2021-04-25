@@ -89,7 +89,7 @@ public class MountDriverBolt extends MassDriverBolt {
                 b.set(toM.getX() + Angles.trnsx(baseAngle, hitDst), toM.getY() + Angles.trnsy(baseAngle, hitDst));
             }
         }
-        Log.info(Math.abs(dst1 + dst2 - baseDst) < 4f && dst2 <= hitDst);
+
         //if on course and it's in range of the target
         if(Math.abs(dst1 + dst2 - baseDst) < 4f && dst2 <= hitDst){
             intersect = true;
