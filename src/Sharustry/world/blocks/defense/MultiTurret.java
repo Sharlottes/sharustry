@@ -839,19 +839,22 @@ public class MultiTurret extends TemplatedTurret {
             return 0;
         }
 
+
         @Override
         public void handleItem(Building source, Item item){
             for(int h = 0; h < mounts.size; h++) {
+                if(mountAmmoTypes.get(h) == null) continue;
+
                 if(!((mountAmmoTypes.get(h) != null
                         && mountAmmoTypes.get(h).get(item) != null
                         && _totalAmmos.get(h) + mountAmmoTypes.get(h).get(item).ammoMultiplier <= mounts.get(h).maxAmmo)
-                    || (ammoTypes.get(item) != null
+                        || (ammoTypes.get(item) != null
                         && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo))) continue;
+
+                if (item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
+
                 BulletType type = mountAmmoTypes.get(h).get(item);
                 if(type == null) continue;
-
-                if(item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
-
                 _totalAmmos.set(h, (int)(_totalAmmos.get(h) + type.ammoMultiplier));
 
                 boolean asdf = true;
@@ -902,11 +905,12 @@ public class MultiTurret extends TemplatedTurret {
         public boolean acceptItem(Building source, Item item){
             boolean h = false;
             for(int i = 0; i < mounts.size; i++) {
-                if(mounts.find(m -> m.mountType == MultiTurretMount.MultiTurretMountType.mass) != null) if(items.total() < itemCapacity && linkValid(i)) h = true;
+                if(mounts.find(m -> m.mountType == MultiTurretMount.MultiTurretMountType.mass) != null) {
+                    if (items.total() < itemCapacity && linkValid(i)) h = true;
+                }
                 else if((mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null
                         && _totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo)
-                    || (ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo))
-                    h = true;
+                        || (ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo)) h = true;
             }
             return h;
         }
