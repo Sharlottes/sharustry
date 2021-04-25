@@ -841,7 +841,6 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public void handleItem(Building source, Item item){
-            boolean ammoFull = false;
             for(int h = 0; h < mounts.size; h++) {
                 if(mountAmmoTypes.get(h) == null) continue;
 

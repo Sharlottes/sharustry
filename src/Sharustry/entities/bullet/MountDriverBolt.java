@@ -5,6 +5,7 @@ import Sharustry.world.blocks.defense.MultiTurret;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.graphics.*;
 import arc.math.*;
+import arc.math.geom.Position;
 import arc.util.Log;
 import mindustry.content.*;
 import mindustry.entities.bullet.MassDriverBolt;
@@ -26,22 +27,66 @@ public class MountDriverBolt extends MassDriverBolt {
         //if the target is dead, just keep flying until the bullet explodes
         if(data.to.dead()) return;
 
-        float baseDst = data.from.dst(data.to);
-        float dst1 = b.dst(data.from);
-        float dst2 = b.dst(data.to);
+        Position fromM = new Position() {
+            @Override
+            public float getX() {
+                if(data.from instanceof MultiTurret.MultiTurretBuild)
+                    return ((MultiTurret.MultiTurretBuild)data.from).mountLocations(((MultiTurret)data.from.block).massIndex)[0];
+                if(data.from instanceof BattleCore.BattleCoreBuild)
+                    return ((BattleCore.BattleCoreBuild)data.from).mountLocations(((BattleCore)data.from.block).massIndex)[0];
+
+                return 0;
+            };
+
+            @Override
+            public float getY() {
+                if(data.from instanceof MultiTurret.MultiTurretBuild)
+                    return ((MultiTurret.MultiTurretBuild)data.from).mountLocations(((MultiTurret)data.from.block).massIndex)[1];
+                if(data.from instanceof BattleCore.BattleCoreBuild)
+                    return ((BattleCore.BattleCoreBuild)data.from).mountLocations(((BattleCore)data.from.block).massIndex)[1];
+
+                return 0;
+            }
+        };
+
+        Position toM = new Position() {
+            @Override
+            public float getX() {
+                if(data.to instanceof MultiTurret.MultiTurretBuild)
+                    return ((MultiTurret.MultiTurretBuild)data.to).mountLocations(((MultiTurret)data.to.block).massIndex)[0];
+                if(data.to instanceof BattleCore.BattleCoreBuild)
+                    return ((BattleCore.BattleCoreBuild)data.to).mountLocations(((BattleCore)data.to.block).massIndex)[0];
+
+                return 0;
+            };
+
+            @Override
+            public float getY() {
+                if(data.to instanceof MultiTurret.MultiTurretBuild)
+                    return ((MultiTurret.MultiTurretBuild)data.to).mountLocations(((MultiTurret)data.to.block).massIndex)[1];
+                if(data.to instanceof BattleCore.BattleCoreBuild)
+                    return ((BattleCore.BattleCoreBuild)data.to).mountLocations(((BattleCore)data.to.block).massIndex)[1];
+
+                return 0;
+            }
+        };
+
+        float baseDst = fromM.dst(toM);
+        float dst1 = b.dst(fromM);
+        float dst2 = b.dst(toM);
 
         boolean intersect = false;
 
         //bullet has gone past the destination point: but did it intersect it?
         if(dst1 > baseDst){
-            float angleTo = b.angleTo(data.to);
-            float baseAngle = data.to.angleTo(data.from);
+            float angleTo = b.angleTo(toM);
+            float baseAngle = toM.angleTo(fromM);
 
             //if angles are nearby, then yes, it did
             if(Angles.near(angleTo, baseAngle, 2f)){
                 intersect = true;
                 //snap bullet position back; this is used for low-FPS situations
-                b.set(data.to.x + Angles.trnsx(baseAngle, hitDst), data.to.y + Angles.trnsy(baseAngle, hitDst));
+                b.set(toM.getX() + Angles.trnsx(baseAngle, hitDst), toM.getY() + Angles.trnsy(baseAngle, hitDst));
             }
         }
         Log.info(Math.abs(dst1 + dst2 - baseDst) < 4f && dst2 <= hitDst);

@@ -716,12 +716,16 @@ public class BattleCore extends CoreBlock {
 
         @Override
         public void handleItem(Building source, Item item){
+            boolean ammoFull = false;
             for(int h = 0; h < mounts.size; h++) {
-                if(mountAmmoTypes.get(h) == null) continue;
+                ammoFull = false;
 
                 if(!(mountAmmoTypes.get(h) != null
                         && mountAmmoTypes.get(h).get(item) != null
-                        && _totalAmmos.get(h) + mountAmmoTypes.get(h).get(item).ammoMultiplier <= mounts.get(h).maxAmmo)) continue;
+                        && _totalAmmos.get(h) + mountAmmoTypes.get(h).get(item).ammoMultiplier <= mounts.get(h).maxAmmo)){
+                    ammoFull = true;
+                    continue;
+                }
 
                 if (item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
 
@@ -745,21 +749,12 @@ public class BattleCore extends CoreBlock {
                     _ammos.get(h).add(new BattleCore.ItemEntry(item, (int)type.ammoMultiplier < mounts.get(h).ammoPerShot ? (int)type.ammoMultiplier + mounts.get(h).ammoPerShot : (int)type.ammoMultiplier));
                 }
             }
-            if(mounts.find(m -> m.mountType == MultiTurretMount.MultiTurretMountType.mass) != null
-                && items.total() < itemCapacity
-                && linkValid(massIndex)) super.handleItem(source, item);
+            if(ammoFull) super.handleItem(source, item);
         }
 
         @Override
         public boolean acceptItem(Building source, Item item){
-            boolean h = false;
-            for(int i = 0; i < mounts.size; i++) {
-                if(mounts.find(m -> m.mountType == MultiTurretMount.MultiTurretMountType.mass) != null) if(items.total() < itemCapacity && linkValid(i) || super.acceptItem(source, item)) h = true;
-                else if((mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null
-                        && _totalAmmos.get(i) + mountAmmoTypes.get(i).get(item).ammoMultiplier <= mounts.get(i).maxAmmo)
-                    || super.acceptItem(source, item)) h = true;
-            }
-            return h;
+            return super.acceptItem(source, item);
         }
 
         @Override
@@ -775,12 +770,8 @@ public class BattleCore extends CoreBlock {
 
         @Override
         public int acceptStack(Item item, int amount, Teamc source){
-            for(int i = 0; i < mounts.size; i++)
-                if(mountAmmoTypes.get(i) != null && mountAmmoTypes.get(i).get(item) != null)
-                    return Math.min((int)((mounts.get(i).maxAmmo - _totalAmmos.get(i)) / mountAmmoTypes.get(i).get(item).ammoMultiplier), amount);
-            return 0;
+            return super.acceptStack(item, amount, source);
         }
-
 
         public float[] mountLocations(int mount){
             Tmp.v1.trns(this.rotation - 90, (customMountLocation ? customMountLocationsX.get(mount) : mounts.get(mount).x), (customMountLocation ? customMountLocationsY.get(mount) : mounts.get(mount).y));
@@ -1712,13 +1703,13 @@ public class BattleCore extends CoreBlock {
                     massState = MassDriver.DriverState.all[read.b()];
                 }
                 if(mounts.get(h).mountType != MultiTurretMount.MultiTurretMountType.item) continue;
+
                 int amount = read.ub();
                 for(int i = 0; i < amount; i++) {
                     Item item = content.item(revision < 2 ? read.ub() : read.s());
                     short a = read.s();
                     _totalAmmos.set(i, _totalAmmos.get(i) + a);
 
-                    //only add ammo if this is a valid ammo type //NO ADD ON EVERY MOUNT WHICH ITEM AMMO
                     if(item != null && mountAmmoTypes.get(h) != null && mountAmmoTypes.get(h).containsKey(item)) _ammos.get(i).add(new ItemEntry(item, a));
                 }
             }
