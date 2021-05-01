@@ -9,6 +9,8 @@ import arc.math.Mathf;
 import arc.scene.ui.Image;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
+import arc.struct.ObjectMap;
+import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.bullet.BulletType;
@@ -189,16 +191,15 @@ public class SBlocks implements ContentList{
                 collidesAir = false;
                 length = 173f;
             }}, Items.titanium, "Conductron");
-            addMountTurret(arcMount, arcMount, laserMount);
-            addCustomMountLocation(new Float[]{
-                -6.5f, -4.25f,
-                6.5f, -4.25f,
-                0f, 1.5f
-            });
+            addMountTurret(arcMount);
+            addMountTurret(arcMount);
+            addMountTurret(laserMount);
 
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
+            addCustomMountLocation(new Float[]{
+                    -6.5f, -4.25f,
+                    6.5f, -4.25f,
+                    0f, 1.5f
+            });
 
             hasPower = true;
             size = 3;
@@ -237,17 +238,13 @@ public class SBlocks implements ContentList{
                 shootEffect = smokeEffect = Fx.thoriumShoot;
             }}, Items.thorium, "Trinity");
             addMountTurret(repairMount, pointMount, massMount, tractMount);
+
             addCustomMountLocation(new Float[]{
                     -8f, 0f,
                     0f, 6.5f,
                     0f, 0f,
                     8f, 0f
             });
-
-            ammos(MountTurretType.MultiTurretMountType.repair);
-            ammos(MountTurretType.MultiTurretMountType.point);
-            ammos(MountTurretType.MultiTurretMountType.mass);
-            ammos(MountTurretType.MultiTurretMountType.tract);
 
             addSkills(entity -> () -> {
                 if(Groups.unit.find(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range) == null
@@ -295,18 +292,15 @@ public class SBlocks implements ContentList{
 
             addBaseTurret(SBullets.artilleryHealBig, Items.plastanium,"Asclepius");
             addMountTurret(healBeamMountR, healBeamMountL, healMissileMountL, healMissileMountR, healLaserMount2);
+
             addCustomMountLocation(new Float[]{
                     -7.25f, 2f,
                     7.25f, 2f,
                     -10f, -4.5f,
                     10f, -4.5f,
-                    0f, 1.5f});
+                    0f, 1.5f
+            });
 
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.repair);
 
             addSkills(entity -> () -> {
                 final float shotAmount = 5;
@@ -376,11 +370,12 @@ public class SBlocks implements ContentList{
 
             addBaseTurret(SBullets.artilleryHeal, Items.plastanium,"Clinicus");
             addMountTurret(healBeamMount, healBeamMount, healLaserMount);
-            addCustomMountLocation(new Float[]{6.75f, -2.5f, -6.5f, -2.5f, 0f, 1f});
 
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.repair);
+            addCustomMountLocation(new Float[]{
+                    6.75f, -2.5f,
+                    -6.5f, -2.5f,
+                    0f, 1f
+            });
 
             customMountLocation = true;
             hasLiquids = true;
@@ -412,16 +407,14 @@ public class SBlocks implements ContentList{
             requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 180, Items.graphite, 140, Items.silicon, 200, Items.titanium, 180, Items.thorium, 130));
 
             addBaseTurret(SBullets.fossers, Items.plastanium,"Fossor");
-            addMountTurret(miniDrillMount, miniDrillMount, miniMassMount);
-            addCustomMountLocation(new Float[]{
-                -7f, -8f,
-                7f, -8f,
-                0f, 0f
-            });
+            addMountTurret(miniDrillMount, miniDrillMount, miniMassMount, miniMassMount);
 
-            ammos(MountTurretType.MultiTurretMountType.drill);
-            ammos(MountTurretType.MultiTurretMountType.drill);
-            ammos(MountTurretType.MultiTurretMountType.mass);
+            addCustomMountLocation(new Float[]{
+                    -7f, -8f,
+                    7f, -8f,
+                    0f, 0f,
+                    2f, 2f
+            });
 
             itemCapacity = 150;
             customMountLocation = true;
@@ -453,19 +446,6 @@ public class SBlocks implements ContentList{
 
             addBaseTurret(jumbleBullet, Items.graphite, "Aggregate");
             addMountTurret(unoMount, waveMount, hailMount);
-
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.liquid,
-                Liquids.water, SBullets.miniWater,
-                Liquids.slag, SBullets.miniSlag,
-                Liquids.cryofluid, SBullets.miniCryo,
-                Liquids.oil, SBullets.miniOil
-            );
-            ammos(MountTurretType.MultiTurretMountType.item,
-                Items.graphite, Bullets.artilleryDense,
-                Items.silicon, Bullets.artilleryHoming,
-                Items.pyratite, Bullets.artilleryIncendiary
-            );
 
             shootCone = 35;
             size = 2;

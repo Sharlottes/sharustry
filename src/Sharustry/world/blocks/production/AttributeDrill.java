@@ -124,7 +124,6 @@ public class AttributeDrill extends Drill{
         public void buildConfiguration(Table table){
             super.buildConfiguration(table);
 
-            Log.info(attributeClicked.get(Attribute.water.ordinal()));
             table.button(new TextureRegionDrawable(Core.atlas.find("status-tarred")).tint(attributeClicked.get(Attribute.oil.ordinal()) ? Color.valueOf("313131") : Color.white), 40, () -> {
                 configure(Attribute.oil);
                 for(Attribute attr : Attribute.all){

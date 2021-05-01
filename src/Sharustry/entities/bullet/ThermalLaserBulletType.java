@@ -1,6 +1,5 @@
 package Sharustry.entities.bullet;
 
-import arc.util.Log;
 import mindustry.entities.bullet.*;
 import mindustry.gen.Bullet;
 

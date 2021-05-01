@@ -6,7 +6,6 @@ import Sharustry.world.blocks.storage.BattleCore;
 import arc.graphics.*;
 import arc.math.*;
 import arc.math.geom.Position;
-import arc.util.Log;
 import mindustry.content.*;
 import mindustry.entities.bullet.MassDriverBolt;
 import mindustry.gen.*;
@@ -31,7 +30,7 @@ public class MountDriverBolt extends MassDriverBolt {
             @Override
             public float getX() {
                 if(data.from instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.from).mountLocations(((MultiTurret)data.from.block).massIndex)[0];
+                    return ((MultiTurret.MultiTurretBuild)data.from).mounts.get(data.link).mountLocations((MultiTurret.MultiTurretBuild)data.from)[0];
                 if(data.from instanceof BattleCore.BattleCoreBuild)
                     return ((BattleCore.BattleCoreBuild)data.from).mountLocations(((BattleCore)data.from.block).massIndex)[0];
 
@@ -41,7 +40,7 @@ public class MountDriverBolt extends MassDriverBolt {
             @Override
             public float getY() {
                 if(data.from instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.from).mountLocations(((MultiTurret)data.from.block).massIndex)[1];
+                    return ((MultiTurret.MultiTurretBuild)data.from).mounts.get(data.link).mountLocations((MultiTurret.MultiTurretBuild)data.from)[1];
                 if(data.from instanceof BattleCore.BattleCoreBuild)
                     return ((BattleCore.BattleCoreBuild)data.from).mountLocations(((BattleCore)data.from.block).massIndex)[1];
 
@@ -53,7 +52,7 @@ public class MountDriverBolt extends MassDriverBolt {
             @Override
             public float getX() {
                 if(data.to instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.to).mountLocations(((MultiTurret)data.to.block).massIndex)[0];
+                    return ((MultiTurret.MultiTurretBuild)data.to).mounts.get(data.link).mountLocations((MultiTurret.MultiTurretBuild)data.to)[0];
                 if(data.to instanceof BattleCore.BattleCoreBuild)
                     return ((BattleCore.BattleCoreBuild)data.to).mountLocations(((BattleCore)data.to.block).massIndex)[0];
 
@@ -63,7 +62,7 @@ public class MountDriverBolt extends MassDriverBolt {
             @Override
             public float getY() {
                 if(data.to instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.to).mountLocations(((MultiTurret)data.to.block).massIndex)[1];
+                    return ((MultiTurret.MultiTurretBuild)data.to).mounts.get(data.link).mountLocations((MultiTurret.MultiTurretBuild)data.to)[1];
                 if(data.to instanceof BattleCore.BattleCoreBuild)
                     return ((BattleCore.BattleCoreBuild)data.to).mountLocations(((BattleCore)data.to.block).massIndex)[1];
 
@@ -89,7 +88,6 @@ public class MountDriverBolt extends MassDriverBolt {
                 b.set(toM.getX() + Angles.trnsx(baseAngle, hitDst), toM.getY() + Angles.trnsy(baseAngle, hitDst));
             }
         }
-
         //if on course and it's in range of the target
         if(Math.abs(dst1 + dst2 - baseDst) < 4f && dst2 <= hitDst){
             intersect = true;
