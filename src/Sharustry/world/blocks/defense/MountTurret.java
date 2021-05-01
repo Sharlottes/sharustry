@@ -408,12 +408,18 @@ public class MountTurret {
                 && Angles.angleDist(build.angleTo(repairTarget), rotation) < 30f){
             Draw.z(Layer.flyingUnit + 1); //above all units
             float ang = build.angleTo(repairTarget);
-            float len = 5f;
-
+            float len = 5f + Mathf.absin(Time.time, 1.1f, 0.5f);
+            float swingScl = 12f, swingMag = tilesize / 8f;
+            float scl = repairTarget.hitSize / 8f;
+            float random = Mathf.randomSeedRange(build.id, scl / 2f);
             Draw.color(type.laserColor);
             Drawf.laser(build.team, type.laser, type.laserEnd,
                     loc[0] + Angles.trnsx(ang, len), loc[1] + Angles.trnsy(ang, len),
-                    repairTarget.x, repairTarget.y, strength);
+                    repairTarget.x +
+                            Mathf.sin((Time.time + 6 * 8f) * scl / 3, (swingScl + random) * scl, swingMag * scl),
+                    repairTarget.y +
+                            Mathf.sin((Time.time + 6 * 8f) * scl / 3, ((swingScl + random) + 2f) * scl, swingMag * scl)
+                    , strength);
 
             Draw.reset();
         }
