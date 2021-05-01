@@ -1,5 +1,6 @@
 package Sharustry.world.blocks.defense;
 
+import Sharustry.ui.SItemImage;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.*;
 import arc.func.Cons;
@@ -8,11 +9,15 @@ import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.Point2;
+import arc.scene.ui.Image;
+import arc.scene.ui.Label;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
+import mindustry.Vars;
 import mindustry.content.*;
+import mindustry.core.UI;
 import mindustry.ctype.UnlockableContent;
 import mindustry.entities.bullet.*;
 import mindustry.game.EventType;
@@ -318,10 +323,39 @@ public class MultiTurret extends TemplatedTurret {
         }
         @Override
         public void displayConsumption(Table table){
-            for(MountTurret mount : mounts){
-                table.center();
-                mount.display(table, this);
-            }
+            table.table(c -> {
+                int q = 0;
+                for(int i = 0; i < Vars.content.items().size; i++) {
+                    q++;
+                    final int hh = q;
+                    final int h1 = i;
+                    Item item = Vars.content.items().get(h1);
+
+                    c.add(new Stack(){{
+                        add(new Table(o -> {
+                            o.left();
+                            o.add(new Image(item.icon(Cicon.medium))).size(32f);
+                        }));
+
+                        add(new Table(h -> {
+                            h.right().top();
+                            h.add(new Label(() -> {
+                                int amount = !items.has(Vars.content.items().get(h1)) ? 0 : items.get(Vars.content.items().get(h1));
+                                return amount > 1000 ? UI.formatAmount(amount) : amount + "";
+                            })).fontScale(0.8f).color(item.color);
+                            h.pack();
+                        }));
+                    }}).left().padRight(8);
+                    if(hh % 7 == 0) c.row();
+                }
+            }).center();
+            table.row();
+            table.table(t -> {
+                for(MountTurret mount : mounts) {
+                    t.center();
+                    mount.display(t, this);
+                }
+            });
         }
 
         @Override

@@ -690,10 +690,39 @@ public class BattleCore extends CoreBlock {
 
         @Override
         public void displayConsumption(Table table){
-            for(int i = 0; i < mounts.size; i++){
-                table.center();
-                tf(table, i);
-            }
+            table.table(c -> {
+                int q = 0;
+                for(int i = 0; i < Vars.content.items().size; i++) {
+                    q++;
+                    final int hh = q;
+                    final int h1 = i;
+                    Item item = Vars.content.items().get(h1);
+
+                    c.add(new Stack(){{
+                        add(new Table(o -> {
+                            o.left();
+                            o.add(new Image(item.icon(Cicon.medium))).size(32f);
+                        }));
+
+                        add(new Table(h -> {
+                            h.right().top();
+                            h.add(new Label(() -> {
+                                int amount = !items.has(Vars.content.items().get(h1)) ? 0 : items.get(Vars.content.items().get(h1));
+                                return amount > 1000 ? UI.formatAmount(amount) : amount + "";
+                            })).fontScale(0.8f).color(item.color);
+                            h.pack();
+                        }));
+                    }}).left().padRight(8);
+                    if(hh % 7 == 0) c.row();
+                }
+            }).center();
+            table.row();
+            table.table(t ->{
+                for(int i = 0; i < mounts.size; i++) {
+                    t.center();
+                    tf(t, i);
+                }
+            });
         }
 
         @Override
@@ -706,7 +735,6 @@ public class BattleCore extends CoreBlock {
                     break;
                 }
             }
-            bars.row();
         }
 
         @Override
