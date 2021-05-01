@@ -15,6 +15,8 @@ import arc.math.geom.Geometry;
 import arc.math.geom.Point2;
 import arc.math.geom.Vec2;
 import arc.scene.ui.Image;
+import arc.scene.ui.Label;
+import arc.scene.ui.Slider;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
@@ -23,6 +25,7 @@ import arc.util.pooling.Pools;
 import mindustry.*;
 import mindustry.audio.*;
 import mindustry.content.*;
+import mindustry.core.UI;
 import mindustry.core.World;
 import mindustry.ctype.UnlockableContent;
 import mindustry.entities.*;
@@ -36,6 +39,7 @@ import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.Block;
 import mindustry.world.Tile;
+import mindustry.world.blocks.ItemSelection;
 import mindustry.world.blocks.distribution.MassDriver;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.consumers.*;
@@ -75,6 +79,12 @@ public class BattleCore extends CoreBlock {
 
     public BattleCore(String name){
         super(name);
+
+        config(Item.class, (BattleCoreBuild tile, Item item) -> {
+            tile.outputItem = item;
+            if(tile.output.find(o -> o.item == item) == null) tile.output.add(new ItemStack(item, 0));
+        });
+        configClear((BattleCoreBuild tile) -> tile.outputItem = null);
 
         config(Point2.class, (Building tile, Point2 point) -> {
             //if(tile instanceof MultiTurret.MultiTurretBuild) ((MultiTurret.MultiTurretBuild)tile).link = Point2.pack(point.x + tile.tileX(), point.y + tile.tileY());
@@ -430,10 +440,13 @@ public class BattleCore extends CoreBlock {
 
         public float logicControlTime = -1;
         public boolean logicShooting = false;
-
+        public Item outputItem;
+        public int outputAmount;
+        public Seq<ItemStack> output = new Seq<>();
         public int link = -1;
         public MassDriver.DriverState massState = MassDriver.DriverState.idle;
         public OrderedSet<Tile> waitingShooters = new OrderedSet<>();
+
         @Override
         public void remove(){
             super.remove();
@@ -443,6 +456,8 @@ public class BattleCore extends CoreBlock {
         @Override
         public void created(){
             super.created();
+            for(int i = 0; i < Vars.content.items().size; i++) output.add(new ItemStack(Vars.content.items().get(i), 0));
+
             for(int i = 0; i < mounts.size; i++){
                 _targetIDs.add(-1);
                 _totalAmmos.add(0);
@@ -475,6 +490,56 @@ public class BattleCore extends CoreBlock {
                 _targetItems.add(null);
                 if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.drill) mountReMap(i);
             }
+        }
+
+        @Override
+        public void buildConfiguration(Table table){
+            ItemSelection.buildTable(table, content.items(), () -> outputItem, this::configure);
+
+            table.table(t -> {
+                for(int i = 1; i <= Vars.content.items().size; i++){
+                    final int j = i - 1;
+                    if(j % 3 == 0) t.row();
+                    t.add(new Stack(){{
+                        add(new Table(o -> {
+                            o.left();
+                            o.add(new Image(output.get(j).item.icon(Cicon.medium))).size(32f);
+                        }));
+
+                        add(new Table(h -> {
+                            h.right().top();
+                            h.add(new Label(() -> output.get(j).amount > 1000 ? UI.formatAmount(output.get(j).amount) : output.get(j).amount + "")).fontScale(0.8f).color(output.get(j).item.color);
+                            h.pack();
+                        }));
+                    }});
+                };
+            });
+
+            table.row();
+            table.add(new Stack(){{
+                add(new Table(tt -> {
+                    tt.top();
+                    float max = outputItem == null ? items.total() : items.get(outputItem);
+                    if(mounts.find(m -> linkValid(mounts.indexOf(m))) != null && world.build(link) != null) max = Math.min(world.build(link).block.itemCapacity, max);
+                    Slider slide = new Slider(0, outputItem == null ? items.total() : items.get(outputItem), 1f, false);
+                    slide.setValue(0);
+                    slide.moved(i -> {
+                        ItemStack stack = output.find(o -> o.item == outputItem);
+                        if(stack != null) stack.set(outputItem, (int)i);
+                        outputAmount = (int) i;
+                    });
+                    tt.add(slide).width(block.size * 3f - 20).padTop(4f);
+                    tt.pack();
+                }));
+                add(new Table(tt -> {
+                    tt.top();
+                    Label label = new Label(() -> {
+                        Color col = Color.white.cpy().lerp(outputItem == null ? Color.valueOf("dcdcdc") : outputItem.color, outputAmount / ((outputItem == null ? items.total() : items.get(outputItem)) * 1f));
+                        return "[#" + col.toString() + "]" + outputAmount + "";
+                    });
+                    tt.add(label);
+                }));
+            }}).padTop(5).growX().top();
         }
 
         public void tf(Table table, int i){
@@ -1168,7 +1233,7 @@ public class BattleCore extends CoreBlock {
             data.link = i;
             int totalUsed = 0;
             for(int h = 0; h < content.items().size; h++){
-                int maxTransfer = Math.min(items.get(content.item(h)), tile.block().itemCapacity - totalUsed);
+                int maxTransfer = Math.min(items.get(content.item(h)), Math.max(output.get(h).amount, 0));
                 data.items[h] = maxTransfer;
                 totalUsed += maxTransfer;
                 items.remove(content.item(h), maxTransfer);
@@ -1676,6 +1741,13 @@ public class BattleCore extends CoreBlock {
         public void write(Writes write){
             super.write(write);
 
+            write.s(outputItem == null ? -1 : outputItem.id);
+            write.i(outputAmount);
+            for(int i = 0; i < output.size; i++){
+                write.s(output.get(i).item == null ? -1 : output.get(i).item.id);
+                write.i(output.get(i).amount);
+            }
+
             for(int i = 0; i < mounts.size; i++) {
                 try{
                     write.f(_reloads.get(i));
@@ -1702,6 +1774,13 @@ public class BattleCore extends CoreBlock {
         @Override
         public void read(Reads read, byte revision){
             super.read(read, revision);
+
+            outputItem = content.item(read.s());
+            outputAmount = read.i();
+            for(int i = 0; i < output.size; i++){
+                output.get(i).item = content.item(read.s());
+                output.get(i).amount = read.i();
+            }
 
             for(int h = 0; h < mounts.size; h++) {
                 try{

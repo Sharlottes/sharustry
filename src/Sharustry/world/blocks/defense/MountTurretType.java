@@ -148,6 +148,7 @@ public class MountTurretType implements Cloneable {
     //mass region, mountType: mass only
     public float translation = 7f;
     public int minDistribute = 10;
+    public int maxDistribute = 300;
     public float knockback = 4f;
     public float bulletSpeed = 5.5f;
     public float bulletLifetime = 200f;
