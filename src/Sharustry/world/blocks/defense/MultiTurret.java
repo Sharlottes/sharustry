@@ -570,7 +570,7 @@ public class MultiTurret extends TemplatedTurret {
             boolean h = !charging;
             for(MountTurret mount : mounts) {
                 h = mount.shouldTurn();
-                if(h) break;
+                if(!h) break;
             }
             return h;
         }
