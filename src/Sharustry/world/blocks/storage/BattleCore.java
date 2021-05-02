@@ -451,6 +451,7 @@ public class BattleCore extends CoreBlock {
         public float scrollPos;
         public boolean massFired;
         public float scrollMax;
+        public float pastvalue;
         @Override
         public void remove(){
             super.remove();
@@ -545,10 +546,14 @@ public class BattleCore extends CoreBlock {
                     tt.top();
                     Slider slide = new Slider(0, scrollMax, 1f, false);
                     update(() -> slide.setRange(0, scrollMax));
-                    slide.setValue(outputItem == null ? 0f : output.find(o -> o.item == outputItem).amount);
+                    if(output.find(o -> o.item == outputItem) != null) slide.setValue(output.find(o -> o.item == outputItem).amount);
+                    else slide.setValue(pastvalue);
                     slide.moved(i -> {
                         ItemStack stack = output.find(o -> o.item == outputItem);
-                        if(stack != null) stack.set(outputItem, (int)i);
+                        if(stack != null) {
+                            stack.set(outputItem, (int)i);
+                            pastvalue = i;
+                        }
                         outputAmount = (int) i;
                     });
                     tt.add(slide).width(block.size * 3f - 20).padTop(4f);
