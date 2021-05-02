@@ -545,7 +545,7 @@ public class BattleCore extends CoreBlock {
                     tt.top();
                     Slider slide = new Slider(0, scrollMax, 1f, false);
                     update(() -> slide.setRange(0, scrollMax));
-                    slide.setValue(output.find(o -> o.item == outputItem).amount);
+                    slide.setValue(outputItem == null ? 0f : output.find(o -> o.item == outputItem).amount);
                     slide.moved(i -> {
                         ItemStack stack = output.find(o -> o.item == outputItem);
                         if(stack != null) stack.set(outputItem, (int)i);
@@ -557,7 +557,7 @@ public class BattleCore extends CoreBlock {
                 add(new Table(tt -> {
                     tt.top();
                     Label label = new Label(() -> {
-                        if(!items.has(outputItem)) return Core.bundle.format("ui.itemnotfound");
+                        if(outputItem == null || !items.has(outputItem)) return Core.bundle.format("ui.itemnotfound");
                         Color col = Color.white.cpy().lerp(outputItem.color, Mathf.clamp(output.find(o -> o.item == outputItem).amount / (scrollMax)));
                         return "[#" + col.toString() + "]" + output.find(o -> o.item == outputItem).amount + "";
                     });
