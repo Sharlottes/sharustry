@@ -1771,8 +1771,7 @@ public class BattleCore extends CoreBlock {
 
             write.s(outputItem == null ? -1 : outputItem.id);
             write.i(outputAmount);
-            for(int i = 0; i < output.size; i++){
-                write.s(output.get(i).item == null ? -1 : output.get(i).item.id);
+            for(int i = 0; i < content.items().size; i++){
                 write.i(output.get(i).amount);
             }
 
@@ -1805,8 +1804,7 @@ public class BattleCore extends CoreBlock {
 
             outputItem = content.item(read.s());
             outputAmount = read.i();
-            for(int i = 0; i < output.size; i++){
-                output.get(i).item = content.item(read.s());
+            for(int i = 0; i < content.items().size; i++){
                 output.get(i).amount = read.i();
             }
 

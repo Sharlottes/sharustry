@@ -413,7 +413,7 @@ public class SBlocks implements ContentList{
                     -7f, -8f,
                     7f, -8f,
                     0f, 0f,
-                    2f, 2f
+                    0f, 0f
             });
 
             itemCapacity = 150;
@@ -559,10 +559,11 @@ public class SBlocks implements ContentList{
             unitCapModifier = 24;
             researchCostMultiplier = 0.03f;
 
-            addMountTurret(hailMount, hailMount, hailMount, hailMount, unoMount, unoMount, unoMount, unoMount);
+            addMountTurret(hailMount, hailMount, massMount, hailMount, hailMount, unoMount, unoMount, unoMount, unoMount);
             addCustomMountLocation(new Float[]{
                 13f, 13f,
                 -13f, 13f,
+                0f, 0f,
                 13f, -13f,
                 -13f, -13f,
                 10f, 0f,
@@ -571,11 +572,19 @@ public class SBlocks implements ContentList{
                 0f, -10f
             });
 
-            for(int i = 0; i < 4; i++) {
+            for(int i = 0; i < 2; i++) {
                 ammos(MountTurretType.MultiTurretMountType.item,
                     Items.graphite, Bullets.artilleryDense,
                     Items.silicon, Bullets.artilleryHoming,
                     Items.pyratite, Bullets.artilleryIncendiary
+                );
+            }
+            ammos(MountTurretType.MultiTurretMountType.mass);
+            for(int i = 0; i < 2; i++) {
+                ammos(MountTurretType.MultiTurretMountType.item,
+                        Items.graphite, Bullets.artilleryDense,
+                        Items.silicon, Bullets.artilleryHoming,
+                        Items.pyratite, Bullets.artilleryIncendiary
                 );
             }
             ammos(MountTurretType.MultiTurretMountType.power);

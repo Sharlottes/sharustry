@@ -323,7 +323,7 @@ public class MultiTurret extends TemplatedTurret {
         }
         @Override
         public void displayConsumption(Table table){
-            table.table(c -> {
+            if(hasMass()) table.table(c -> {
                 int q = 0;
                 for(int i = 0; i < Vars.content.items().size; i++) {
                     q++;
