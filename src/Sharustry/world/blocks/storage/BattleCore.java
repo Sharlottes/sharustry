@@ -558,7 +558,7 @@ public class BattleCore extends CoreBlock {
                     tt.top();
                     Label label = new Label(() -> {
                         if(!items.has(outputItem)) return Core.bundle.format("ui.itemnotfound");
-                        Color col = Color.white.cpy().lerp(outputItem.color, Mathf.clamp(outputAmount / (items.get(outputItem) * 1f)));
+                        Color col = Color.white.cpy().lerp(outputItem.color, Mathf.clamp(outputAmount / (scrollMax * 1f)));
                         return "[#" + col.toString() + "]" + outputAmount + "";
                     });
                     tt.add(label);
