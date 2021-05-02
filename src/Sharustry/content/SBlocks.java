@@ -545,6 +545,7 @@ public class SBlocks implements ContentList{
         }};
 
         armedNucleus = new BattleCore("armedNucleus"){{
+            configurable = true;
             customMountLocation = true;
             hasLiquids = true;
             hasItems = true;

@@ -16,6 +16,7 @@ import arc.math.geom.Point2;
 import arc.math.geom.Vec2;
 import arc.scene.ui.Image;
 import arc.scene.ui.Label;
+import arc.scene.ui.ScrollPane;
 import arc.scene.ui.Slider;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
@@ -447,6 +448,9 @@ public class BattleCore extends CoreBlock {
         public MassDriver.DriverState massState = MassDriver.DriverState.idle;
         public OrderedSet<Tile> waitingShooters = new OrderedSet<>();
 
+        public float scrollPos;
+        public boolean massFired;
+        public float scrollMax;
         @Override
         public void remove(){
             super.remove();
@@ -494,35 +498,54 @@ public class BattleCore extends CoreBlock {
 
         @Override
         public void buildConfiguration(Table table){
-            ItemSelection.buildTable(table, content.items(), () -> outputItem, this::configure);
+            if(massFired) {
+                table.clear();
+                buildConfiguration(table);
+            }
+            ItemSelection.buildTable(table, content.items(), () -> outputItem, this::configure, false);
 
-            table.table(t -> {
-                for(int i = 1; i <= Vars.content.items().size; i++){
-                    final int j = i - 1;
-                    if(j % 3 == 0) t.row();
-                    t.add(new Stack(){{
-                        add(new Table(o -> {
-                            o.left();
-                            o.add(new Image(output.get(j).item.icon(Cicon.medium))).size(32f);
-                        }));
+            Table t = new Table();
+            t.defaults().size(40);
+            int w = 0;
+            for(int i = 1; i <= Vars.content.items().size; i++){
+                final int j = i - 1;
+                t.add(new Stack(){{
+                    add(new Table(o -> {
+                        o.left();
+                        o.add(new Image(output.get(j).item.icon(Cicon.medium))).size(32f);
+                    }));
 
-                        add(new Table(h -> {
-                            h.right().top();
-                            h.add(new Label(() -> output.get(j).amount > 1000 ? UI.formatAmount(output.get(j).amount) : output.get(j).amount + "")).fontScale(0.8f).color(output.get(j).item.color);
-                            h.pack();
-                        }));
-                    }});
-                };
-            });
+                    add(new Table(h -> {
+                        h.right().top();
+                        h.add(new Label(() -> output.get(j).amount > 1000 ? UI.formatAmount(output.get(j).amount) : output.get(j).amount + "")).fontScale(0.8f).color(output.get(j).item.color);
+                        h.pack();
+                    }));
+                }});
+                if(w++ % 4 == 3){
+                    t.row();
+                }
+            };
+            if(w % 4 != 0){
+                int remaining = 4 - (w % 4);
+                for(int j = 0; j < remaining; j++){
+                    t.image(Styles.black6);
+                }
+            }
 
+            ScrollPane pane = new ScrollPane(t, Styles.smallPane);
+            pane.setScrollingDisabled(true, false);
+            pane.setScrollYForce(scrollPos);
+            pane.update(() -> scrollPos = pane.getScrollY());
+
+            pane.setOverscroll(false, false);
+            table.add(pane).maxHeight(Scl.scl(40 * 5));
             table.row();
             table.add(new Stack(){{
                 add(new Table(tt -> {
                     tt.top();
-                    float max = outputItem == null ? items.total() : items.get(outputItem);
-                    if(mounts.find(m -> linkValid(mounts.indexOf(m))) != null && world.build(link) != null) max = Math.min(world.build(link).block.itemCapacity, max);
-                    Slider slide = new Slider(0, outputItem == null ? items.total() : items.get(outputItem), 1f, false);
-                    slide.setValue(0);
+                    Slider slide = new Slider(0, scrollMax, 1f, false);
+                    update(() -> slide.setRange(0, scrollMax));
+                    slide.setValue(outputAmount);
                     slide.moved(i -> {
                         ItemStack stack = output.find(o -> o.item == outputItem);
                         if(stack != null) stack.set(outputItem, (int)i);
@@ -534,7 +557,8 @@ public class BattleCore extends CoreBlock {
                 add(new Table(tt -> {
                     tt.top();
                     Label label = new Label(() -> {
-                        Color col = Color.white.cpy().lerp(outputItem == null ? Color.valueOf("dcdcdc") : outputItem.color, outputAmount / ((outputItem == null ? items.total() : items.get(outputItem)) * 1f));
+                        if(!items.has(outputItem)) return Core.bundle.format("ui.itemnotfound");
+                        Color col = Color.white.cpy().lerp(outputItem.color, Mathf.clamp(outputAmount / (items.get(outputItem) * 1f)));
                         return "[#" + col.toString() + "]" + outputAmount + "";
                     });
                     tt.add(label);
@@ -1041,6 +1065,8 @@ public class BattleCore extends CoreBlock {
             unit.set(x, y);
 
             super.updateTile();
+            scrollMax = items.get(outputItem);
+            if(mounts.find(m -> linkValid(mounts.indexOf(m))) != null && world.build(link) != null) scrollMax = Math.min(world.build(link).block.itemCapacity, scrollMax);
 
             if(logicControlTime > 0) logicControlTime -= Time.delta;
 
@@ -1250,6 +1276,7 @@ public class BattleCore extends CoreBlock {
         }
 
         public void fire(int i, Building other){
+            massFired = true;
             float[] loc = this.mountLocations(i);
 
             _reloads.set(i, 0f);
@@ -1278,6 +1305,7 @@ public class BattleCore extends CoreBlock {
             mounts.get(i).smokeEffect.at(loc[4] + Angles.trnsx(angle, mounts.get(i).translation), loc[5] + Angles.trnsy(angle, mounts.get(i).translation), angle);
             Effect.shake(mounts.get(i).shake, mounts.get(i).shake, new Vec2(loc[4], loc[5]));
             mounts.get(i).shootSound.at(tile, Mathf.random(0.9f, 1.1f));
+            massFired = false;
         }
 
         public void handlePayload(Bullet bullet, DriverBulletData data){
