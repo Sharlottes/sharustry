@@ -1185,7 +1185,7 @@ public class BattleCore extends CoreBlock {
                 waitingShooters.remove(currentShooter());
             }
 
-            //switch states
+            // states
             if(massState == MassDriver.DriverState.idle){
                 //start accepting when idle and there's space
                 if(!waitingShooters.isEmpty() && (itemCapacity - items.total() >= mounts.get(i).minDistribute)){
@@ -1195,8 +1195,6 @@ public class BattleCore extends CoreBlock {
                 }
             }
 
-            //dump when idle or accepting
-            if((massState == MassDriver.DriverState.idle || massState == MassDriver.DriverState.accepting) && mounts.find(m -> m.mountType == MountTurretType.MultiTurretMountType.drill && _mineTiles.get(mounts.indexOf(m)) != null) == null) dump();
             //skip when there's no power
             if(Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) <= 0.001f) return;
 

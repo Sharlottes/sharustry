@@ -1,6 +1,7 @@
 package Sharustry.content;
 
 import arc.graphics.Color;
+import arc.struct.Seq;
 import mindustry.content.Bullets;
 import mindustry.content.Fx;
 import mindustry.content.Items;
@@ -18,8 +19,7 @@ import static Sharustry.content.SBullets.*;
 
 public class STurretMounts implements ContentList {
     public static MountTurretType miniDrillMount, miniMassMount, drillMount, massMount, electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
-
-
+    public static Seq<MountTurretType> mounttypes = new Seq<>();
     @Override
     public void load() {
         miniDrillMount = new MountTurretType("mineM", MountTurretType.MultiTurretMountType.drill){{
@@ -461,5 +461,7 @@ public class STurretMounts implements ContentList {
             maxAmmo = 100;
             extinguish = true;
         }};
+
+        mounttypes = Seq.with(miniDrillMount, miniMassMount, drillMount, massMount, electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount);
     }
 }

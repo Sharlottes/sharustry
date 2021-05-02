@@ -97,10 +97,14 @@ public class MountTurret {
     public int link = -1;
     public int linkIndex = i;
 
-    public MountTurret(MountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i){
+    public float x, y;
+
+    public MountTurret(MountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i, float x, float y){
         this.type = type;
         this.block = block;
         this.i = i;
+        this.x = x;
+        this.y = y;
         shotCounter = 0f;
         skillCounter = 0;
         totalAmmo = 0;
@@ -140,7 +144,7 @@ public class MountTurret {
     }
 
     public float[] mountLocations(MultiTurret.MultiTurretBuild build){
-        Tmp.v1.trns(build.rotation - 90, (block.customMountLocation ? block.customMountLocationsX.get(i) : type.x), (block.customMountLocation ? block.customMountLocationsY.get(i) : type.y) - build.recoil);
+        Tmp.v1.trns(build.rotation - 90, x, y);
         Tmp.v1.add(build.x, build.y);
         Tmp.v2.trns(rotation, -recoil);
         float i = (shotCounter % type.barrels) - (type.barrels - 1) / 2;
@@ -239,7 +243,7 @@ public class MountTurret {
 
     public void display(Table table, MultiTurret.MultiTurretBuild build){
         if(block.basicMounts.size > 3 && i % 3 == 0) table.row();
-
+        else if(i % 3 == 0) table.row();
         table.add(new Stack(){{
             add(new Table(o -> {
                 o.left();
