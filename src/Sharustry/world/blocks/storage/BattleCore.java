@@ -1065,7 +1065,7 @@ public class BattleCore extends CoreBlock {
             unit.set(x, y);
 
             super.updateTile();
-            scrollMax = items.get(outputItem);
+            if(outputItem != null) scrollMax = items.get(outputItem);
             if(mounts.find(m -> linkValid(mounts.indexOf(m))) != null && world.build(link) != null) scrollMax = Math.min(world.build(link).block.itemCapacity, scrollMax);
 
             if(logicControlTime > 0) logicControlTime -= Time.delta;
