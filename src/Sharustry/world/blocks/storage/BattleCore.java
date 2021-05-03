@@ -14,10 +14,7 @@ import arc.math.*;
 import arc.math.geom.Geometry;
 import arc.math.geom.Point2;
 import arc.math.geom.Vec2;
-import arc.scene.ui.Image;
-import arc.scene.ui.Label;
-import arc.scene.ui.ScrollPane;
-import arc.scene.ui.Slider;
+import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
@@ -46,6 +43,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
+import static arc.Core.scene;
 import static mindustry.Vars.*;
 
 import static arc.struct.ObjectMap.of;
@@ -572,7 +570,7 @@ public class BattleCore extends CoreBlock {
         }
 
         public void tf(Table table, int i){
-            if(mounts.size > 3 && i % 3 == 0) table.row();
+            if(mounts.size > 3 && i % 4 == 0) table.row();
 
             table.add(new Stack(){{
                 add(new Table(o -> {
@@ -718,8 +716,8 @@ public class BattleCore extends CoreBlock {
         }
 
         @Override
-        public void displayConsumption(Table table){
-            table.table(c -> {
+        public void displayConsumption(Table table1){
+            table1.table(Tex.underline, table -> table.table(scene.getStyle(Button.ButtonStyle.class).up, c -> {
                 int q = 0;
                 for(int i = 0; i < Vars.content.items().size; i++) {
                     q++;
@@ -744,9 +742,9 @@ public class BattleCore extends CoreBlock {
                     }}).left().padRight(8);
                     if(hh % 7 == 0) c.row();
                 }
-            }).center();
-            table.row();
-            table.table(t ->{
+            }).center()).center();
+            table1.row();
+            table1.table(scene.getStyle(Button.ButtonStyle.class).up, t ->{
                 for(int i = 0; i < mounts.size; i++) {
                     t.center();
                     tf(t, i);

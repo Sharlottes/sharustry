@@ -242,8 +242,8 @@ public class MountTurret {
 
 
     public void display(Table table, MultiTurret.MultiTurretBuild build){
-        if(block.basicMounts.size > 3 && i % 3 == 0) table.row();
-        else if(i % 3 == 0) table.row();
+        if(block.basicMounts.size > 3 && i % 4 == 0) table.row();
+        else if(i % 4 == 0) table.row();
         table.add(new Stack(){{
             add(new Table(o -> {
                 o.left();

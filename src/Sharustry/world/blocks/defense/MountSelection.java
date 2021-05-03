@@ -43,6 +43,7 @@ public class MountSelection {
         button.changed(() -> consumer.get(build.linkmount));
         button.getStyle().imageUp = Icon.cancel;
         button.update(() -> button.setChecked(holder.get() == null));
+        if(i++ % 4 == 3) cont.row();
 
         //add extra blank spaces so it looks nice
         if(i % 4 != 0){

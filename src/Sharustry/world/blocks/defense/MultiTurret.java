@@ -10,6 +10,7 @@ import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.Point2;
+import arc.scene.ui.Button;
 import arc.scene.ui.Image;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.*;
@@ -33,6 +34,7 @@ import mindustry.world.meta.*;
 
 import java.util.Objects;
 
+import static arc.Core.scene;
 import static arc.struct.ObjectMap.*;
 import static mindustry.Vars.*;
 
@@ -330,8 +332,8 @@ public class MultiTurret extends TemplatedTurret {
             return mounts.find(m -> m.type.mountType == MountTurretType.MultiTurretMountType.mass) != null;
         }
         @Override
-        public void displayConsumption(Table table){
-            if(hasMass()) table.table(c -> {
+        public void displayConsumption(Table table1){
+            if(hasMass()) table1.table(Tex.underline, table -> table.table(scene.getStyle(Button.ButtonStyle.class).up, c -> {
                 int q = 0;
                 for(int i = 0; i < Vars.content.items().size; i++) {
                     q++;
@@ -356,9 +358,10 @@ public class MultiTurret extends TemplatedTurret {
                     }}).left().padRight(8);
                     if(hh % 7 == 0) c.row();
                 }
-            }).center();
-            table.row();
-            table.table(t -> {
+            }).center()).center();
+
+            table1.row();
+            table1.table(scene.getStyle(Button.ButtonStyle.class).up, t -> {
                 for(MountTurret mount : mounts) {
                     t.center();
                     mount.display(t, this);
@@ -421,9 +424,16 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void buildConfiguration(Table table) {
             super.buildConfiguration(table);
-            if(hasMass()) MountSelection.buildTable(table, mounts.copy().filter(m -> m.type.mountType == MountTurretType.MultiTurretMountType.mass), () -> linkmount, this::configure, this, false);
-            table.row();
-            MountTypeSelection.buildTable(table, STurretMounts.mounttypes, m -> addMount(m, Mathf.range(size), Mathf.range(size)),  false);
+            table.table(scene.getStyle(Button.ButtonStyle.class).up, t -> {
+                if(hasMass()) t.table(Tex.underline2, tt -> {
+                    tt.top();
+                    MountSelection.buildTable(tt, mounts.copy().filter(m -> m.type.mountType == MountTurretType.MultiTurretMountType.mass), () -> linkmount, this::configure, this, false);
+                }).top().row();
+                t.table(tt -> {
+                    tt.top();
+                    MountTypeSelection.buildTable(table, this, tt, STurretMounts.mounttypes, m -> addMount(m, Mathf.range(size), Mathf.range(size)),  false);
+                }).padLeft(10f);
+            });
         }
         @Override
         public int removeStack(Item item, int amount){
