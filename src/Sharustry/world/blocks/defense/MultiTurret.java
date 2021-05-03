@@ -1,6 +1,7 @@
 package Sharustry.world.blocks.defense;
 
 import Sharustry.content.STurretMounts;
+import Sharustry.ui.SBar;
 import Sharustry.ui.SItemImage;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.*;
@@ -13,6 +14,7 @@ import arc.math.geom.Point2;
 import arc.scene.ui.Button;
 import arc.scene.ui.Image;
 import arc.scene.ui.Label;
+import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
@@ -60,6 +62,7 @@ public class MultiTurret extends TemplatedTurret {
     public Seq<Cons<Table>> skillStats = new Seq<>();
     public Seq<MountTurretType> basicMounts = new Seq<>();
 
+    public float scrollPos;
     public MultiTurret(String name, BulletType type, Object ammo, String title, MountTurretType... mounts){
         this(name);
         addMountTurret(mounts);
@@ -408,6 +411,15 @@ public class MultiTurret extends TemplatedTurret {
                         () -> (shotcounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
                 bars.row();
             }
+
+            bars.add(new SBar(
+                    () -> {
+                        float value = Mathf.clamp(reload / reloadTime) * 100f;
+                        return Core.bundle.format("bar.shar-reload", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
+                    },
+                    () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime),
+                    () -> reload / reloadTime)).growX();
+            bars.row();
         }
 
         @Override
