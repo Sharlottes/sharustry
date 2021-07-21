@@ -62,7 +62,7 @@ public class MultipleDrill extends Drill {
             if(type != 0) return type;
             int amounts = Integer.compare(oreCount.get(item1, 0), oreCount.get(item2, 0));
             if(amounts != 0) return amounts;
-            return Integer.compare(item1.id, item2.id); //아이템 id 순서로 정렬
+            return Integer.compare(item1.id, item2.id);
         });
 
         if(itemArray.size == 0) return;
@@ -269,8 +269,6 @@ public class MultipleDrill extends Drill {
                         if(items.get(dominatedItems.get(i))<itemCapacity)
                             for(int ii=0;ii<Math.max(1,Mathf.round(((cons.optionalValid()?liquidBoostIntensity*efficiency():efficiency()) * dominatedItemsAmount.get(i) * warmup) / (drillTime + hardnessDrillMultiplier * dominatedItems.get(i).hardness) * 60 * timeScale));ii++)
                                 offload(dominatedItems.get(i));
-
-                    index++;
                     progress = 0;
 
                     drillEffect.at(x + Mathf.range(size), y + Mathf.range(size), dominatedItems.peek().color);

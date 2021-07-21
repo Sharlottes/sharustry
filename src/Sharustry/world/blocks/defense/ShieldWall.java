@@ -55,7 +55,7 @@ public class ShieldWall extends Wall {
             float alpha = shieldAlpha;
             float radius = block.size * Vars.tilesize * 1.3f;
             Draw.z(Layer.blockOver);
-            Fill.light(x, y, Lines.circleVertices(radius), radius, Tmp.c1.set(Pal.shieldIn), Tmp.c2.set(Pal.shield).lerp(Color.white, Mathf.clamp(hitTime() / 2f)).a(Pal.shield.a * alpha));
+            Fill.light(x, y, Lines.circleVertices(radius), radius, Tmp.c1.set(Pal.shield), Tmp.c2.set(Pal.shield).lerp(Color.white, Mathf.clamp(hitTime() / 2f)).a(Pal.shield.a * alpha));
             Draw.reset();
         }
 

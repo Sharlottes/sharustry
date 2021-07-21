@@ -33,10 +33,12 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.input.InputHandler;
 import mindustry.logic.LAccess;
+import mindustry.logic.Ranged;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.Block;
 import mindustry.world.Tile;
+import mindustry.world.blocks.ControlBlock;
 import mindustry.world.blocks.ItemSelection;
 import mindustry.world.blocks.distribution.MassDriver;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -48,7 +50,7 @@ import static mindustry.Vars.*;
 
 import static arc.struct.ObjectMap.of;
 
-public class BattleCore extends CoreBlock {
+public class BattleCore extends CoreBlock{
     public final static float logicControlCooldown = 60 * 2;
 
     public float healHealth = 0.4f;
@@ -70,11 +72,6 @@ public class BattleCore extends CoreBlock {
     public TextureRegion heatRegion, iconRegion;
 
     public int massIndex = 2;
-
-    public BattleCore(String name, MountTurretType... mounts){
-        this(name);
-        addMountTurret(mounts);
-    }
 
     public BattleCore(String name){
         super(name);
@@ -272,14 +269,14 @@ public class BattleCore extends CoreBlock {
             if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.item){
                 for(Item item : content.items()){
                     BulletType bullet = mountAmmoTypes.get(i).get(item);
-                    if(bullet != null) types.put(of(bullet, item), item.icon(Cicon.medium));
+                    if(bullet != null) types.put(of(bullet, item), item.uiIcon);
                 }
             }
 
             if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.liquid){
                 for(Liquid liquid : content.liquids()) {
                     BulletType bullet = liquidMountAmmoTypes.get(i).get(liquid);
-                    if(bullet != null) types.put(of(bullet, liquid), liquid.icon(Cicon.medium));
+                    if(bullet != null) types.put(of(bullet, liquid), liquid.uiIcon);
                 }
             }
 
@@ -406,7 +403,7 @@ public class BattleCore extends CoreBlock {
         return super.canReplace(other) || (other instanceof CoreBlock && !(other instanceof BattleCore) && size >= other.size);
     }
 
-    public class BattleCoreBuild extends CoreBuild {
+    public class BattleCoreBuild extends CoreBuild implements ControlBlock, Ranged {
         public Seq<Integer> _totalAmmos = new Seq<>();
         public Seq<Integer> _targetIDs = new Seq<>();
         public Seq<Float> _mineTimers = new Seq<>();
@@ -450,10 +447,27 @@ public class BattleCore extends CoreBlock {
         public boolean massFired;
         public float scrollMax;
         public float pastvalue;
+
+        public @Nullable BlockUnitc unit;
+
         @Override
         public void remove(){
             super.remove();
             if(sound != null) sound.stop();
+        }
+
+        @Override
+        public float range(){
+            return mounts.sort(((m -> m.range))).peek().range;
+        }
+
+        @Override
+        public Unit unit() {
+            if(unit == null){
+                unit = (BlockUnitc)UnitTypes.block.create(team);
+                unit.tile(this);
+            }
+            return (Unit)unit;
         }
 
         @Override
@@ -511,7 +525,7 @@ public class BattleCore extends CoreBlock {
                 t.add(new Stack(){{
                     add(new Table(o -> {
                         o.left();
-                        o.add(new Image(output.get(j).item.icon(Cicon.medium))).size(32f);
+                        o.add(new Image(output.get(j).item.uiIcon)).size(32f);
                     }));
 
                     add(new Table(h -> {
@@ -523,7 +537,7 @@ public class BattleCore extends CoreBlock {
                 if(w++ % 4 == 3){
                     t.row();
                 }
-            };
+            }
             if(w % 4 != 0){
                 int remaining = 4 - (w % 4);
                 for(int j = 0; j < remaining; j++){
@@ -582,7 +596,7 @@ public class BattleCore extends CoreBlock {
                     if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.item) {
                         MultiReqImage itemReq = new MultiReqImage();
 
-                        for(Item item : mountAmmoTypes.get(i).keys()) itemReq.add(new ReqImage(item.icon(Cicon.tiny), () -> mountHasAmmo(i)));
+                        for(Item item : mountAmmoTypes.get(i).keys()) itemReq.add(new ReqImage(item.uiIcon, () -> mountHasAmmo(i)));
 
                         h.add(new Stack(){{
                             add(new Table(e -> {
@@ -619,7 +633,7 @@ public class BattleCore extends CoreBlock {
                                 e.add(chargeBar);
                                 e.pack();
                             }));
-                            add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(_ammos.get(i).peek().item.icon(Cicon.tiny)))) : new Table(e -> e.add(itemReq).size(Cicon.tiny.size)));
+                            add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(_ammos.get(i).peek().item.uiIcon))) : new Table(e -> e.add(itemReq).size(iconSmall)));
                         }}).padTop(2*8).padLeft(2*8);
 
                     }
@@ -627,7 +641,7 @@ public class BattleCore extends CoreBlock {
                     if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.liquid) {
                         MultiReqImage liquidReq = new MultiReqImage();
 
-                        for(Liquid liquid : liquidMountAmmoTypes.get(i).keys()) liquidReq.add(new ReqImage(liquid.icon(Cicon.tiny), () -> mountHasAmmo(i)));
+                        for(Liquid liquid : liquidMountAmmoTypes.get(i).keys()) liquidReq.add(new ReqImage(liquid.uiIcon, () -> mountHasAmmo(i)));
 
                         h.add(new Stack(){{
                             add(new Table(e -> {
@@ -659,7 +673,7 @@ public class BattleCore extends CoreBlock {
                                 e.add(chargeBar);
                                 e.pack();
                             }));
-                            add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(liquids.current().icon(Cicon.tiny)))) : new Table(e -> e.add(liquidReq).size(Cicon.tiny.size)));
+                            add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(liquids.current().uiIcon))) : new Table(e -> e.add(liquidReq).size(iconSmall)));
                         }}).padTop(2*8).padLeft(2*8);
 
                     }
@@ -728,7 +742,7 @@ public class BattleCore extends CoreBlock {
                     c.add(new Stack(){{
                         add(new Table(o -> {
                             o.left();
-                            o.add(new Image(item.icon(Cicon.medium))).size(32f);
+                            o.add(new Image(item.uiIcon)).size(32f);
                         }));
 
                         add(new Table(h -> {
@@ -1003,7 +1017,7 @@ public class BattleCore extends CoreBlock {
 
         @Override
         public void control(LAccess type, double p1, double p2, double p3, double p4){
-            if(type == LAccess.shoot && !unit.isPlayer()){
+            if(type == LAccess.shoot && !((ControlBlock) this).unit().isPlayer()){
                 for(int i = 0; i < mounts.size; i++) _targetPoses.get(i).set(World.unconv((float)p1), World.unconv((float)p2));
                 logicControlTime = logicControlCooldown;
                 logicShooting = !Mathf.zero(p3);
@@ -1014,7 +1028,7 @@ public class BattleCore extends CoreBlock {
 
         @Override
         public void control(LAccess type, Object p1, double p2, double p3, double p4){
-            if(type == LAccess.shootp && !unit.isPlayer()){
+            if(type == LAccess.shootp && !((ControlBlock) this).unit().isPlayer()){
                 logicControlTime = logicControlCooldown;
                 logicShooting = !Mathf.zero(p2);
 
@@ -1057,15 +1071,15 @@ public class BattleCore extends CoreBlock {
         public void updateTile() {
             //set block's ammo
             for(int i = 0; i < mounts.size; i++){
-                unit.ammo((float)unit.type().ammoCapacity * _totalAmmos.get(i) /  mounts.get(i).maxAmmo);
-                unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
-                unit.ammo(power.status * unit.type().ammoCapacity);
+                ((ControlBlock) this).unit().ammo((float)((ControlBlock) this).unit().type().ammoCapacity * _totalAmmos.get(i) /  mounts.get(i).maxAmmo);
+                ((ControlBlock) this).unit().ammo(((ControlBlock) this).unit().type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
+                ((ControlBlock) this).unit().ammo(power.status * ((ControlBlock) this).unit().type().ammoCapacity);
             }
 
-            unit.health(health);
-            unit.rotation(rotation);
-            unit.team(team);
-            unit.set(x, y);
+            ((ControlBlock) this).unit().health(health);
+            ((ControlBlock) this).unit().rotation(rotation);
+            ((ControlBlock) this).unit().team(team);
+            ((ControlBlock) this).unit().set(x, y);
 
             super.updateTile();
             if(outputItem != null) scrollMax = items.get(outputItem);
@@ -1287,15 +1301,14 @@ public class BattleCore extends CoreBlock {
             data.from = this;
             data.to = other;
             data.link = i;
-            int totalUsed = 0;
+
             for(int h = 0; h < content.items().size; h++){
                 int maxTransfer = Math.min(items.get(content.item(h)), Math.max(output.get(h).amount, 0));
                 data.items[h] = maxTransfer;
-                totalUsed += maxTransfer;
                 items.remove(content.item(h), maxTransfer);
             }
             float angle = tile.angleTo(other);
-            if(other instanceof BattleCore.BattleCoreBuild) angle = Angles.angle(mountLocations(massIndex)[0], mountLocations(massIndex)[1], ((BattleCore.BattleCoreBuild)other).mountLocations(((BattleCore)((BattleCore.BattleCoreBuild)other).block).massIndex)[0], ((BattleCore.BattleCoreBuild)other).mountLocations(((BattleCore)((BattleCore.BattleCoreBuild)other).block).massIndex)[1]);
+            if(other instanceof BattleCore.BattleCoreBuild) angle = Angles.angle(mountLocations(massIndex)[0], mountLocations(massIndex)[1], ((BattleCore.BattleCoreBuild)other).mountLocations(((BattleCore)other.block).massIndex)[0], ((BattleCore.BattleCoreBuild)other).mountLocations(((BattleCore)other.block).massIndex)[1]);
             if(other instanceof MultiTurret.MultiTurretBuild) angle = Angles.angle(mountLocations(massIndex)[0], mountLocations(massIndex)[1], ((MultiTurret.MultiTurretBuild)other).mounts.get(i).mountLocations((MultiTurret.MultiTurretBuild)other)[0], ((MultiTurret.MultiTurretBuild)other).mounts.get(i).mountLocations((MultiTurret.MultiTurretBuild)other)[1]);
 
             SBullets.mountDriverBolt.create(this, team,
@@ -1638,9 +1651,9 @@ public class BattleCore extends CoreBlock {
 
         public boolean mountTargetValid(int mount){
             float[] loc = mountLocations(mount);
-            if(mounts.get(mount).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(mount).range, Building::damaged) != null) return (_targets != null && !(_targets instanceof Teamc && ((Teamc) _targets).team() != team) && !(_targets instanceof Healthc && !((Healthc) _targets).isValid())) || isControlled() || logicControlled();
+            if(mounts.get(mount).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(mount).range, Building::damaged) != null) return (_targets != null && !(_targets instanceof Teamc && ((Teamc) _targets).team() != team) && !(_targets instanceof Healthc && !((Healthc) _targets).isValid())) || (this instanceof ControlBlock && ((ControlBlock) this).isControlled()) || logicControlled();
 
-            return !Units.invalidateTarget(_targets.get(mount), team, loc[0], loc[1]) || isControlled() || logicControlled();
+            return !Units.invalidateTarget(_targets.get(mount), team, loc[0], loc[1]) || (this instanceof ControlBlock && ((ControlBlock) this).isControlled()) || logicControlled();
         }
 
         public void mountTargetPosition(int mount, Posc pos, float x, float y){

@@ -11,7 +11,6 @@ import arc.util.Strings;
 import arc.util.Time;
 import arc.util.io.*;
 import mindustry.*;
-import mindustry.annotations.Annotations;
 import mindustry.content.*;
 import mindustry.entities.Effect;
 import mindustry.entities.Fires;
@@ -26,7 +25,6 @@ import mindustry.world.Tile;
 import mindustry.world.blocks.defense.turrets.Turret;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
-import mindustry.world.meta.values.*;
 
 import java.util.Objects;
 
@@ -43,8 +41,8 @@ public class TemplatedTurret extends Turret {
     public float powerUse = 1f;
 
     public ObjectMap<Liquid, BulletType> liqAmmoTypes = new ObjectMap<>();
-    public @Annotations.Load("@-liquid") TextureRegion liquidRegion;
-    public @Annotations.Load("@-top") TextureRegion topRegion;
+    public TextureRegion liquidRegion;
+    public TextureRegion topRegion;
     public boolean extinguish = true;
 
     public TemplatedTurret(String name){
@@ -60,6 +58,13 @@ public class TemplatedTurret extends Turret {
         }
     }
 
+    @Override
+    public void load() {
+        super.load();
+        liquidRegion = Core.atlas.find("shar-" + name + "-liquid");
+        topRegion = Core.atlas.find("shar-" + name + "-top");
+    }
+
     /** Initializes accepted ammo map. Format: [item1, bullet1, item2, bullet2...] */
     public void ammo(Object... objects){
         if(Objects.equals(ammoType, "item")) ammoTypes = OrderedMap.of(objects);
@@ -72,10 +77,10 @@ public class TemplatedTurret extends Turret {
 
         if(Objects.equals(ammoType, "item")) {
             stats.remove(Stat.itemCapacity);
-            stats.add(Stat.ammo, new AmmoListValue<>(ammoTypes));
+            stats.add(Stat.ammo, StatValues.ammo(ammoTypes));
         }
         if(Objects.equals(ammoType, "power")) stats.add(Stat.damage, shootType.damage, StatUnit.none);
-        if(Objects.equals(ammoType, "liquid")) stats.add(Stat.ammo, new AmmoListValue<>(liqAmmoTypes));
+        if(Objects.equals(ammoType, "liquid")) stats.add(Stat.ammo, StatValues.ammo(liqAmmoTypes));
     }
 
     @Override

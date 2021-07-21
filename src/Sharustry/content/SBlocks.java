@@ -494,7 +494,7 @@ public class SBlocks implements ContentList{
                 armor = 3;
 
         }};
-
+        /*
         multi = new MultiCrafterator("multi-crafterator", 4){{
             requirements(Category.crafting, with(Items.copper, 10));
             size = 3;
@@ -517,7 +517,7 @@ public class SBlocks implements ContentList{
                 new OutputContents(with(Items.silicon, 1), 10), 30f, true
             );
         }};
-
+        */
         armedFoundation = new BattleCore("armedFoundation"){{
             customMountLocation = true;
             hasPower = true;

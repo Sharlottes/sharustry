@@ -21,10 +21,6 @@ public class STechTree implements ContentList{
             });
         });
 
-        margeNode(multiPress, () -> {
-            node(multi);
-        });
-
         margeNode(titaniumWall, () -> {
             node(shieldWall);
         });

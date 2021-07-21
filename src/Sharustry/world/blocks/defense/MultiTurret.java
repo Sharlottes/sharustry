@@ -2,7 +2,6 @@ package Sharustry.world.blocks.defense;
 
 import Sharustry.content.STurretMounts;
 import Sharustry.ui.SBar;
-import Sharustry.ui.SItemImage;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.*;
 import arc.func.Cons;
@@ -14,7 +13,6 @@ import arc.math.geom.Point2;
 import arc.scene.ui.Button;
 import arc.scene.ui.Image;
 import arc.scene.ui.Label;
-import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
@@ -61,13 +59,6 @@ public class MultiTurret extends TemplatedTurret {
     public Seq<String> skillDescriptions = new Seq<>();
     public Seq<Cons<Table>> skillStats = new Seq<>();
     public Seq<MountTurretType> basicMounts = new Seq<>();
-
-    public float scrollPos;
-    public MultiTurret(String name, BulletType type, Object ammo, String title, MountTurretType... mounts){
-        this(name);
-        addMountTurret(mounts);
-        addBaseTurret(type, ammo, title);
-    }
 
     public MultiTurret(String name){
         super(name);
@@ -192,8 +183,8 @@ public class MultiTurret extends TemplatedTurret {
 
             ObjectMap<ObjectMap<BulletType ,? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
             TextureRegion icon = Core.atlas.find("error");
-            if(mainAmmo instanceof Item) icon = ((Item)mainAmmo).icon(Cicon.medium);
-            if(mainAmmo instanceof Liquid) icon = ((Liquid)mainAmmo).icon(Cicon.medium);
+            if(mainAmmo instanceof Item) icon = ((Item)mainAmmo).uiIcon;
+            if(mainAmmo instanceof Liquid) icon = ((Liquid)mainAmmo).uiIcon;
             if(mainAmmo instanceof Float) icon = Icon.power.getRegion();
             types.put(of(bullet, mainAmmo), icon);
 
@@ -347,7 +338,7 @@ public class MultiTurret extends TemplatedTurret {
                     c.add(new Stack(){{
                         add(new Table(o -> {
                             o.left();
-                            o.add(new Image(item.icon(Cicon.medium))).size(32f);
+                            o.add(new Image(item.uiIcon)).size(32f);
                         }));
 
                         add(new Table(h -> {

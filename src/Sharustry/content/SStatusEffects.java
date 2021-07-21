@@ -30,13 +30,13 @@ public class SStatusEffects implements ContentList{
                 init(() -> {
                     opposite(melting, burning);
 
-                    affinity(blasted, ((unit, time, newTime, result) -> {
+                    affinity(blasted, ((unit, result, time) -> {
                         unit.damagePierce(transitionDamage);
                         result.set(overFreezing, time);
                     }));
 
-                    affinity(freezing, ((unit, time, newTime, result) -> {
-                        result.set(overFreezing, Math.min(time + newTime, 300f));
+                    affinity(freezing, ((unit, result, time) -> {
+                        result.set(overFreezing, Math.min(time + result.time, 300f));
                     }));
                 });
                 effect = SFx.boost;
