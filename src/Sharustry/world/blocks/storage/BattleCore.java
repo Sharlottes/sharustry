@@ -1653,7 +1653,7 @@ public class BattleCore extends CoreBlock{
             float[] loc = mountLocations(mount);
             if(mounts.get(mount).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(mount).range, Building::damaged) != null) return (_targets != null && !(_targets instanceof Teamc && ((Teamc) _targets).team() != team) && !(_targets instanceof Healthc && !((Healthc) _targets).isValid())) || (this instanceof ControlBlock && ((ControlBlock) this).isControlled()) || logicControlled();
 
-            return !Units.invalidateTarget(_targets.get(mount), team, loc[0], loc[1]) || (this instanceof ControlBlock && ((ControlBlock) this).isControlled()) || logicControlled();
+            return !Units.invalidateTarget(_targets.get(mount), team, loc[0], loc[1]) || isControlled() || logicControlled();
         }
 
         public void mountTargetPosition(int mount, Posc pos, float x, float y){
