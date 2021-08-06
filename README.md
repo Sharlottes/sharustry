@@ -39,42 +39,9 @@ After you have the `Sharustry.jar`, paste it into your mod folder(locate your mo
 Releases를 클릭하고, 최신 버전에 달린 `Sharustry.jar`를 다운로드하세요. 원하는 버전에 `Sharustry.jar`가 첨부되어 있지 않다면, 아래의 과정을 따르거나 새로운 Issue로 `.jar`를 달아달라고 저를 괴롭히세요.   
 `Sharustry.jar`를 다운로드 한 후, 모드 디렉토리(민더스트리에서 모드 파일 열기로 확인 가능)에 옮기세요.   
 
-### Actions / 깃허브 엑션으로 다운로드하기 
-[![Java CI with Gradle](https://github.com/sharlottes/Sharustry/workflows/Java%20CI%20with%20Gradle/badge.svg)](https://github.com/sharlottes/Sharustry/actions)   
-Unlike the release, Actions can enjoy the mode of **most recent versions** that have recently built commitments. But it's very unstable, and there can be bugs.   
-Actions 는 릴리즈와는 달리 최근 커밋을 빌드한 **가장 최신 버전**의 모드를 즐기실 수 있습니다. 하지만 매우 불안정적이고, 버그가 있을 수 있습니다.   
-
-1.
-![image](https://user-images.githubusercontent.com/60801210/107146488-0d098e00-698c-11eb-82ca-57b1417e627f.png)
-![image](https://user-images.githubusercontent.com/60801210/107147102-99698000-698f-11eb-815d-584e4d9b57a8.png)
-* Go to [Actions](https://github.com/sharlottes/sharustry/actions), and click on the latest workflow.
-* [Actions](https://github.com/sharlottes/sharustry/actions) 탭으로 가서, 가장 최근의 Workflow를 클릭하세요. 
-
-2.
-![image](https://user-images.githubusercontent.com/60801210/107147181-01b86180-6990-11eb-8a48-bc8e6c477159.png)
-* Select the "dexed" Artifact (with the box icon), it will download the zip.
-* "dexed"이라는 이름의 Artifact(상자 모양 아이콘)을 클릭하면, 압축 파일이 다운로드됩니다. 
-
-3.
-![image](https://user-images.githubusercontent.com/60801210/107173528-4fbe7b00-6a0b-11eb-8817-f98b5a201d3d.png)
-![image](https://user-images.githubusercontent.com/60801210/107173516-48976d00-6a0b-11eb-9c70-ff342092b52e.png)
-![image](https://user-images.githubusercontent.com/60801210/107173551-5d740080-6a0b-11eb-8ec5-1f8c66ca9475.png)
-* Unzip `dexed-Sharustry.zip` to obtain `dexed-Sharustry.jar`, then follow the procedure above to import the file.
-* `dexed-Sharustry.zip`를 압축해제하여 `dexed-Sharustry.jar`를 얻은 후, 위의 절차를 따라서 파일을 불러오세요.
-
-![image](https://user-images.githubusercontent.com/60801210/107173390-05d59500-6a0b-11eb-9538-443e1d35058e.png)
-![image](https://user-images.githubusercontent.com/60801210/107147244-53f98280-6990-11eb-8b48-fda0cd51f80b.png)
-* Or paste into your mod folder(locate your mod folder in the "open mod folder" of Mindustry).
-* 또는 모드 디렉토리(민더스트리에서 모드 파일 열기로 확인 가능)에 옮기세요.
-
-4.
-* Enjoy!
-* 끝!
-
 ## Compiling / 컴파일하기
 translate/copied from https://github.com/Anuken/ExampleJavaMod/edit/master/README.md. you don't need this for playing this mod. notice if you will make java mod.
 https://github.com/Anuken/ExampleJavaMod/edit/master/README.md 에서 번역/복사됨. 이 모드를 사용하는데 필요하지 않습니다. 자바 모드를 만들거라면 참고하세요.
-
 
 JDK 15.
 

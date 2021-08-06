@@ -8,9 +8,9 @@ import mindustry.ctype.ContentList;
 import mindustry.entities.bullet.BulletType;
 import mindustry.entities.bullet.LaserBoltBulletType;
 import mindustry.gen.*;
-import mindustry.type.AmmoTypes;
 import mindustry.type.UnitType;
 import mindustry.type.Weapon;
+import mindustry.type.ammo.PowerAmmoType;
 
 import static Sharustry.graphics.SPal.paradium;
 
@@ -31,7 +31,7 @@ public class SUnitTypes implements ContentList {
             range = 10 * 8f;
             isCounted = false;
 
-            ammoType = AmmoTypes.powerLow;
+            ammoType = new PowerAmmoType(500);
 
             mineTier = 1;
             mineSpeed = 2.5f;
@@ -58,7 +58,7 @@ public class SUnitTypes implements ContentList {
             hitSize = 8f;
             lowAltitude = true;
 
-            ammoType = AmmoTypes.power;
+            ammoType = new PowerAmmoType(750);
 
             mineTier = 2;
             mineSpeed = 3.5f;
