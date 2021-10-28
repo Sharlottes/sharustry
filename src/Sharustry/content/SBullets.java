@@ -227,7 +227,7 @@ public class SBullets implements ContentList{
             height = 16f;
             hitSound = Sounds.explosion;
             trailChance = 0.2f;
-            lifetime = 49f;
+            lifetime = 25f;
             sprite = "bullet";
             accelScl = 0.25f;
             pierceBuilding = true;
