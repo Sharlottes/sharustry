@@ -1,4 +1,4 @@
-package Sharustry.world.blocks.defense;
+package Sharustry.world.blocks.defense.turret;
 
 import Sharustry.content.SBullets;
 import Sharustry.world.blocks.storage.BattleCore;
@@ -65,7 +65,7 @@ public class MountTurret {
     public float lastY;
     public float strength;
     public float mineTimer;
-    public float _heat; //why not
+    public float _heat;
     public float __heat;
     public float ___heat;
     public float charge;
@@ -146,7 +146,7 @@ public class MountTurret {
     public float[] mountLocations(MultiTurret.MultiTurretBuild build){
         Tmp.v1.trns(build.rotation - 90, x, y);
         Tmp.v1.add(build.x, build.y);
-        Tmp.v2.trns(rotation, -recoil);
+        Tmp.v2.trns(rotation, -(recoil+build.recoil));
         float i = (shotCounter % type.barrels) - (type.barrels - 1) / 2;
         Tmp.v3.trns(rotation - 90, type.shootX + type.barrelSpacing * i + type.xRand, type.shootY + type.yRand);
 
@@ -247,7 +247,7 @@ public class MountTurret {
         table.add(new Stack(){{
             add(new Table(o -> {
                 o.left();
-                o.add(new Image(Core.atlas.find("shar-" + type.name + "-full")));
+                o.add(new Image(Core.atlas.find("shar-" + type.name + "-full"))).size(5*8f);
             }));
 
             add(new Table(h -> {
@@ -376,7 +376,7 @@ public class MountTurret {
 
                 h.pack();
             }));
-        }}).left();
+        }}).left().size(7*8f);
     }
 
 
@@ -402,7 +402,7 @@ public class MountTurret {
 
             Draw.mixcol(type.laserColor, Mathf.absin(4f, 0.6f));
             Drawf.laser(build.team, type.tractLaser, type.tractLaserEnd,
-                    loc[0] + Angles.trnsx(ang, type.shootLength), loc[1] + Angles.trnsy(ang, type.shootLength),
+                    loc[2] + Angles.trnsx(ang, type.shootLength), loc[3] + Angles.trnsy(ang, type.shootLength),
                     lastX, lastY, strength * getPowerEfficiency(build) * type.laserWidth);
 
             Draw.reset();
@@ -418,7 +418,7 @@ public class MountTurret {
             float random = Mathf.randomSeedRange(build.id, scl / 2f);
             Draw.color(type.laserColor);
             Drawf.laser(build.team, type.laser, type.laserEnd,
-                    loc[0] + Angles.trnsx(ang, len), loc[1] + Angles.trnsy(ang, len),
+                    loc[2] + Angles.trnsx(ang, len), loc[3] + Angles.trnsy(ang, len),
                     repairTarget.x +
                             Mathf.sin((Time.time + 6 * 8f) * scl / 3, (swingScl + random) * scl, swingMag * scl),
                     repairTarget.y +
@@ -433,8 +433,8 @@ public class MountTurret {
             float swingScl = 12f, swingMag = tilesize / 8f;
             float flashScl = 0.3f;
 
-            float px = loc[0] + Angles.trnsx(rotation, focusLen);
-            float py = loc[1] + Angles.trnsy(rotation, focusLen);
+            float px = loc[2] + Angles.trnsx(rotation, focusLen);
+            float py = loc[3] + Angles.trnsy(rotation, focusLen);
 
             float ex = mineTile.worldx() + Mathf.sin(Time.time + 48, swingScl, swingMag);
             float ey = mineTile.worldy() + Mathf.sin(Time.time + 48, swingScl + 2f, swingMag);

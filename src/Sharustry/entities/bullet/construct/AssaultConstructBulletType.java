@@ -1,6 +1,6 @@
 package Sharustry.entities.bullet.construct;
 
-import Sharustry.world.blocks.defense.MultiConstructTurret;
+import Sharustry.world.blocks.defense.turret.MultiConstructTurret;
 import arc.*;
 import arc.func.*;
 import arc.graphics.*;

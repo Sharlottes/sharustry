@@ -2,6 +2,7 @@ package Sharustry.content;
 
 import Sharustry.entities.bullet.FieldBulletType;
 import Sharustry.graphics.SPal;
+import Sharustry.world.blocks.defense.turret.*;
 import Sharustry.world.blocks.logic.VariableLogicBlock;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.Core;
@@ -9,15 +10,12 @@ import arc.math.Mathf;
 import arc.scene.ui.Image;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
-import arc.struct.ObjectMap;
-import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.bullet.BulletType;
 import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.ShrapnelBulletType;
 import mindustry.graphics.Pal;
-import multilib.Recipe.*;
 import Sharustry.world.blocks.defense.*;
 import Sharustry.world.blocks.production.*;
 import arc.graphics.Color;
@@ -36,11 +34,10 @@ public class SBlocks implements ContentList{
     public static Block
             //logic
             variableProcessor,
-            //defense
-            //marksman,
+            //turret
             balkan, jumble, conductron, trinity, asclepius, clinicus, fossor,
-            //wall
-            shieldWall,
+            //defense
+            shieldWall, explodeMine,
             //drill
             adaptDrill, multiDrill,
             //crafterator
@@ -131,53 +128,7 @@ public class SBlocks implements ContentList{
             acceptCoolant = false;
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
-        /*
-        marksman = new MultiTurret("marksman"){{
-            requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
-            addBaseTurret(new LaserBulletType(140){{
-                colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
-                hitEffect = Fx.hitLancer;
-                despawnEffect = Fx.none;
-                hitSize = 4;
-                lifetime = 16f;
-                drawSize = 400f;
-                collidesAir = false;
-                length = 173f;
-            }}, Items.titanium, "Marksman");
-            addMountTurret(electricLaserMountR, electricLaserMountL);
-            addCustomMountLocation(new Float[]{
-                    -3f, -2f,
-                    3f, -2f,
-            });
-
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-            ammos(MultiTurretMount.MultiTurretMountType.power);
-
-            hasPower = true;
-            size = 4;
-            maxAmmo = 30;
-            ammoPerShot = 3;
-            customMountLocation = true;
-            range = 165f;
-            chargeTime = 40f;
-            chargeMaxDelay = 30f;
-            chargeEffects = 7;
-            recoilAmount = 2f;
-            reloadTime = 80f;
-            cooldown = 0.03f;
-            shootShake = 2f;
-            shootEffect = Fx.lancerLaserShoot;
-            smokeEffect = Fx.none;
-            chargeEffect = Fx.lancerLaserCharge;
-            chargeBeginEffect = Fx.lancerLaserChargeBegin;
-            heatColor = Color.red;
-
-            health = 280 * size * size;
-            shootSound = Sounds.laser;
-
-        }};
-        */
         conductron = new MultiTurret("conductron"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
@@ -489,35 +440,22 @@ public class SBlocks implements ContentList{
         }};
 
         shieldWall = new ShieldWall("shield-wall"){{
-                requirements(Category.defense, with(Items.titanium, 6));
-                health = 150 * 4;
-                armor = 3;
-
+            requirements(Category.defense, with(Items.titanium, 6));
+            health = 150 * 4;
+            armor = 3;
         }};
-        /*
-        multi = new MultiCrafterator("multi-crafterator", 4){{
-            requirements(Category.crafting, with(Items.copper, 10));
-            size = 3;
-            isSmelter = true;
 
-            addRecipe(
-                new InputContents(with(Items.sand, 1, Items.lead, 1)),
-                new OutputContents(), 12f, true
-            );
-            addRecipe(
-                new InputContents(with(Items.coal, 1, Items.sand, 1), new LiquidStack[]{new LiquidStack(Liquids.water, 5)}, 1),
-                new OutputContents(new LiquidStack[]{new LiquidStack(Liquids.slag, 5)}), 60f
-            );
-            addRecipe(
-                new InputContents(with(Items.pyratite, 1, Items.blastCompound, 1)),
-                new OutputContents(with(Items.scrap, 1, Items.plastanium, 2, Items.sporePod, 2)), 72f
-            );
-            addRecipe(
-                new InputContents(with(Items.sand, 1), 15),
-                new OutputContents(with(Items.silicon, 1), 10), 30f, true
-            );
+        explodeMine = new ExplodeMine("explode-mine"){{
+            requirements(Category.defense, with(Items.lead, 30, Items.silicon, 25, Items.blastCompound, 5));
+            size = 2;
+            health = 50;
+            cooldown = 50;
+            shots = 10;
+            inaccuracy = 15;
+            bullet = Bullets.pyraFlame;
+            shotsSpacing = 0.25f;
         }};
-        */
+
         armedFoundation = new BattleCore("armedFoundation"){{
             customMountLocation = true;
             hasPower = true;

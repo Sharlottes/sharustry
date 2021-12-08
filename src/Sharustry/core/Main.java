@@ -1,7 +1,7 @@
 package Sharustry.core;
 
 import Sharustry.content.STurretMounts;
-import Sharustry.world.blocks.defense.MountTurretType;
+import Sharustry.world.blocks.defense.turret.MountTurretType;
 import arc.Events;
 import mindustry.game.EventType.*;
 import mindustry.mod.Mod;

@@ -19,6 +19,22 @@ import static arc.math.Angles.*;
 public class SFx {
     public static final Effect
 
+    mineExplode = new Effect(360, e -> {
+        float cooldown = (float)e.data;
+        float range = 30 * 8;
+        e.scaled(cooldown, e1 -> {
+                Draw.color(Pal.health, e1.fout(0.125f));
+        Lines.polySeg(60, 0, (int) (70 * (e1.fin(Interp.pow2))), e.x, e.y, range/3, 0);
+    });
+
+        if(e.time >= cooldown){
+            e.scaled(40 + cooldown, e1 ->{
+                Draw.color(Pal.health, e1.fout(40/e1.lifetime));
+                Lines.circle(e.x, e.y, range/3 + range*2/3 * (1-e1.fout(40/e1.lifetime)));
+            });
+        }
+    }),
+
     distSplashFx = new Effect(80, e -> {
         Draw.color((Color) e.data, e.color, e.fin());
         Lines.stroke(2 * e.fout());

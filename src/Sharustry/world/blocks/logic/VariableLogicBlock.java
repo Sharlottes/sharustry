@@ -21,8 +21,6 @@ public class VariableLogicBlock extends LogicBlock {
     public float maxInstructionsPerTick = 2000;
     public VariableLogicBlock(String name){
         super(name);
-
-        //config(Float.class, (VariableLogicBuild tile, Float ipt) -> tile.instructionsPerTicks = ipt);
     }
 
     public class VariableLogicBuild extends LogicBuild {

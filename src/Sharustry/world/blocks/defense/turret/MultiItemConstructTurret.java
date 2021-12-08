@@ -1,11 +1,11 @@
-package Sharustry.world.blocks.defense;
+package Sharustry.world.blocks.defense.turret;
 
+import Sharustry.world.blocks.defense.turret.MountTurret;
+import Sharustry.world.blocks.defense.turret.MultiConstructTurret;
 import arc.Core;
 import arc.graphics.Blending;
-import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
-import arc.math.Angles;
 import arc.math.Mathf;
 import arc.util.Time;
 import arc.util.Tmp;
@@ -13,9 +13,7 @@ import mindustry.entities.bullet.BulletType;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
 
-import static mindustry.Vars.tilesize;
-
-public class MultiItemConstructTurret extends MultiConstructTurret{
+public class MultiItemConstructTurret extends MultiConstructTurret {
     public TextureRegion leftRegion, rightRegion, leftOutline, rightOutline;
     public float offsetX = 1.5f, offsetY = 0;
     public MultiItemConstructTurret(String name){

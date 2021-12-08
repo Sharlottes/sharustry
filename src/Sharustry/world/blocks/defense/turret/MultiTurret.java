@@ -1,4 +1,4 @@
-package Sharustry.world.blocks.defense;
+package Sharustry.world.blocks.defense.turret;
 
 import Sharustry.content.STurretMounts;
 import Sharustry.ui.SBar;
@@ -327,7 +327,7 @@ public class MultiTurret extends TemplatedTurret {
         }
         @Override
         public void displayConsumption(Table table1){
-            if(hasMass()) table1.table(Tex.underline, table -> table.table(scene.getStyle(Button.ButtonStyle.class).up, c -> {
+            if(hasMass()) table1.table(table -> table.table(scene.getStyle(Button.ButtonStyle.class).up, c -> {
                 int q = 0;
                 for(int i = 0; i < Vars.content.items().size; i++) {
                     q++;
@@ -350,7 +350,7 @@ public class MultiTurret extends TemplatedTurret {
                             h.pack();
                         }));
                     }}).left().padRight(8);
-                    if(hh % 7 == 0) c.row();
+                    if(hh % 6 == 0) c.row();
                 }
             }).center()).center();
 
@@ -424,20 +424,6 @@ public class MultiTurret extends TemplatedTurret {
             for(MountTurret mount : mounts) mount.drawConfigure(this);
         }
 
-        @Override
-        public void buildConfiguration(Table table) {
-            super.buildConfiguration(table);
-            table.table(scene.getStyle(Button.ButtonStyle.class).up, t -> {
-                if(hasMass()) t.table(Tex.underline2, tt -> {
-                    tt.top();
-                    MountSelection.buildTable(tt, mounts.copy().filter(m -> m.type.mountType == MountTurretType.MultiTurretMountType.mass), () -> linkmount, this::configure, this, false);
-                }).top().row();
-                t.table(tt -> {
-                    tt.top();
-                    MountTypeSelection.buildTable(table, this, tt, STurretMounts.mounttypes, m -> addMount(m, Mathf.range(size), Mathf.range(size)),  false);
-                }).padLeft(10f);
-            });
-        }
         @Override
         public int removeStack(Item item, int amount){
             return 0;
@@ -682,7 +668,6 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void read(Reads read, byte revision){
             super.read(read, revision);
-            Log.info(mounts.size);
             for(int i = 0; i < skillDelays.size; i++) shotcounters.set(i, read.i());
             int amount = read.i();
             for(int i = 0; i < basicMounts.size; i++) mounts.get(i).read(read, revision);

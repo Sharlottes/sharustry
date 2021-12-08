@@ -15,14 +15,14 @@ public class TractorAI extends FlyingAI {
     public float tractRange = 50 * 8;
     public float approach = 20 * 8;
     @Override
-    protected void moveTo(Position target, float circleLength, float smooth){
+    public void moveTo(Position target, float circleLength, float smooth){
         if(target == null) return;
 
         vec.set(target).sub(unit);
 
         float length = circleLength <= 0.001f ? 1f : Mathf.clamp((unit.dst(target) - circleLength) / smooth, -1f, 1f);
 
-        vec.setLength(unit.realSpeed() * length);
+        vec.setLength(unit.speed() * length);
         if(length < -0.5f){
             Building build = Units.findAllyTile(unit.team(), unit.x, unit.y, tractRange, b -> b instanceof Turret.TurretBuild && ((Turret.TurretBuild)b).hasAmmo());
 

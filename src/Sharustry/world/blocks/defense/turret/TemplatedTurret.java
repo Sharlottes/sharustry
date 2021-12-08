@@ -1,4 +1,4 @@
-package Sharustry.world.blocks.defense;
+package Sharustry.world.blocks.defense.turret;
 
 import arc.*;
 import arc.graphics.Color;

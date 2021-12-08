@@ -54,7 +54,7 @@ public class AttributeDrill extends Drill{
                 for (Floor block : Vars.content.blocks()
                         .select(block -> (block instanceof Floor) && ((Floor) block).attributes.get(attr) != 0 && !(((Floor) block).isLiquid && !floating))
                         .<Floor>as().with(s -> s.sort(f -> f.attributes.get(attr)))) {
-                    StatValues.floorEfficiency(block, block.attributes.get(attr) * boostScale, false).display(table);
+                    StatValues.blockEfficiency(block, block.attributes.get(attr) * boostScale, false).display(table);
                 }
                 table.row();
             }

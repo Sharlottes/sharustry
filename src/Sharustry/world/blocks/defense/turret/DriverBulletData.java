@@ -1,6 +1,5 @@
-package Sharustry.world.blocks.defense;
+package Sharustry.world.blocks.defense.turret;
 
-import Sharustry.world.blocks.storage.BattleCore;
 import arc.util.pooling.Pool;
 import mindustry.gen.Building;
 

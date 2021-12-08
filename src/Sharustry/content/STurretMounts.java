@@ -12,7 +12,7 @@ import mindustry.entities.bullet.LaserBulletType;
 import mindustry.entities.bullet.LightningBulletType;
 import mindustry.entities.bullet.MissileBulletType;
 import mindustry.gen.Sounds;
-import Sharustry.world.blocks.defense.MountTurretType;
+import Sharustry.world.blocks.defense.turret.MountTurretType;
 import mindustry.graphics.Pal;
 
 import static Sharustry.content.SBullets.*;
