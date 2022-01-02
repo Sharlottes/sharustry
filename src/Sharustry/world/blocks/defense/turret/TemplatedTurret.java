@@ -14,8 +14,10 @@ import mindustry.*;
 import mindustry.content.*;
 import mindustry.entities.Effect;
 import mindustry.entities.Fires;
+import mindustry.entities.Units;
 import mindustry.entities.bullet.*;
 import mindustry.game.EventType.*;
+import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.LAccess;
@@ -31,8 +33,7 @@ import java.util.Objects;
 import static mindustry.Vars.*;
 
 public class TemplatedTurret extends Turret {
-    public float minRanged = 0f;
-
+    public float minRanged;
     public String ammoType; //should be item(ItemTurret) or power(PowerTurret) or liquid(LiquidTurret).
 
     public ObjectMap<Item, BulletType> ammoTypes = new ObjectMap<>();
@@ -139,6 +140,14 @@ public class TemplatedTurret extends Turret {
         return super.icons();
     }
 
+    @Override
+    public void drawPlace(int x, int y, int rotation, boolean valid){
+        super.drawPlace(x, y, rotation, valid);
+
+        if(minRanged > 0 && player != null){
+            Drawf.dashCircle(x, y, minRanged, Vars.player.team().color.cpy().lerp(Pal.lancerLaser, Mathf.sin(Time.time * 0.05f)));
+        }
+    }
 
     public class TemplatedTurretBuild extends TurretBuild {
         float charge;
@@ -200,7 +209,15 @@ public class TemplatedTurret extends Turret {
                 }
             }
 
-            super.findTarget();
+            if(targetAir && !targetGround){
+                target = Units.bestEnemy(team, x, y, range, e -> !e.dead() && !e.isGrounded() && !e.within(x, y, minRanged), unitSort);
+            }else{
+                target = Units.bestTarget(team, x, y, range, e -> !e.dead() && (e.isGrounded() || targetAir) && (!e.isGrounded() || targetGround) && !e.within(x, y, minRanged), b -> targetGround && !b.within(x, y, minRanged), unitSort);
+
+                if(target == null && canHeal()){
+                    target = Units.findAllyTile(team, x, y, range, b -> b.damaged() && b != this);
+                }
+            }
         }
 
         @Override
@@ -229,7 +246,6 @@ public class TemplatedTurret extends Turret {
 
             else return super.sense(sensor);
         }
-
 
         @Override
         public BulletType useAmmo(){

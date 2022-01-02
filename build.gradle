@@ -6,7 +6,7 @@ group pGroup
 
 version '1.0'
 
-sourceCompatibility = 8
+sourceCompatibility = 16
 
 
 sourceSets.main {
@@ -58,3 +58,4 @@ task dexify(type: Jar) {
 }
 
 task buildDex dependsOn "build", "dexify"
+targetCompatibility = JavaVersion.VERSION_16

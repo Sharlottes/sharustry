@@ -35,7 +35,7 @@ public class SBlocks implements ContentList{
             //logic
             variableProcessor,
             //turret
-            balkan, jumble, conductron, trinity, asclepius, clinicus, fossor,
+            balkan, latusis, jumble, conductron, trinity, asclepius, clinicus, fossor,
             //defense
             shieldWall, explodeMine,
             //drill
@@ -59,7 +59,7 @@ public class SBlocks implements ContentList{
 
         balkan = new SkillTurret("balkan"){{
             addSkills(entity -> () -> {
-                for(int i = 0; i < 8; i++){
+                for(int i = 0; i < 5; i++){
                     Time.run(0.1f * 60 * i, () -> {
                         final float ex = entity.x + Mathf.range(16f);
                         final float ey = entity.y + Mathf.range(16f);
@@ -107,7 +107,7 @@ public class SBlocks implements ContentList{
             ammo(Items.titanium, SBullets.accelMissile);
 
             hasPower = true;
-            range = 45*8f;
+            range = 30*8f;
             chargeTime = 40f;
             chargeMaxDelay = 30f;
             chargeEffects = 5;
@@ -127,6 +127,36 @@ public class SBlocks implements ContentList{
 
             acceptCoolant = false;
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
+        }};
+
+        latusis = new AsideTurret("latusis") {{
+            requirements(Category.turret, ItemStack.with(Items.titanium, 750, Items.thorium, 860, Items.lead, 1000));
+            ammoType = "item";
+            ammo(Items.titanium, SBullets.accelerMissile);
+
+            spread = 5;
+            shots = 2;
+            hasPower = true;
+            range = 60*8f;
+            minRanged = 12*8f;
+            chargeTime = 50f;
+            chargeMaxDelay = 35f;
+            chargeEffects = 5;
+            recoilAmount = 12f;
+            reloadTime = 100f;
+            cooldown = 0.1f;
+            shootShake = 6f;
+            shootEffect = SFx.balkanShoot;
+            smokeEffect = Fx.none;
+            chargeEffect = SFx.balkanChargeCircles;
+            chargeBeginEffect = SFx.balkanChargeBegin;
+            heatColor = Color.blue;
+            size = 3;
+            health = 150 * size * size;
+            targetAir = true;
+            shootSound = Sounds.missile;
+
+            acceptCoolant = false;
         }};
 
         conductron = new MultiTurret("conductron"){{

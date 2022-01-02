@@ -13,8 +13,12 @@ import mindustry.content.*;
 import Sharustry.entities.bullet.*;
 import mindustry.graphics.Pal;
 
+import static Sharustry.content.SFx.missileDead;
+
 public class SBullets implements ContentList{
-    public static BulletType fossers, mountDriverBolt, force, assault, artilleryHealBig, artilleryHeal, jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, miniAccelMissilePyra, accelMissile, testLaser;
+    public static BulletType
+            fossers, mountDriverBolt, force, assault, artilleryHealBig, artilleryHeal,
+            jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, accelMissile, accelerMissile, testLaser;
 
     @Override
     public void load(){
@@ -186,7 +190,7 @@ public class SBullets implements ContentList{
             orbSize = 1;
         }};
 
-        miniAccelMissile = new AccelBulletType(2f, 10){{
+        miniAccelMissile = new AccelBulletType(2f, 5){{
             backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
             frontColor = trailColor = SPal.cryoium;
             shrinkY = 0f;
@@ -194,32 +198,13 @@ public class SBullets implements ContentList{
             height = 3.5f;
             hitSound = Sounds.explosion;
             trailChance = 0.45f;
-            lifetime = 25f;
+            lifetime = 47f;
             sprite = "bullet";
-            accelScl = 0.15f;
-            pierceBuilding = true;
-            pierceCap = 3;
-            maxDamage = damage*4f;
+            pierceCap = 2;
+            homing = true;
         }};
 
-        miniAccelMissilePyra = new AccelBulletType(2f, 10){{
-            backColor = Pal.lighterOrange.cpy().mul(Items.pyratite.color);
-            frontColor = trailColor = Pal.lightOrange;
-            trailColors = Pal.lightOrange;
-            shrinkY = 0f;
-            width = 1.5f;
-            height = 3.5f;
-            hitSound = Sounds.explosion;
-            trailChance = 0.45f;
-            lifetime = 25f;
-            sprite = "bullet";
-            accelScl = 0.15f;
-            pierceBuilding = true;
-            pierceCap = 3;
-            maxDamage = damage*4f;
-        }};
-
-        accelMissile = new AccelBulletType(2.5f, 30){{
+        accelMissile = new AccelBulletType(2.5f, 15){{
             backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
             frontColor = trailColor = SPal.cryoium;
             shrinkY = 0f;
@@ -227,13 +212,31 @@ public class SBullets implements ContentList{
             height = 16f;
             hitSound = Sounds.explosion;
             trailChance = 0.2f;
-            lifetime = 25f;
+            lifetime = 47f;
             sprite = "bullet";
-            accelScl = 0.25f;
-            pierceBuilding = true;
-            pierceCap = 10;
-            maxDamage = damage*10;
+            pierce = true;
+            pierceDec = 0.35f;
             shootEffect = SFx.balkanShoot;
+            despawnEffect = missileDead;
+            hitEffect = missileDead;
+        }};
+
+        accelerMissile = new AccelBulletType(3f, 20){{
+            backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
+            frontColor = trailColor = SPal.cryoium;
+            shrinkY = 0f;
+            width = 4f;
+            height = 16f;
+            hitSound = Sounds.explosion;
+            trailChance = 0.2f;
+            lifetime = 67f;
+            sprite = "bullet";
+            homing = true;
+            pierce = true;
+            pierceDec = 0.5f;
+            shootEffect = SFx.balkanShoot;
+            despawnEffect = missileDead;
+            hitEffect = missileDead;
         }};
 
         testLaser = new ContinuousLaserBulletType(70){{

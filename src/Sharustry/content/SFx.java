@@ -18,7 +18,10 @@ import static arc.math.Angles.*;
 
 public class SFx {
     public static final Effect
-
+    missileDead = new Effect(30, e -> {
+        Lines.stroke(1.5f*e.fout(), Pal.lancerLaser);
+        Lines.circle(e.x, e.y, e.fin()*12);
+    }),
     mineExplode = new Effect(360, e -> {
         float cooldown = (float)e.data;
         float range = 30 * 8;
