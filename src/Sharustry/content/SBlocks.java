@@ -11,6 +11,7 @@ import arc.scene.ui.Image;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
 import arc.util.Time;
+import mindustry.entities.Units;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.bullet.BulletType;
 import mindustry.entities.bullet.LaserBulletType;
@@ -35,7 +36,7 @@ public class SBlocks implements ContentList{
             //logic
             variableProcessor,
             //turret
-            balkan, latusis, jumble, conductron, trinity, asclepius, clinicus, fossor,
+            balkan, latusis, diaperito, jumble, conductron, trinity, asclepius, clinicus, fossor,
             //defense
             shieldWall, explodeMine,
             //drill
@@ -129,21 +130,20 @@ public class SBlocks implements ContentList{
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
 
-        latusis = new AsideTurret("latusis") {{
-            requirements(Category.turret, ItemStack.with(Items.titanium, 750, Items.thorium, 860, Items.lead, 1000));
-            ammoType = "item";
-            ammo(Items.titanium, SBullets.accelerMissile);
+        diaperito = new SnipeTurret("diaperito") {{
+            requirements(Category.turret, ItemStack.with(Items.titanium, 700, Items.thorium, 800, Items.lead, 1000));
 
+            ammoType = "item";
+            ammo(Items.titanium, SBullets.accelBullet);
             spread = 5;
-            shots = 2;
-            hasPower = true;
+            size = 3;
             range = 60*8f;
             minRanged = 12*8f;
-            chargeTime = 50f;
+            chargeTime = 55f;
             chargeMaxDelay = 35f;
             chargeEffects = 5;
             recoilAmount = 12f;
-            reloadTime = 100f;
+            reloadTime = 110f;
             cooldown = 0.1f;
             shootShake = 6f;
             shootEffect = SFx.balkanShoot;
@@ -151,11 +151,41 @@ public class SBlocks implements ContentList{
             chargeEffect = SFx.balkanChargeCircles;
             chargeBeginEffect = SFx.balkanChargeBegin;
             heatColor = Color.blue;
-            size = 3;
             health = 150 * size * size;
-            targetAir = true;
             shootSound = Sounds.missile;
 
+            hasPower = true;
+            targetAir = true;
+            acceptCoolant = false;
+        }};
+
+        latusis = new AsideTurret("latusis") {{
+            requirements(Category.turret, ItemStack.with(Items.titanium, 750, Items.thorium, 860, Items.lead, 1000));
+
+            ammoType = "item";
+            ammo(Items.titanium, SBullets.accelerMissile);
+            spread = 5;
+            shots = 2;
+            size = 3;
+            range = 50*8f;
+            minRanged = 13*8f;
+            chargeTime = 55f;
+            chargeMaxDelay = 35f;
+            chargeEffects = 5;
+            recoilAmount = 12f;
+            reloadTime = 110f;
+            cooldown = 0.1f;
+            shootShake = 6f;
+            shootEffect = SFx.balkanShoot;
+            smokeEffect = Fx.none;
+            chargeEffect = SFx.balkanChargeCircles;
+            chargeBeginEffect = SFx.balkanChargeBegin;
+            heatColor = Color.blue;
+            health = 150 * size * size;
+            shootSound = Sounds.missile;
+            unitSort = (u, x, y) -> (u.isFlying()?+1:-1);
+            hasPower = true;
+            targetAir = true;
             acceptCoolant = false;
         }};
 
@@ -187,7 +217,7 @@ public class SBlocks implements ContentList{
             maxAmmo = 30;
             ammoPerShot = 3;
             customMountLocation = true;
-            range = 165f;
+            range = 180f;
             chargeTime = 40f;
             chargeMaxDelay = 30f;
             chargeEffects = 7;

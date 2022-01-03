@@ -14,10 +14,10 @@ import mindustry.entities.bullet.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.Ranged;
+import mindustry.world.blocks.defense.turrets.Turret;
 
 public class AccelBulletType extends BasicBulletType {
-    public float pierceDec = 1;
-    public int maxPierce = 5;
+    public float pierceDec = 1, damageMultiplier = 1;
     public Color trailColors = Pal.lancerLaser;
     public boolean homing = false;
 
@@ -37,27 +37,25 @@ public class AccelBulletType extends BasicBulletType {
     @Override
     public void update(Bullet b) {
         super.update(b);
-        if(b.time<15f)return;
-        if(homing) {
-            TemplatedTurret.TemplatedTurretBuild build = (TemplatedTurret.TemplatedTurretBuild) b.owner;
-            Posc target = build.target;
-            if (target == null) target = Units.closestTarget(b.team, b.x, b.y, 50);
-            if (target != null) b.vel.setAngle(Angles.moveToward(b.rotation(), b.angleTo(target), ((BulletData)b.data).hitten ? 10 * Time.delta : Math.min(5, build.dst(target)/8)*Time.delta));
+        if(b.time>=15f) {
+            if (homing && b.owner instanceof Turret.TurretBuild build) {
+                Posc target = build.target;
+                if (target == null || ((BulletData)b.data).hitten)
+                    target = Units.closestTarget(b.team, b.x, b.y, 50, e -> e.checkTarget(collidesAir, collidesGround) && !b.hasCollided(e.id), t -> collidesGround && !b.hasCollided(t.id));
+                if (target != null)
+                    b.vel.setAngle(Angles.moveToward(b.rotation(), b.angleTo(target), ((BulletData) b.data).hitten ? 5 * Time.delta : Math.min(5, build.dst(target) / 8) * Time.delta));
 
+            }
+
+            if(b.vel().len() < 15) b.vel().scl(1 + Interp.sineIn.apply(b.fin()) / 8);
+            ((BulletData) b.data).trails.each(t -> t.update(b.x, b.y));
+            b.damage += 1 + Interp.sineIn.apply(b.fin()) * damageMultiplier;
         }
-
-        b.vel().scl(1+Interp.sineIn.apply(b.fin())/8);
-        ((BulletData)b.data).trails.each(t->t.update(b.x,b.y));
-        b.damage += 1+Interp.sineIn.apply(b.fin())*3;
     }
 
     @Override
     public void hit(Bullet b, float x, float y){
         b.damage *= pierceDec;
-        if(++((BulletData)b.data).pierceCount>=maxPierce) {
-            if(b.vel().len() > 30f) b.vel().scl(0.5f);
-            else despawned(b);
-        }
         super.hit(b,x,y);
         ((BulletData)b.data).hitten=true;
     }
@@ -71,7 +69,7 @@ public class AccelBulletType extends BasicBulletType {
         Fill.square(b.x, b.y, this.width, b.rotation()+45);
     }
 
-    class BulletData {
+    static class BulletData {
         Seq<Trail> trails;
         int pierceCount;
         boolean hitten=false;

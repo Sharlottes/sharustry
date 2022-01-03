@@ -12,10 +12,14 @@ public class AsideTurret extends TemplatedTurret {
 
     public class AsideTurretBuild extends TemplatedTurretBuild {
         @Override
-        protected void shoot(BulletType type){
+        protected void findTarget() {
+            super.findTarget();
+        }
 
+        @Override
+        protected void shoot(BulletType type){
             for(int ag : Mathf.signs) {
-                float rot = rotation+90*ag;
+                float rot = rotation+60*ag;
                 //when charging is enabled, use the charge shoot pattern
                 if (chargeTime > 0) {
                     if(ag==1) useAmmo();

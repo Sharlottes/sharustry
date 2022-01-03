@@ -5,6 +5,8 @@ import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import arc.math.geom.Vec2;
+import arc.util.Tmp;
 import mindustry.entities.*;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.game.Team;
@@ -36,6 +38,13 @@ public class SFx {
                 Lines.circle(e.x, e.y, range/3 + range*2/3 * (1-e1.fout(40/e1.lifetime)));
             });
         }
+    }),
+
+    snipeLine = new Effect(10, e -> {
+        e.lifetime = ((Float[])e.data)[0];
+        Lines.stroke(1.5f, Pal.lancerLaser.cpy().lerp(Pal.health, 0.75f).lerp(Color.white, Mathf.absin(1, e.fin() * 1.5f)));
+        Vec2 tr = Tmp.v1.set(e.x, e.y).trns(e.rotation, ((Float[])e.data)[1]);
+        Lines.line(e.x, e.y, e.x+tr.x, e.y+tr.y);
     }),
 
     distSplashFx = new Effect(80, e -> {
