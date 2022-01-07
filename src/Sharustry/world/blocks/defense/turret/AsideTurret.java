@@ -1,19 +1,53 @@
 package Sharustry.world.blocks.defense.turret;
 
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.TextureRegion;
 import arc.math.Mathf;
+import arc.math.geom.Vec2;
 import arc.util.Time;
+import arc.util.Tmp;
 import mindustry.entities.bullet.BulletType;
+import mindustry.graphics.Pal;
 
 
 public class AsideTurret extends TemplatedTurret {
+    TextureRegion chargeRegion;
+
     public AsideTurret(String name) {
         super(name);
     }
 
+    @Override
+    public void load() {
+        super.load();
+        chargeRegion = Core.atlas.find(name + "-charge");
+    }
+
     public class AsideTurretBuild extends TemplatedTurretBuild {
+        float heattt = 0f;
+
         @Override
         protected void findTarget() {
             super.findTarget();
+        }
+
+        @Override
+        public void update() {
+            super.update();
+            if(charging) heattt += Time.delta;
+        }
+
+        @Override
+        public void draw() {
+            super.draw();
+            if(charging) {
+                Draw.color(Tmp.c1.set(Color.white).lerp(Pal.lancerLaser, 1-heattt/chargeTime).a(0.5f+heattt/chargeTime/2));
+                Tmp.v1.set(x, y).trns(rotation, -recoil);
+                Draw.rect(chargeRegion, x+Tmp.v1.x, y+Tmp.v1.y, rotation-90);
+                Draw.reset();
+            }
         }
 
         @Override
@@ -37,9 +71,9 @@ public class AsideTurret extends TemplatedTurret {
                     }
 
                     charging = true;
-
                     Time.run(chargeTime, () -> {
                         if (dead) return;
+                        heattt = 0f;
                         tr.trns(rot, shootLength);
                         recoil = recoilAmount;
                         heat = 1f;

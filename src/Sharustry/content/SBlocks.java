@@ -11,7 +11,6 @@ import arc.scene.ui.Image;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
 import arc.util.Time;
-import mindustry.entities.Units;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.bullet.BulletType;
 import mindustry.entities.bullet.LaserBulletType;
@@ -36,7 +35,7 @@ public class SBlocks implements ContentList{
             //logic
             variableProcessor,
             //turret
-            balkan, latusis, diaperito, jumble, conductron, trinity, asclepius, clinicus, fossor,
+            flucturbare, sasitil, balkan, latusis, traislar, jumble, conductron, trinity, asclepius, clinicus, fossor,
             //defense
             shieldWall, explodeMine,
             //drill
@@ -52,10 +51,59 @@ public class SBlocks implements ContentList{
             requirements(Category.logic, with(Items.copper, 80, Items.lead, 50, Items.silicon, 30));
 
             instructionsPerTick = 2;
-
             size = 1;
-
             range = 500 * 8f;
+        }};
+        /*
+        flucturbare = new AsideTurret("flucturbare") {{
+            requirements(Category.turret, ItemStack.with(Items.titanium, 750, Items.thorium, 860, Items.lead, 1000));
+
+            ammoType = "item";
+            ammo(Items.titanium, SBullets.accelerMissile);
+            spread = 5;
+            shots = 2;
+            size = 3;
+            shootCone = 120f;
+            range = 50*8f;
+            minRanged = 13*8f;
+            chargeTime = 55f;
+            chargeMaxDelay = 35f;
+            chargeEffects = 5;
+            recoilAmount = 12f;
+            reloadTime = 110f;
+            cooldown = 0.1f;
+            shootShake = 6f;
+            shootEffect = SFx.balkanShoot;
+            smokeEffect = Fx.none;
+            chargeEffect = SFx.balkanChargeCircles;
+            chargeBeginEffect = SFx.balkanChargeBegin;
+            heatColor = Color.blue;
+            health = 150 * size * size;
+            shootSound = Sounds.missile;
+            hasPower = true;
+            targetAir = true;
+            acceptCoolant = false;
+        }};
+*/
+        sasitil = new GetlingTurret("sasitil") {{
+            ammoType = "item";
+            ammo(Items.blastCompound, Bullets.missileExplosive);
+
+            inaccuracy = 25f;
+            range = 17*8f;
+            recoilAmount = 4f;
+            reloadTime = 60f;
+            shootShake = 4f;
+            shootCone = 120f;
+            heatColor = Color.red;
+            size = 3;
+            health = 140 * size * size;
+            shootSound = Sounds.missile;
+
+            targetAir = true;
+            hasPower = true;
+            acceptCoolant = false;
+            requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
 
         balkan = new SkillTurret("balkan"){{
@@ -107,7 +155,6 @@ public class SBlocks implements ContentList{
             ammoType = "item";
             ammo(Items.titanium, SBullets.accelMissile);
 
-            hasPower = true;
             range = 30*8f;
             chargeTime = 40f;
             chargeMaxDelay = 30f;
@@ -123,30 +170,31 @@ public class SBlocks implements ContentList{
             heatColor = Color.blue;
             size = 2;
             health = 110 * size * size;
-            targetAir = true;
             shootSound = Sounds.missile;
 
+            targetAir = true;
+            hasPower = true;
             acceptCoolant = false;
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
 
-        diaperito = new SnipeTurret("diaperito") {{
+        traislar = new SnipeTurret("traislar") {{
             requirements(Category.turret, ItemStack.with(Items.titanium, 700, Items.thorium, 800, Items.lead, 1000));
 
             ammoType = "item";
             ammo(Items.titanium, SBullets.accelBullet);
             spread = 5;
             size = 3;
+            shootCone = 30f;
             range = 60*8f;
-            minRanged = 12*8f;
-            chargeTime = 55f;
+            chargeTime = 60f;
             chargeMaxDelay = 35f;
             chargeEffects = 5;
             recoilAmount = 12f;
-            reloadTime = 110f;
+            reloadTime = 150f;
             cooldown = 0.1f;
             shootShake = 6f;
-            shootEffect = SFx.balkanShoot;
+            shootEffect = SFx.traislarShoot;
             smokeEffect = Fx.none;
             chargeEffect = SFx.balkanChargeCircles;
             chargeBeginEffect = SFx.balkanChargeBegin;
@@ -154,6 +202,7 @@ public class SBlocks implements ContentList{
             health = 150 * size * size;
             shootSound = Sounds.missile;
 
+            unitSort = (u, x, y) -> -u.dst2(x, y);
             hasPower = true;
             targetAir = true;
             acceptCoolant = false;
@@ -167,6 +216,7 @@ public class SBlocks implements ContentList{
             spread = 5;
             shots = 2;
             size = 3;
+            shootCone = 120f;
             range = 50*8f;
             minRanged = 13*8f;
             chargeTime = 55f;

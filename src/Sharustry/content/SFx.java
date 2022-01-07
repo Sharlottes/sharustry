@@ -7,6 +7,7 @@ import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.Vec2;
 import arc.util.Tmp;
+import mindustry.content.Items;
 import mindustry.entities.*;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.game.Team;
@@ -76,12 +77,29 @@ public class SFx {
         for(int i : Mathf.signs)
             Drawf.tri(e.x, e.y, 4f * e.fout(), 29*1.5f, e.rotation + 90f * i);
     }),
+
+    traislarShoot = new Effect(45f, e -> {
+        for(int r : Mathf.signs) {
+            for(int i = 0; i < 2; i++){
+                Draw.color(Pal.lancerLaser.cpy().lerp(Items.titanium.color,0.5f * i).a(1 - 0.5f * e.fin()));
+
+                float m = 1 - 0.5f * i;
+                float rot = e.rotation + Mathf.lerp(60, 30, e.fin()) * r;
+                float w = 15 * e.fout() * m;
+                Drawf.tri(e.x, e.y, w, (30 + 15) * m, rot + 180);
+                Drawf.tri(e.x, e.y, w, 10 * m, rot);
+            }
+
+            Drawf.light(e.x, e.y, 60, Pal.bulletYellowBack, 0.6f * e.fout());
+            e.scaled(30f, ee -> Drawf.tri(e.x, e.y, 4 * ee.fout(), 29 * 1.5f, e.rotation + Mathf.lerp(90,120, ee.fin()) * r));
+        }
+    }),
+
     balkanChargeBegin = new Effect(60f, 100f, e -> {
         stroke(e.fin(), SPal.cryoium(e));
         Lines.circle(e.x, e.y, 4f + e.fout() * 6f);
 
         Fill.circle(e.x, e.y, e.fin() * 3f);
-
         color();
         Fill.circle(e.x, e.y, e.fin() * 2f);
     }),

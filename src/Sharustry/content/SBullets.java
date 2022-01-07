@@ -10,6 +10,7 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.math.Mathf;
 import arc.struct.Seq;
+import arc.util.Time;
 import mindustry.ctype.*;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
@@ -256,9 +257,10 @@ public class SBullets implements ContentList{
             lifetime = 120f;
             height = 15f;
             width = 24f;
-            hitEffect = Fx.none;
             drag = 1;
             trailColor = SPal.cryoium;
+            hitEffect = Fx.none;
+            despawnEffect = Fx.none;
         }
             @Override
             public void draw(Bullet b) {
@@ -266,15 +268,13 @@ public class SBullets implements ContentList{
                 Draw.color(trailColor.cpy().a(0.75f-b.fin()/2));
 
                 for(int i : Mathf.signs) {
-                    Drawf.tri(b.x, b.y, height*(1-b.fin()), width, b.rotation()+90*i);
+                    Drawf.tri(b.x, b.y, height*(1-b.fin()), width, b.rotation()+Mathf.lerp(120, 150, b.fin())*i);
                 }
             }
         };
 
-        accelBullet = new TrailBulletType(4f, 45){{
-            backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
+        accelBullet = new BasicBulletType(4f, 75){{
             frontColor = trailColor = SPal.cryoium;
-            shrinkY = 0f;
             width = 4f;
             height = 16f;
             hitSound = Sounds.explosion;
@@ -288,21 +288,47 @@ public class SBullets implements ContentList{
             shootEffect = SFx.balkanShoot;
             despawnEffect = missileDead;
             hitEffect = missileDead;
-            trailBullet = SBullets.trailBullet;
         }
             @Override
+            public void update(Bullet b){
+                super.update(b);
+                b.damage += Time.delta * 1.5f;
+                ((BulletData)b.data).heat += Time.delta;
+                if(((BulletData)b.data).heat > 2.5) {
+                    ((BulletData)b.data).heat = 0f;
+                    trailBullet.create(b, b.team, b.x, b.y, b.rotation(),  0f, 1);
+                }
+            }
+
+            @Override
             public void init(Bullet b){
-                b.data = Seq.with(new Trail(6), new Trail(3));
+                b.data = new BulletData(Seq.with(new Trail(6), new Trail(3)), 0f);
             }
 
             @Override
             public void draw(Bullet b){
-                super.draw(b);
+                drawTrail(b);
                 Draw.color(Pal.lancerLaser);
-                ((Seq<Trail>)b.data).each(t->t.draw(this.frontColor, this.width));
+                ((BulletData)b.data).trails.each(t->t.draw(this.frontColor, this.width));
 
                 Drawf.tri(b.x, b.y, width, height, b.rotation());
                 Drawf.tri(b.x, b.y, width, height/2, b.rotation()+180);
+            }
+
+            @Override
+            public void hit(Bullet b, float x, float y) {
+                super.hit(b, x, y);
+                b.damage*=0.75f;
+            }
+
+            class BulletData {
+                final Seq<Trail> trails;
+                float heat;
+
+                public BulletData(Seq<Trail> trails, float heat) {
+                    this.trails = trails;
+                    this.heat = heat;
+                }
             }
         };
 
