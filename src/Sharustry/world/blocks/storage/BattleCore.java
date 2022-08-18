@@ -108,10 +108,10 @@ public class BattleCore extends CoreBlock{
     public void ammos(MountTurretType.MultiTurretMountType ammotype, Object... objects){
         if(ammotype == MountTurretType.MultiTurretMountType.item) {
             mountAmmoTypes.add(OrderedMap.of(objects));
-            liquidMountAmmoTypes.add(null);
+            liquidMountAmmoTypes.add((ObjectMap<Liquid, BulletType>) null);
         }
         if(ammotype == MountTurretType.MultiTurretMountType.liquid) {
-            mountAmmoTypes.add(null);
+            mountAmmoTypes.add((ObjectMap<Item, BulletType>) null);
             liquidMountAmmoTypes.add(OrderedMap.of(objects));
         }
         if(ammotype == MountTurretType.MultiTurretMountType.power
@@ -120,36 +120,34 @@ public class BattleCore extends CoreBlock{
                 || ammotype == MountTurretType.MultiTurretMountType.repair
                 || ammotype == MountTurretType.MultiTurretMountType.mass
                 || ammotype == MountTurretType.MultiTurretMountType.drill){
-            liquidMountAmmoTypes.add(null);
-            mountAmmoTypes.add(null);
+            liquidMountAmmoTypes.add((ObjectMap<Liquid, BulletType>) null);
+            mountAmmoTypes.add((ObjectMap<Item, BulletType>) null);
         }
     }
 
     @Override
     public void init(){
-        consumes.add(new ConsumeLiquidFilter(i -> liquidAmmoTypes.containsKey(i), 1f){
+        consume(new ConsumeLiquidFilter(i -> liquidAmmoTypes.containsKey(i), 1f){
             @Override
-            public boolean valid(Building entity){
-                return entity.liquids.total() > 0.001f;
+            public float efficiency (Building entity){
+                return entity.liquids.currentAmount() > 0.001f ? super.efficiency(entity) : 0;
             }
-
             @Override
-            public void update(Building entity){
-
-            }
-
+            public void update(Building entity){ }
             @Override
-            public void display(Stats stats){
-
-            }
+            public void display(Stats stats){ }
         });
 
         super.init();
     }
 
     @Override
+    public void createIcons(MultiPacker packer){
+        Drawm.generateTeamRegion(packer, this);
+        super.createIcons(packer);
+    }
+    @Override
     public void load(){
-        iconRegion = Drawm.generateTeamRegion(this);
         super.load();
         heatRegion = Core.atlas.find(name + "-heat");
         Events.on(EventType.ClientLoadEvent.class, e -> {
@@ -202,8 +200,8 @@ public class BattleCore extends CoreBlock{
 
             if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.mass){
                 //check if a mass driver is selected while placing this driver
-                if(!control.input.frag.config.isShown()) continue;
-                Building selected = control.input.frag.config.getSelectedTile();
+                if(!control.input.config.isShown()) continue;
+                Building selected = control.input.config.getSelected();
                 if(selected == null || !(selected.block instanceof MultiTurret) || !(selected.within(x * tilesize, y * tilesize, mounts.get(i).range))) continue;
 
                 //if so, draw a dotted line towards it while it is in range
@@ -225,7 +223,6 @@ public class BattleCore extends CoreBlock{
     @Override
     public TextureRegion[] icons() {
         return new TextureRegion[]{
-                region,
                 iconRegion
         };
     }
@@ -255,7 +252,7 @@ public class BattleCore extends CoreBlock{
             if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.item) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (mounts.get(i).ammoPerShot));
             if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", mounts.get(i).damage * 60f));
             if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.repair) rowAdd(h, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", mounts.get(i).repairRadius / tilesize));
-            if(mounts.get(i).mountType != MountTurretType.MultiTurretMountType.repair || mounts.get(i).mountType != MountTurretType.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (mounts.get(i).reloadTime) * (mounts.get(i).shots), 1));
+            if(mounts.get(i).mountType != MountTurretType.MultiTurretMountType.repair || mounts.get(i).mountType != MountTurretType.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / (mounts.get(i).reload) * (mounts.get(i).shots), 1));
 
             h.row();
 
@@ -332,7 +329,7 @@ public class BattleCore extends CoreBlock{
                             if(bullet.buildingDamageMultiplier != 1) rowAdd(e, Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1)));
                             if(bullet.splashDamage > 0) rowAdd(e, Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1)));
                             if(bullet.ammoMultiplier > 0 && (mounts.get(i).mountType == MountTurretType.MultiTurretMountType.item) && !Mathf.equal(bullet.ammoMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1)));
-                            if(!Mathf.equal(bullet.reloadMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.reload", bullet.reloadMultiplier));
+                            if(!Mathf.equal(bullet.reloadMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.reloadCounter", bullet.reloadMultiplier));
                             if(bullet.knockback > 0) rowAdd(e, Core.bundle.format("bullet.knockback", Strings.fixed(bullet.knockback, 1)));
                             if(bullet.healPercent > 0) rowAdd(e, Core.bundle.format("bullet.healpercent", bullet.healPercent));
                             if(bullet.pierce || bullet.pierceCap != -1) rowAdd(e, bullet.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", bullet.pierceCap));
@@ -487,24 +484,24 @@ public class BattleCore extends CoreBlock{
                 _mineTimers.add(0f);
                 __heats.add(0f);
                 ___heats.add(0f);
-                _targets.add(null);
-                _tractTargets.add(null);
-                _pointTargets.add(null);
-                _repairTargets.add(null);
-                _healTargets.add(null);
+                _targets.add((Posc) null);
+                _tractTargets.add((Unit) null);
+                _pointTargets.add((Bullet) null);
+                _repairTargets.add((Unit) null);
+                _healTargets.add((Building) null);
                 _targetPoses.add(new Vec2());
                 _wasShootings.add(false);
                 _chargings.add(false);
-                _ammos.add(new Seq<>());
+                _ammos.add(new Seq<ItemEntry>());
                 _lastXs.add(0f);
                 _lastYs.add(0f);
                 _strengths.add(0f);
                 _anys.add(false);
-                _proxItemses.add(new Seq<>());
-                _proxOreses.add(new Seq<>());
-                _mineTiles.add(null);
-                _ores.add(null);
-                _targetItems.add(null);
+                _proxItemses.add(new Seq<Item>());
+                _proxOreses.add(new Seq<Tile>());
+                _mineTiles.add((Tile) null);
+                _ores.add((Tile) null);
+                _targetItems.add((Item) null);
                 if(mounts.get(i).mountType == MountTurretType.MultiTurretMountType.drill) mountReMap(i);
             }
         }
@@ -618,8 +615,8 @@ public class BattleCore extends CoreBlock{
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
                                 Bar reloadBar = new Bar(
                                         () -> "",
-                                        () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime),
-                                        () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                        () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reload),
+                                        () -> _reloads.get(i) / mounts.get(i).reload);
                                 e.add(reloadBar);
                                 e.pack();
                             }));
@@ -628,12 +625,12 @@ public class BattleCore extends CoreBlock{
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
                                 Bar chargeBar = new Bar(
                                         () -> "",
-                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reload),
                                         () -> _charges.get(i));
                                 e.add(chargeBar);
                                 e.pack();
                             }));
-                            add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(_ammos.get(i).peek().item.uiIcon))) : new Table(e -> e.add(itemReq).size(iconSmall)));
+                            add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(_ammos.get(i).peek().item.uiIcon, 1))) : new Table(e -> e.add(itemReq).size(iconSmall)));
                         }}).padTop(2*8).padLeft(2*8);
 
                     }
@@ -658,8 +655,8 @@ public class BattleCore extends CoreBlock{
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
                                 Bar reloadBar = new Bar(
                                         () -> "",
-                                        () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime),
-                                        () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                        () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reload),
+                                        () -> _reloads.get(i) / mounts.get(i).reload);
                                 e.add(reloadBar);
                                 e.pack();
                             }));
@@ -668,12 +665,12 @@ public class BattleCore extends CoreBlock{
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
                                 Bar chargeBar = new Bar(
                                         () -> "",
-                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reload),
                                         () -> _charges.get(i));
                                 e.add(chargeBar);
                                 e.pack();
                             }));
-                            add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(liquids.current().uiIcon))) : new Table(e -> e.add(liquidReq).size(iconSmall)));
+                            add(mountHasAmmo(i) ? new Table(e -> e.add(new ItemImage(liquids.current().uiIcon, 1))) : new Table(e -> e.add(liquidReq).size(iconSmall)));
                         }}).padTop(2*8).padLeft(2*8);
 
                     }
@@ -705,8 +702,8 @@ public class BattleCore extends CoreBlock{
                                     e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
                                     Bar reloadBar = new Bar(
                                             () -> "",
-                                            () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reloadTime),
-                                            () -> _reloads.get(i) / mounts.get(i).reloadTime);
+                                            () -> Pal.accent.cpy().lerp(Color.orange, _reloads.get(i) / mounts.get(i).reload),
+                                            () -> _reloads.get(i) / mounts.get(i).reload);
                                     e.add(reloadBar);
                                     e.pack();
                                 }));
@@ -715,7 +712,7 @@ public class BattleCore extends CoreBlock{
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
                                 Bar chargeBar = new Bar(
                                         () -> "",
-                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reloadTime),
+                                        () -> Pal.surge.cpy().lerp(Pal.accent, _reloads.get(i) / mounts.get(i).reload),
                                         () -> _charges.get(i));
                                 e.add(chargeBar);
                                 e.pack();
@@ -768,7 +765,7 @@ public class BattleCore extends CoreBlock{
 
         @Override
         public void displayBars(Table bars){
-            for(Func<Building, Bar> bar : block.bars.list()){
+            for(Func<Building, Bar> bar : block.listBars()){
                 try{
                     bars.add(bar.get(self())).growX();
                     bars.row();
@@ -971,7 +968,7 @@ public class BattleCore extends CoreBlock{
                     float ang = angleTo(_lastXs.get(i), _lastYs.get(i));
 
                     Draw.mixcol(mounts.get(i).laserColor, Mathf.absin(4f, 0.6f));
-                    Drawf.laser(team, mounts.get(i).tractLaser, mounts.get(i).tractLaserEnd,
+                    Drawf.laser(mounts.get(i).tractLaser, mounts.get(i).tractLaserEnd,
                             loc[0] + Angles.trnsx(ang, mounts.get(i).shootLength), loc[1] + Angles.trnsy(ang, mounts.get(i).shootLength),
                             _lastXs.get(i), _lastYs.get(i), _strengths.get(i) * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1) * mounts.get(i).laserWidth);
 
@@ -985,7 +982,7 @@ public class BattleCore extends CoreBlock{
                     float len = 5f;
 
                     Draw.color(mounts.get(i).laserColor);
-                    Drawf.laser(team, mounts.get(i).laser, mounts.get(i).laserEnd,
+                    Drawf.laser(mounts.get(i).laser, mounts.get(i).laserEnd,
                             loc[0] + Angles.trnsx(ang, len), loc[1] + Angles.trnsy(ang, len),
                             _repairTargets.get(i).x(), _repairTargets.get(i).y(), _strengths.get(i));
 
@@ -1005,7 +1002,7 @@ public class BattleCore extends CoreBlock{
 
                     Draw.z(Layer.flyingUnit + 0.1f);
                     Draw.color(Color.lightGray, Color.white, 1f - flashScl + Mathf.absin(Time.time, 0.5f, flashScl));
-                    Drawf.laser(team(), mounts.get(i).laser, mounts.get(i).laserEnd, px, py, ex, ey, mounts.get(i).laserWidth);
+                    Drawf.laser(mounts.get(i).laser, mounts.get(i).laserEnd, px, py, ex, ey, mounts.get(i).laserWidth);
 
                     Draw.reset();
                 }
@@ -1087,13 +1084,13 @@ public class BattleCore extends CoreBlock{
 
             if(logicControlTime > 0) logicControlTime -= Time.delta;
 
-            float maxUsed = consumes.<ConsumeLiquidBase>get(ConsumeType.liquid).amount / mounts.size;
+            float maxUsed = block.<ConsumeLiquidBase>findConsumer(consume -> consume instanceof ConsumeLiquidBase).amount / mounts.size;
 
             Liquid liquid = liquids.current();
 
             for(int i = 0; i < mounts.size; i++){
                 if(!(mounts.get(i).acceptCooling) || liquidMountAmmoTypes.get(i) == null) continue;
-                float used = Math.min(Math.min(liquids.get(liquid), maxUsed * Time.delta), Math.max(0, ((mounts.get(i).reloadTime - _reloads.get(i)) / mounts.get(i).coolantMultiplier) / liquid.heatCapacity));
+                float used = Math.min(Math.min(liquids.get(liquid), maxUsed * Time.delta), Math.max(0, ((mounts.get(i).reload - _reloads.get(i)) / mounts.get(i).coolantMultiplier) / liquid.heatCapacity));
                 if(mounts.get(i).powerUse > 0.001f) used *= Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1);
                 else used *= baseReloadSpeed();
                 _reloads.set(i, _reloads.get(i) + used * liquid.heatCapacity * mounts.get(i).coolantMultiplier);
@@ -1188,8 +1185,8 @@ public class BattleCore extends CoreBlock{
 
             if(hasLink) this.link = link.pos();
 
-            //reload regardless of state
-            if(_reloads.get(i) < mounts.get(i).reloadTime) _reloads.set(i, _reloads.get(i) + delta() * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
+            //reloadCounter regardless of state
+            if(_reloads.get(i) < mounts.get(i).reload) _reloads.set(i, _reloads.get(i) + delta() * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
 
 
             //cleanup waiting shooters that are not valid
@@ -1231,11 +1228,10 @@ public class BattleCore extends CoreBlock{
                         items.total() >= mounts.get(i).minDistribute && //must shoot minimum amount of items
                         link.block.itemCapacity - link.items.total() >= mounts.get(i).minDistribute //must have minimum amount of space
                 ){
-                    if(link instanceof BattleCoreBuild){
-                        BattleCore.BattleCoreBuild other = (BattleCore.BattleCoreBuild)link;
+                    if(link instanceof BattleCoreBuild other){
                         other.waitingShooters.add(tile);
 
-                        if(_reloads.get(i) >= mounts.get(i).reloadTime && !_chargings.get(i)){
+                        if(_reloads.get(i) >= mounts.get(i).reload && !_chargings.get(i)){
                             _rotations.set(i, Mathf.slerpDelta(_rotations.get(i), targetRotation, mounts.get(i).rotateSpeed * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1)));
 
                             //fire when it's the first in the queue and angles are ready.
@@ -1256,14 +1252,13 @@ public class BattleCore extends CoreBlock{
                             }
                         }
                     }
-                    else if(link instanceof MultiTurret.MultiTurretBuild){
-                        MultiTurret.MultiTurretBuild other = (MultiTurret.MultiTurretBuild)link;
+                    else if(link instanceof MultiTurret.MultiTurretBuild other){
                         Seq<MountTurret> massmounts = other.mounts.copy().filter(m -> m.type.mountType == MountTurretType.MultiTurretMountType.mass);
                         for(int w = 0; w < massmounts.size; w++){
                             final int q = w;
                             massmounts.get(q).waitingShooters.add(tile);
 
-                            if(_reloads.get(i) >= mounts.get(i).reloadTime && !_chargings.get(i)){
+                            if(_reloads.get(i) >= mounts.get(i).reload && !_chargings.get(i)){
                                 _rotations.set(i, Mathf.slerpDelta(_rotations.get(i), targetRotation, mounts.get(i).rotateSpeed * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1)));
 
                                 //fire when it's the first in the queue and angles are ready.
@@ -1373,7 +1368,7 @@ public class BattleCore extends CoreBlock{
         }
 
         @Override
-        public boolean onConfigureTileTapped(Building other){
+        public boolean onConfigureBuildTapped(Building other){
             if(this == other){
                 configure(-1);
                 return false;
@@ -1389,9 +1384,6 @@ public class BattleCore extends CoreBlock{
             }
             return true;
         }
-
-        /* mass region end */
-        /* drill region */
 
         public void mountUpdateDrill(int i){
             float[] loc = this.mountLocations(i);
@@ -1419,7 +1411,7 @@ public class BattleCore extends CoreBlock{
 
                     if(state.rules.sector != null && team() == state.rules.defaultTeam) state.rules.sector.info.handleProduction(item, 1);
 
-                    //items are synced anyways
+                    //items are synced anyway
                     InputHandler.transferItemTo(null, item, 1,
                             _mineTiles.get(i).worldx() + Mathf.range(tilesize / 2f),
                             _mineTiles.get(i).worldy() + Mathf.range(tilesize / 2f),
@@ -1531,9 +1523,6 @@ public class BattleCore extends CoreBlock{
             super.removeFromProximity();
         }
 
-        /* drill region end */
-        /* tractor region */
-
         public void mountUpdateTract(int i){
             float[] loc = this.mountLocations(i);
             _anys.set(i, false);
@@ -1569,9 +1558,6 @@ public class BattleCore extends CoreBlock{
             }
         }
 
-        /* tractor region end */
-        /* point region */
-
         public void mountUpdatePoint(int i){
             float[] loc = this.mountLocations(i);
             if(_pointTargets.get(i) != null
@@ -1584,7 +1570,7 @@ public class BattleCore extends CoreBlock{
                 _reloads.set(i, _reloads.get(i) + delta() * Mathf.clamp(power.graph.getPowerBalance()/mounts.get(i).powerUse, 0, 1));
 
                 //shoot when possible
-                if(Angles.within(_rotations.get(i), dest, mounts.get(i).shootCone) && _reloads.get(i) >= mounts.get(i).reloadTime){
+                if(Angles.within(_rotations.get(i), dest, mounts.get(i).shootCone) && _reloads.get(i) >= mounts.get(i).reload){
                     if(_pointTargets.get(i).damage() > mounts.get(i).bulletDamage) _pointTargets.get(i).damage(_pointTargets.get(i).damage() - mounts.get(i).bulletDamage);
                     else _pointTargets.get(i).remove();
 
@@ -1599,9 +1585,6 @@ public class BattleCore extends CoreBlock{
                 }
             }
         }
-
-        /* point region end */
-        /* repair region */
 
         public void mountUpdateRepair(int i){
             float[] loc = this.mountLocations(i);
@@ -1621,8 +1604,6 @@ public class BattleCore extends CoreBlock{
             if(_repairTargets.get(i) != null && targetIsBeingRepaired) _strengths.set(i, Mathf.lerpDelta(_strengths.get(i), 1f, 0.08f * Time.delta));
             else _strengths.set(i, Mathf.lerpDelta(_strengths.get(i), 0f, 0.07f * Time.delta));
         }
-
-        /* repair region end */
 
         public void mountTargetTurn(int mount, float target){
             float speed = mounts.get(mount).rotateSpeed * delta();
@@ -1651,7 +1632,7 @@ public class BattleCore extends CoreBlock{
 
         public boolean mountTargetValid(int mount){
             float[] loc = mountLocations(mount);
-            if(mounts.get(mount).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(mount).range, Building::damaged) != null) return (_targets != null && !(_targets instanceof Teamc && ((Teamc) _targets).team() != team) && !(_targets instanceof Healthc && !((Healthc) _targets).isValid())) || (this instanceof ControlBlock && ((ControlBlock) this).isControlled()) || logicControlled();
+            if(mounts.get(mount).healBlock && Units.findAllyTile(team, loc[0], loc[1], mounts.get(mount).range, Building::damaged) != null) return (_targets != null && !(_targets instanceof Teamc && ((Teamc) _targets).team() != team) && !(_targets instanceof Healthc && !((Healthc) _targets).isValid())) || this.isControlled() || logicControlled();
 
             return !Units.invalidateTarget(_targets.get(mount), team, loc[0], loc[1]) || isControlled() || logicControlled();
         }
@@ -1671,7 +1652,7 @@ public class BattleCore extends CoreBlock{
         }
 
         public void mountUpdateShooting(int mount){
-            if(_reloads.get(mount) >= mounts.get(mount).reloadTime){
+            if(_reloads.get(mount) >= mounts.get(mount).reload){
                 mountShoot(mount, mounts.get(mount).mountType == MountTurretType.MultiTurretMountType.liquid ? liquidMountAmmoTypes.get(mount).get(liquids.current()) : mountPeekAmmo(mount));
                 _reloads.set(mount, 0f);
             }else {
@@ -1751,7 +1732,7 @@ public class BattleCore extends CoreBlock{
         public void mountBullet(int mount, BulletType type, float spreadAmount){
             float[] loc = mountLocations(mount);
 
-            float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(loc[4], loc[5], _targetPoses.get(mount).x, _targetPoses.get(mount).y) / type.range(), mounts.get(mount).minRange / type.range(), mounts.get(mount).range / type.range()) : 1;
+            float lifeScl = type.scaleLife ? Mathf.clamp(Mathf.dst(loc[4], loc[5], _targetPoses.get(mount).x, _targetPoses.get(mount).y) / type.range, mounts.get(mount).minRange / type.range, mounts.get(mount).range / type.range) : 1;
             float angle = _rotations.get(mount) + Mathf.range(mounts.get(mount).inaccuracy + type.inaccuracy) + (spreadAmount - (mounts.get(mount).shots / 2f)) * mounts.get(mount).spread;
             type.create(this, this.team, loc[4], loc[5], angle, 1 + Mathf.range(mounts.get(mount).velocityInaccuracy), lifeScl);
         }
@@ -1802,7 +1783,7 @@ public class BattleCore extends CoreBlock{
             if(mounts.get(mount).mountType == MountTurretType.MultiTurretMountType.liquid) {
                 return liquidMountAmmoTypes.get(mount) != null
                         && liquidMountAmmoTypes.get(mount).get(liquids.current()) != null
-                        && liquids.total() >= 1f / liquidMountAmmoTypes.get(mount).get(liquids.current()).ammoMultiplier;
+                        && liquids.currentAmount() >= 1f / liquidMountAmmoTypes.get(mount).get(liquids.current()).ammoMultiplier;
             }
             return false;
         }

@@ -9,7 +9,7 @@ public class ThermalLaserBulletType extends ContinuousLaserBulletType {
         super(damage);
     }
 
-    public class ThermalLaserBullet extends Bullet {
+    public static class ThermalLaserBullet extends Bullet {
         @Override
         public void update() {
             super.update();

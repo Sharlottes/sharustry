@@ -1,6 +1,5 @@
 package Sharustry.world.blocks.logic;
 
-
 import arc.func.*;
 import arc.graphics.Color;
 import arc.scene.ui.Label;
@@ -15,6 +14,8 @@ import mindustry.logic.*;
 import mindustry.logic.LAssembler.*;
 import mindustry.logic.LExecutor.*;
 import mindustry.world.blocks.logic.LogicBlock;
+
+import java.util.Objects;
 
 import static mindustry.Vars.*;
 public class VariableLogicBlock extends LogicBlock {
@@ -113,7 +114,7 @@ public class VariableLogicBlock extends LogicBlock {
             }
 
             if(enabled){
-                accumulator += edelta() * instructionsPerTicks * (consValid() ? 1 : 0);
+                accumulator += edelta() * instructionsPerTicks * (canConsume() ? 1 : 0);
 
                 if(accumulator > maxInstructionScale * instructionsPerTicks) accumulator = maxInstructionScale * instructionsPerTicks;
 
@@ -134,8 +135,8 @@ public class VariableLogicBlock extends LogicBlock {
                 try{
                     //create assembler to store extra variables
                     LAssembler asm = new LAssembler();
-                    Seq<LStatement> st = LAssembler.read(str);
-                    asm.instructions = st.map(l -> l.build(asm)).filter(l -> l != null).toArray(LInstruction.class);
+                    Seq<LStatement> st = LAssembler.read(str, privileged);
+                    asm.instructions = st.map(l -> l.build(asm)).filter(Objects::nonNull).toArray(LInstruction.class);
 
                     //store connections
                     for(LogicLink link : links){
@@ -191,8 +192,8 @@ public class VariableLogicBlock extends LogicBlock {
 
                     //handle malformed code and replace it with nothing
                     LAssembler asm = new LAssembler();
-                    Seq<LStatement> st = LAssembler.read(str);
-                    asm.instructions = st.map(l -> l.build(asm)).filter(l -> l != null).toArray(LInstruction.class);
+                    Seq<LStatement> st = LAssembler.read(str, privileged);
+                    asm.instructions = st.map(l -> l.build(asm)).filter(Objects::nonNull).toArray(LInstruction.class);
                     executor.load(asm);
                 }
             }

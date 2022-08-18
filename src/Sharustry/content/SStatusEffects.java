@@ -2,11 +2,8 @@ package Sharustry.content;
 
 import arc.graphics.Color;
 import arc.math.Mathf;
-import arc.util.Nullable;
 import arc.util.Tmp;
-import mindustry.ctype.*;
 import mindustry.entities.Lightning;
-import mindustry.entities.bullet.BulletType;
 import mindustry.game.Team;
 import mindustry.gen.Unit;
 import mindustry.graphics.Pal;
@@ -14,11 +11,10 @@ import mindustry.type.*;
 
 import static mindustry.content.StatusEffects.*;
 
-public class SStatusEffects implements ContentList{
+public class SStatusEffects {
     public static StatusEffect overFreezing;
 
-    @Override
-    public void load(){
+    public static void load(){
         overFreezing = new StatusEffect("over-freezing"){
             {
                 color = Color.valueOf("6ecdec").cpy().lerp(Pal.lancerLaser, 0.5f);

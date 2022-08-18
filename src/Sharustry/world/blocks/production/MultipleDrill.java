@@ -1,9 +1,7 @@
 package Sharustry.world.blocks.production;
 
 import Sharustry.ui.*;
-import arc.func.*;
 import arc.scene.ui.layout.*;
-import mindustry.gen.*;
 import mindustry.world.blocks.production.*;
 
 import arc.*;
@@ -34,8 +32,7 @@ public class MultipleDrill extends Drill {
     @Override
     public void setBars() {
         super.setBars();
-        bars.remove("drillspeed");
-
+        removeBar("drillspeed");
     }
 
     @Override
@@ -44,8 +41,8 @@ public class MultipleDrill extends Drill {
         stats.remove(Stat.drillSpeed);
         stats.add(Stat.drillSpeed, delay / 60, StatUnit.itemsSecond);
     }
-
-    void countOre(Tile tile){
+    @Override
+    protected void countOre(Tile tile){
         returnItems.clear();
         returnItemsAmount.clear();
         oreCount.clear();
@@ -72,7 +69,7 @@ public class MultipleDrill extends Drill {
     }
 
     @Override
-    public void drawRequestConfigTop(BuildPlan req, Eachable<BuildPlan> list){
+    public void drawPlanConfigTop(BuildPlan req, Eachable<BuildPlan> list){
         if(!req.worldContext) return;
 
         Tile tile = req.tile();
@@ -90,7 +87,7 @@ public class MultipleDrill extends Drill {
     }
 
     @Override
-    public boolean canPlaceOn(Tile tile, Team team){
+    public boolean canPlaceOn(Tile tile, Team team, int rotation){
         if(isMultiblock()){
             for(Tile other : tile.getLinkedTilesAs(this, tempTiles))
                 if(canMine(other)) return true;
@@ -121,9 +118,9 @@ public class MultipleDrill extends Drill {
                 float dx = x * tilesize + offset - width / 2f - 4f, dy = (y+i) * tilesize + offset + size * tilesize / 2f + 5;
                 Draw.mixcol(Color.darkGray, 1f);
 
-                Draw.rect(returnItems.get(i).icon(Cicon.small), dx, dy - 1);
+                Draw.rect(returnItems.get(i).uiIcon, dx, dy - 1);
                 Draw.reset();
-                Draw.rect(returnItems.get(i).icon(Cicon.small), dx, dy);
+                Draw.rect(returnItems.get(i).uiIcon, dx, dy);
             }
             Draw.color();
 
@@ -133,7 +130,7 @@ public class MultipleDrill extends Drill {
             if(item != null){
                 float width = drawPlaceText(Core.bundle.get("bar.drilltierreq")+" item: ", x, y, valid);
                 float dx = x * tilesize + offset + width / 2f - 4f, dy = y * tilesize + offset + size * tilesize / 2f + 5;
-                Draw.rect(item.icon(Cicon.small), dx, dy + 1);
+                Draw.rect(item.uiIcon, dx, dy + 1);
                 Draw.reset();
             }
         }
@@ -186,9 +183,9 @@ public class MultipleDrill extends Drill {
                     Draw.getColor().a += (time % 1f);
                     h = 1;
                 }
-                Draw.rect(dominatedItems.get(((int)time + h) % dominatedItems.size).icon(Cicon.small), dx, dy - 1);
+                Draw.rect(dominatedItems.get(((int)time + h) % dominatedItems.size).uiIcon, dx, dy - 1);
                 Draw.reset();
-                Draw.rect(dominatedItems.get(((int)time + h) % dominatedItems.size).icon(Cicon.small), dx, dy);
+                Draw.rect(dominatedItems.get(((int)time + h) % dominatedItems.size).uiIcon, dx, dy);
 
             }
         }
@@ -207,8 +204,8 @@ public class MultipleDrill extends Drill {
                     int h = 0;
 
                     for(ItemStack stack : itemS){
-                        int value = (Math.max(1,Mathf.round(((cons.optionalValid()?liquidBoostIntensity*efficiency():efficiency()) * stack.amount * warmup) / (drillTime + hardnessDrillMultiplier * stack.item.hardness) * 60 * timeScale)));
-                        c.add(new ReqImage(new SItemImage(stack.item.icon(Cicon.medium), value, (stack.amount*100)/totalOre(),stack), ()->true)).left().padRight(8);
+                        int value = (Math.max(1, Mathf.round(((optionalEfficiency > 0 ? liquidBoostIntensity * efficiency() : efficiency()) * stack.amount * warmup) / (drillTime + hardnessDrillMultiplier * stack.item.hardness) * 60 * timeScale)));
+                        c.add(new ReqImage(new SItemImage(stack.item.uiIcon, value, (stack.amount*100)/totalOre(),stack), ()->true)).left().padRight(8);
                         if(++h % 4 == 0) table.row();
                     }
                 }).left();
@@ -247,9 +244,9 @@ public class MultipleDrill extends Drill {
 
             if(isOre() && h){
 
-                if(consValid()) {
+                if(canConsume()) {
                     float speed = 1f;
-                    if (cons.optionalValid()) speed = liquidBoostIntensity;
+                    if (optionalEfficiency > 0) speed = liquidBoostIntensity;
                     speed *= efficiency();
 
                     lastDrillSpeed = (speed * totalOre() * warmup) / delay;
@@ -267,7 +264,7 @@ public class MultipleDrill extends Drill {
                 if(progress >= delay) {
                     for(int i=0;i<dominatedItems.size;i++)
                         if(items.get(dominatedItems.get(i))<itemCapacity)
-                            for(int ii=0;ii<Math.max(1,Mathf.round(((cons.optionalValid()?liquidBoostIntensity*efficiency():efficiency()) * dominatedItemsAmount.get(i) * warmup) / (drillTime + hardnessDrillMultiplier * dominatedItems.get(i).hardness) * 60 * timeScale));ii++)
+                            for(int ii=0;ii<Math.max(1,Mathf.round(((optionalEfficiency > 0 ? liquidBoostIntensity*efficiency():efficiency()) * dominatedItemsAmount.get(i) * warmup) / (drillTime + hardnessDrillMultiplier * dominatedItems.get(i).hardness) * 60 * timeScale));ii++)
                                 offload(dominatedItems.get(i));
                     progress = 0;
 

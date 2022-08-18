@@ -19,7 +19,6 @@ import arc.util.Scaling;
 import arc.util.Strings;
 import arc.util.Time;
 import arc.util.Tmp;
-import mindustry.Vars;
 import mindustry.audio.SoundLoop;
 import mindustry.content.Fx;
 import mindustry.content.StatusEffects;
@@ -31,7 +30,6 @@ import mindustry.graphics.Pal;
 import mindustry.type.Item;
 import mindustry.type.Liquid;
 import mindustry.type.StatusEffect;
-import mindustry.ui.Cicon;
 import mindustry.world.meta.Stat;
 import mindustry.world.meta.StatUnit;
 
@@ -53,7 +51,7 @@ public class MountTurretType implements Cloneable {
     public float height = 3;
     public float elevation = 1;
 
-    public float reloadTime = 30;
+    public float reload = 30;
     public float maxAmmo = 20;
     public float range = 80;
     public float rotateSpeed = 5;
@@ -65,8 +63,6 @@ public class MountTurretType implements Cloneable {
     public float restitution = 0.02f;
     public float cooldown = 0.02f;
 
-    public float ejectX = 1;
-    public float ejectY = -1;
     public float loopVolume = 1;
     public float shootShake = 0;
 
@@ -92,7 +88,6 @@ public class MountTurretType implements Cloneable {
 
     public String name;
     public String title = "ohno";
-    public String icon = "error";
 
     public Sound shootSound = Sounds.pew;
     public Sound loopSound = Sounds.none;
@@ -275,7 +270,7 @@ public class MountTurretType implements Cloneable {
             if(mountType == MountTurretType.MultiTurretMountType.item) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + ammoPerShot);
             if(mountType == MountTurretType.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", damage * 60f));
             if(mountType == MountTurretType.MultiTurretMountType.repair) rowAdd(h, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", repairRadius / tilesize));
-            else if(mountType != MountTurretType.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reloadTime * shots, 1));
+            else if(mountType != MountTurretType.MultiTurretMountType.tract) rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reload * shots, 1));
 
             h.row();
 
@@ -288,14 +283,14 @@ public class MountTurretType implements Cloneable {
                 if(mountType == MountTurretType.MultiTurretMountType.item){
                     for(Item item : content.items()){
                         BulletType bullet = mountAmmoType.get(item);
-                        if(bullet != null) types.put(of(bullet, item), item.icon(Cicon.medium));
+                        if(bullet != null) types.put(of(bullet, item), item.uiIcon);
                     }
                 }
 
                 if(mountType == MountTurretType.MultiTurretMountType.liquid){
                     for(Liquid liquid : content.liquids()) {
                         BulletType bullet = liquidMountAmmoType.get(liquid);
-                        if(bullet != null) types.put(of(bullet, liquid), liquid.icon(Cicon.medium));
+                        if(bullet != null) types.put(of(bullet, liquid), liquid.uiIcon);
                     }
                 }
 
@@ -352,7 +347,7 @@ public class MountTurretType implements Cloneable {
                             if(bullet.buildingDamageMultiplier != 1) rowAdd(e, Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1)));
                             if(bullet.splashDamage > 0) rowAdd(e, Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1)));
                             if(mountType == MountTurretType.MultiTurretMountType.item && bullet.ammoMultiplier > 0 && !Mathf.equal(bullet.ammoMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1)));
-                            if(!Mathf.equal(bullet.reloadMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.reload", bullet.reloadMultiplier));
+                            if(!Mathf.equal(bullet.reloadMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.reloadCounter", bullet.reloadMultiplier));
                             if(bullet.knockback > 0) rowAdd(e, Core.bundle.format("bullet.knockback", Strings.fixed(bullet.knockback, 1)));
                             if(bullet.healPercent > 0) rowAdd(e, Core.bundle.format("bullet.healpercent", bullet.healPercent));
                             if(bullet.pierce || bullet.pierceCap != -1) rowAdd(e, bullet.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", bullet.pierceCap));
@@ -381,7 +376,7 @@ public class MountTurretType implements Cloneable {
 
         Lines.stroke(3, Pal.gray);
         Draw.alpha(fade);
-        if(mountType == MountTurretType.MultiTurretMountType.repair){
+        if(mountType == MultiTurretMountType.repair){
             Lines.dashCircle(tX, tY, repairRadius);
             Lines.stroke(1, Pal.heal);
             Draw.alpha(fade);
@@ -389,20 +384,20 @@ public class MountTurretType implements Cloneable {
         }
         else{
             Lines.dashCircle(tX, tY, range);
-            Lines.stroke(1, Vars.player.team().color);
+            Lines.stroke(1, player.team().color);
             Draw.alpha(fade);
             Lines.dashCircle(tX, tY, range);
         }
 
-        Draw.color(Vars.player.team().color, fade);
+        Draw.color(player.team().color, fade);
         Draw.rect(turrets[3], tX, tY);
         Draw.reset();
 
 
-        if(mountType == MountTurretType.MultiTurretMountType.mass){
+        if(mountType == MultiTurretMountType.mass){
             //check if a mass driver is selected while placing this driver
-            if(!control.input.frag.config.isShown()) return;
-            Building selected = control.input.frag.config.getSelectedTile();
+            if(!control.input.config.isShown()) return;
+            Building selected = control.input.config.getSelected();
             if(selected == null || !(selected.block instanceof MultiTurret) || !(selected.within(x * tilesize, y * tilesize, range))) return;
 
             //if so, draw a dotted line towards it while it is in range
@@ -417,14 +412,6 @@ public class MountTurretType implements Cloneable {
             Lines.stroke(2f, Pal.placing);
             Lines.dashLine(x1, y1, x2, y2, segs);
             Draw.reset();
-        }
-    }
-
-    public MountTurretType copy(){
-        try{
-            return (MountTurretType)clone();
-        }catch(CloneNotSupportedException suck){
-            throw new RuntimeException("very good language design", suck);
         }
     }
 

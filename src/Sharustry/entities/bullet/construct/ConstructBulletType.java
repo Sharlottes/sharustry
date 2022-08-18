@@ -10,10 +10,6 @@ import mindustry.entities.bullet.BulletType;
 import mindustry.gen.Bullet;
 import mindustry.graphics.Pal;
 
-/** the bullet type for construct turret. all sprite & sound taken from Nova Drift
- * do not ever use sprite without their permission.
- * do not ever use sound without their permission.*/
-
 public class ConstructBulletType extends BulletType {
     public Color backColor = Pal.bulletYellowBack, frontColor = Pal.bulletYellow;
     public Color mixColorFrom = new Color(1f, 1f, 1f, 0f), mixColorTo = new Color(1f, 1f, 1f, 0f);

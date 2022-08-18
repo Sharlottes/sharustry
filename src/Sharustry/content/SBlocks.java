@@ -1,52 +1,61 @@
 package Sharustry.content;
 
+import Sharustry.entities.bullet.AccelBulletType;
 import Sharustry.entities.bullet.FieldBulletType;
+import Sharustry.entities.pattern.ShootAside;
 import Sharustry.graphics.SPal;
 import Sharustry.world.blocks.defense.turret.*;
 import Sharustry.world.blocks.logic.VariableLogicBlock;
 import Sharustry.world.blocks.storage.BattleCore;
 import arc.Core;
+import arc.graphics.g2d.Draw;
+import arc.math.Angles;
 import arc.math.Mathf;
 import arc.scene.ui.Image;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
+import arc.struct.Seq;
+import arc.util.Structs;
 import arc.util.Time;
 import mindustry.entities.abilities.ForceFieldAbility;
-import mindustry.entities.bullet.BulletType;
-import mindustry.entities.bullet.LaserBulletType;
-import mindustry.entities.bullet.ShrapnelBulletType;
+import mindustry.entities.bullet.*;
+import mindustry.entities.effect.MultiEffect;
+import mindustry.entities.pattern.ShootAlternate;
+import mindustry.entities.pattern.ShootBarrel;
+import mindustry.graphics.Drawf;
 import mindustry.graphics.Pal;
 import Sharustry.world.blocks.defense.*;
 import Sharustry.world.blocks.production.*;
 import arc.graphics.Color;
-import mindustry.ctype.*;
 import mindustry.gen.*;
+import mindustry.graphics.Trail;
 import mindustry.type.*;
 import mindustry.content.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
 
 import static Sharustry.content.SBullets.jumbleBullet;
+import static Sharustry.content.SFx.missileDead;
 import static Sharustry.content.STurretMounts.*;
 import static mindustry.type.ItemStack.*;
 
-public class SBlocks implements ContentList{
+public class SBlocks {
     public static Block
             //logic
             variableProcessor,
             //turret
-            flucturbare, sasitil, balkan, latusis, traislar, jumble, conductron, trinity, asclepius, clinicus, fossor,
+            //flucturbare,
+            sasitil, balkan, latusis, traislar, jumble, conductron, trinity, asclepius, clinicus, fossor,
             //defense
             shieldWall, explodeMine,
             //drill
             adaptDrill, multiDrill,
             //crafterator
-            multi,
+            //multi,
             //armed core
             armedFoundation, armedNucleus;
 
-    @Override
-    public void load(){
+    public static void load(){
         variableProcessor = new VariableLogicBlock("variable-processor"){{
             requirements(Category.logic, with(Items.copper, 80, Items.lead, 50, Items.silicon, 30));
 
@@ -70,9 +79,9 @@ public class SBlocks implements ContentList{
             chargeMaxDelay = 35f;
             chargeEffects = 5;
             recoilAmount = 12f;
-            reloadTime = 110f;
+            reload = 110f;
             cooldown = 0.1f;
-            shootShake = 6f;
+            shake = 6f;
             shootEffect = SFx.balkanShoot;
             smokeEffect = Fx.none;
             chargeEffect = SFx.balkanChargeCircles;
@@ -82,18 +91,30 @@ public class SBlocks implements ContentList{
             shootSound = Sounds.missile;
             hasPower = true;
             targetAir = true;
-            acceptCoolant = false;
+            
         }};
-*/
+        */
         sasitil = new GetlingTurret("sasitil") {{
             ammoType = "item";
-            ammo(Items.blastCompound, Bullets.missileExplosive);
+            ammo(Items.blastCompound, new MissileBulletType(3.7f, 10){{
+                width = 8f;
+                height = 8f;
+                shrinkY = 0f;
+                splashDamageRadius = 30f;
+                splashDamage = 30f * 1.5f;
+                ammoMultiplier = 5f;
+                hitEffect = Fx.blastExplosion;
+                despawnEffect = Fx.blastExplosion;
+
+                status = StatusEffects.blasted;
+                statusDuration = 60f;
+            }});
 
             inaccuracy = 25f;
             range = 17*8f;
-            recoilAmount = 4f;
-            reloadTime = 60f;
-            shootShake = 4f;
+            recoil = 4f;
+            reload = 60f;
+            shake = 4f;
             shootCone = 120f;
             heatColor = Color.red;
             size = 3;
@@ -102,7 +123,7 @@ public class SBlocks implements ContentList{
 
             targetAir = true;
             hasPower = true;
-            acceptCoolant = false;
+            
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
 
@@ -153,20 +174,36 @@ public class SBlocks implements ContentList{
                 }
             );
             ammoType = "item";
-            ammo(Items.titanium, SBullets.accelMissile);
+            ammo(Items.titanium, new AccelBulletType(2.5f, 25){{
+                backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
+                frontColor = trailColor = SPal.cryoium;
+                shrinkY = 0f;
+                width = 4f;
+                height = 16f;
+                hitSound = Sounds.explosion;
+                trailChance = 0.2f;
+                lifetime = 47f;
+                sprite = "bullet";
+                pierce = true;
+                pierceBuilding = true;
+                pierceCap = 3;
+                pierceDec = 0.5f;
+                damageMultiplier = 1.3f;
+                shootEffect = SFx.balkanShoot;
+                despawnEffect = missileDead;
+                hitEffect = missileDead;
+            }});
 
             range = 30*8f;
-            chargeTime = 40f;
-            chargeMaxDelay = 30f;
-            chargeEffects = 5;
-            recoilAmount = 4f;
-            reloadTime = 90f;
-            cooldown = 0.05f;
-            shootShake = 4f;
+            moveWhileCharging = false;
+            accurateDelay = false;
+            shoot.firstShotDelay = 40f;
+            recoil = 4f;
+            reload = 90f;
+            cooldownTime = 0.05f;
+            shake = 4f;
             shootEffect = SFx.balkanShoot;
             smokeEffect = Fx.none;
-            chargeEffect = SFx.balkanChargeCircles;
-            chargeBeginEffect = SFx.balkanChargeBegin;
             heatColor = Color.blue;
             size = 2;
             health = 110 * size * size;
@@ -174,75 +211,148 @@ public class SBlocks implements ContentList{
 
             targetAir = true;
             hasPower = true;
-            acceptCoolant = false;
+            
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
 
-        traislar = new SnipeTurret("traislar") {{
+        traislar = new TemplatedTurret("traislar") {{
             requirements(Category.turret, ItemStack.with(Items.titanium, 700, Items.thorium, 800, Items.lead, 1000));
 
             ammoType = "item";
-            ammo(Items.titanium, SBullets.accelBullet);
-            spread = 5;
+            ammo(Items.titanium, new BasicBulletType(4f, 75){{
+                chargeEffect = new MultiEffect(SFx.balkanChargeCircles, SFx.balkanChargeBegin);
+                frontColor = trailColor = SPal.cryoium;
+                width = 4f;
+                height = 16f;
+                hitSound = Sounds.explosion;
+                trailChance = 0.2f;
+                lifetime = 120f;
+                sprite = "bullet";
+                pierce = true;
+                pierceBuilding = true;
+                absorbable = false;
+                pierceCap = 12;
+                shootEffect = SFx.balkanShoot;
+                despawnEffect = missileDead;
+                hitEffect = missileDead;
+            }
+                @Override
+                public void update(Bullet b){
+                    super.update(b);
+                    b.damage += Time.delta * 1.5f;
+                    ((BulletData)b.data).heat += Time.delta;
+                    if(((BulletData)b.data).heat > 2.5) {
+                        ((BulletData)b.data).heat = 0f;
+                        SBullets.trailBullet.create(b, b.team, b.x, b.y, b.rotation(),  0f, 1);
+                    }
+                }
+
+                @Override
+                public void init(Bullet b){
+                    b.data = new BulletData(Seq.with(new Trail(6), new Trail(3)), 0f);
+                }
+
+                @Override
+                public void draw(Bullet b){
+                    drawTrail(b);
+                    Draw.color(Pal.lancerLaser);
+                    ((BulletData)b.data).trails.each(t->t.draw(this.frontColor, this.width));
+
+                    Drawf.tri(b.x, b.y, width, height, b.rotation());
+                    Drawf.tri(b.x, b.y, width, height/2, b.rotation()+180);
+                }
+
+                @Override
+                public void hit(Bullet b, float x, float y) {
+                    super.hit(b, x, y);
+                    b.damage*=0.75f;
+                }
+
+                class BulletData {
+                    final Seq<Trail> trails;
+                    float heat;
+
+                    public BulletData(Seq<Trail> trails, float heat) {
+                        this.trails = trails;
+                        this.heat = heat;
+                    }
+                }
+            });
             size = 3;
             shootCone = 30f;
             range = 60*8f;
-            chargeTime = 60f;
-            chargeMaxDelay = 35f;
-            chargeEffects = 5;
-            recoilAmount = 12f;
-            reloadTime = 150f;
-            cooldown = 0.1f;
-            shootShake = 6f;
+            shoot.firstShotDelay = 60f;
+            recoil = 12f;
+            reload = 150f;
+            cooldownTime = 0.1f;
+            shake = 6f;
             shootEffect = SFx.traislarShoot;
             smokeEffect = Fx.none;
-            chargeEffect = SFx.balkanChargeCircles;
-            chargeBeginEffect = SFx.balkanChargeBegin;
             heatColor = Color.blue;
             health = 150 * size * size;
             shootSound = Sounds.missile;
 
             unitSort = (u, x, y) -> -u.dst2(x, y);
+            moveWhileCharging = false;
+            accurateDelay = false;
             hasPower = true;
             targetAir = true;
-            acceptCoolant = false;
         }};
 
-        latusis = new AsideTurret("latusis") {{
+        latusis = new TemplatedTurret("latusis") {{
             requirements(Category.turret, ItemStack.with(Items.titanium, 750, Items.thorium, 860, Items.lead, 1000));
 
             ammoType = "item";
-            ammo(Items.titanium, SBullets.accelerMissile);
-            spread = 5;
-            shots = 2;
+            ammo(Items.titanium, new AccelBulletType(3f, 45){{
+                chargeEffect = new MultiEffect(SFx.balkanChargeCircles, SFx.balkanChargeBegin);
+                backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
+                frontColor = trailColor = SPal.cryoium;
+                shrinkY = 0f;
+                width = 4f;
+                height = 16f;
+                hitSound = Sounds.explosion;
+                trailChance = 0.2f;
+                lifetime = 67f;
+                sprite = "bullet";
+                homing = true;
+                pierce = true;
+                pierceBuilding = true;
+                pierceCap = 5;
+                pierceDec = 0.75f;
+                damageMultiplier = 1.5f;
+                shootEffect = SFx.balkanShoot;
+                despawnEffect = missileDead;
+                hitEffect = missileDead;
+            }});
+
+            shoot = new ShootAside();
+            shoot.shots = 2;
+            shoot.firstShotDelay = 55f;
             size = 3;
             shootCone = 120f;
             range = 50*8f;
             minRanged = 13*8f;
-            chargeTime = 55f;
-            chargeMaxDelay = 35f;
-            chargeEffects = 5;
-            recoilAmount = 12f;
-            reloadTime = 110f;
-            cooldown = 0.1f;
-            shootShake = 6f;
+            recoil = 12f;
+            reload = 110f;
+            cooldownTime = 0.1f;
+            shake = 6f;
             shootEffect = SFx.balkanShoot;
             smokeEffect = Fx.none;
-            chargeEffect = SFx.balkanChargeCircles;
-            chargeBeginEffect = SFx.balkanChargeBegin;
             heatColor = Color.blue;
             health = 150 * size * size;
             shootSound = Sounds.missile;
             unitSort = (u, x, y) -> (u.isFlying()?+1:-1);
+            moveWhileCharging = false;
+            accurateDelay = false;
             hasPower = true;
             targetAir = true;
-            acceptCoolant = false;
         }};
 
         conductron = new MultiTurret("conductron"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
             addBaseTurret(new LaserBulletType(140){{
+                chargeEffect = new MultiEffect(Fx.lancerLaserCharge, Fx.lancerLaserChargeBegin);
                 colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
                 hitEffect = Fx.hitLancer;
                 despawnEffect = Fx.none;
@@ -268,17 +378,15 @@ public class SBlocks implements ContentList{
             ammoPerShot = 3;
             customMountLocation = true;
             range = 180f;
-            chargeTime = 40f;
-            chargeMaxDelay = 30f;
-            chargeEffects = 7;
-            recoilAmount = 2f;
-            reloadTime = 80f;
-            cooldown = 0.03f;
-            shootShake = 2f;
+            moveWhileCharging = false;
+            accurateDelay = false;
+            shoot.firstShotDelay = 40f;
+            recoil = 2f;
+            reload = 80f;
+            cooldownTime = 0.03f;
+            shake = 2f;
             shootEffect = Fx.lancerLaserShoot;
             smokeEffect = Fx.none;
-            chargeEffect = Fx.lancerLaserCharge;
-            chargeBeginEffect = Fx.lancerLaserChargeBegin;
             heatColor = Color.red;
 
             health = 190 * size * size;
@@ -306,18 +414,17 @@ public class SBlocks implements ContentList{
                     0f, 0f,
                     8f, 0f
             });
-
             addSkills(entity -> () -> {
                 if(Groups.unit.find(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range) == null
                         || Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range
-                        && u.abilities.find(a -> a instanceof ForceFieldAbility) != null) == Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range)) return;
+                        && Structs.find(u.abilities, a -> a instanceof ForceFieldAbility) != null) == Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range)) return;
                 SFx.shieldSpread.at(entity.x, entity.y, 0, range);
 
                 Time.run(30, () -> Groups.unit.each(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range, target -> {
-                    if(target.abilities.find(a -> a instanceof ForceFieldAbility) != null) return;
+                    if(Structs.find(target.abilities, a -> a instanceof ForceFieldAbility) != null) return;
                     ForceFieldAbility abil = new ForceFieldAbility(Math.min(25 * 8, target.hitSize * 2.5f), Math.min(5000, target.type.health * 0.5f) / (2.5f * 60), Math.min(5000, target.type.health * 0.5f), Math.min(20 * 60f, target.hitSize * 60));
-                    target.abilities.add(abil);
-                    Time.run(60 * 60 * 60, () -> target.abilities.remove(abil));
+                    target.abilities(Structs.add(target.abilities, abil));
+                    Time.run(60 * 60 * 60, () -> target.abilities(Structs.remove(target.abilities, abil)));
                 }));
             }, 20, Core.bundle.get("stat.shar.shieldreceive-name"));
             skillDescriptions.add(Core.bundle.get("stat.shar.shieldreceive-description"));
@@ -332,18 +439,14 @@ public class SBlocks implements ContentList{
             itemCapacity = 150;
             hasPower = true;
             size = 3;
-            spread = 4f;
-            shots = 2;
-            alternate = true;
-            reloadTime = 20f;
-            restitution = 0.03f;
+            shoot = new ShootAlternate(5f);
+            shoot.shots = 2;
+            reload = 20f;
             range = 100;
             shootCone = 15f;
             ammoUseEffect = Fx.casing1;
             inaccuracy = 2f;
             rotateSpeed = 10f;
-
-
             health = 160 * size * size;
             shootSound = Sounds.shotgun;
         }};
@@ -367,11 +470,16 @@ public class SBlocks implements ContentList{
                 final float shotAmount = 5;
                 BulletType type = SBullets.force;
                 for(int i = 0; i < shotAmount; i++) {
-                    float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
+                    float
+                        xSpread = Mathf.range(xRand),
+                        bulletX = entity.x + Angles.trnsx(entity.rotation - 90, shootX + xSpread, shootY),
+                        bulletY = entity.y + Angles.trnsy(entity.rotation - 90, shootX + xSpread, shootY),
+                        angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
                     Time.run(10 * i, () -> {
-                        float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(entity.x + tr.x, entity.y + tr.y, entity.targetPos.x, entity.targetPos.y) / type.range(), minRange / type.range(), range / type.range()) : 1f;
+                        float lifeScl = !type.scaleLife ? 1f
+                            : Mathf.clamp(Mathf.dst(bulletX, bulletY, entity.targetPos.x, entity.targetPos.y) / type.range, minRange / type.range, range / type.range);
 
-                        type.create(entity, entity.team, entity.x + tr.x, entity.y + tr.y, angle, 1f + Mathf.range(velocityInaccuracy), lifeScl);
+                        entity.handleBullet(type.create(entity, entity.team, bulletX, bulletY, angle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, null, null, entity.targetPos.x, entity.targetPos.y), 0, 0, angle - entity.rotation);
                     });
                 }
             }, 3, Core.bundle.get("stat.shar.fireforce-name"));
@@ -380,11 +488,16 @@ public class SBlocks implements ContentList{
                 final float shotAmount = 3;
                 BulletType type = SBullets.assault;
                 for(int i = 0; i < shotAmount; i++) {
-                    float angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
+                    float
+                        xSpread = Mathf.range(xRand),
+                        bulletX = entity.x + Angles.trnsx(entity.rotation - 90, shootX + xSpread, shootY),
+                        bulletY = entity.y + Angles.trnsy(entity.rotation - 90, shootX + xSpread, shootY),
+                        angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
                     Time.run(20 * i, () -> {
-                        float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(entity.x + tr.x, entity.y + tr.y, entity.targetPos.x, entity.targetPos.y) / type.range(), minRange / type.range(), range / type.range()) : 1f;
+                        float lifeScl = !type.scaleLife ? 1f
+                                : Mathf.clamp(Mathf.dst(bulletX, bulletY, entity.targetPos.x, entity.targetPos.y) / type.range, minRange / type.range, range / type.range);
 
-                        type.create(entity, entity.team, entity.x + tr.x, entity.y + tr.y, angle, 1f + Mathf.range(velocityInaccuracy), lifeScl);
+                        entity.handleBullet(type.create(entity, entity.team, bulletX, bulletY, angle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, null, null, entity.targetPos.x, entity.targetPos.y), 0, 0, angle - entity.rotation);
                     });
                 }
             }, 5, Core.bundle.get("stat.shar.fireassault-name"));
@@ -404,21 +517,18 @@ public class SBlocks implements ContentList{
             hasItems = true;
             hasPower = true;
             size = 4;
-            shots = 6;
+            shoot = new ShootBarrel();
+            ((ShootBarrel) shoot).barrelOffset = 7;
+            shoot.shots = 6;
             maxConstruct = 18;
-            inaccuracy = 45f;
-            reloadTime = 2.5f * 60f;
+            reload = 2.5f * 60f;
             ammoEjectBack = 5f;
             ammoUseEffect = Fx.casing3Double;
             ammoPerShot = 8;
-            cooldown = 0.03f;
-            velocityInaccuracy = 0.3f;
-            restitution = 0.04f;
-            recoilAmount = 8f;
-            shootShake = 3.5f;
+            cooldownTime = 0.03f;
+            recoil = 8f;
+            shake = 3.5f;
             range = 45 * 8f;
-            burstSpacing = 7f;
-
 
             minRanged = 30 * 8f;
             inaccuracy = 25f;
@@ -443,19 +553,17 @@ public class SBlocks implements ContentList{
             hasItems = true;
             hasPower = true;
             size = 3;
-            shots = 3;
-            inaccuracy = 12f;
-            reloadTime = 1.5f * 60f;
+            shoot = new ShootBarrel();
+            ((ShootBarrel) shoot).barrelOffset = 5;
+            shoot.shots = 3;
+            reload = 1.5f * 60f;
             ammoEjectBack = 5f;
             ammoUseEffect = Fx.casing3Double;
             ammoPerShot = 4;
-            cooldown = 0.03f;
-            velocityInaccuracy = 0.2f;
-            restitution = 0.02f;
-            recoilAmount = 6f;
-            shootShake = 2f;
+            cooldownTime = 0.03f;
+            recoil = 6f;
+            shake = 2f;
             range = 32 * 8f;
-            burstSpacing = 5f;
 
             minRanged = 25 * 8f;
             inaccuracy = 17f;
@@ -483,20 +591,17 @@ public class SBlocks implements ContentList{
             hasItems = true;
             hasPower = true;
             size = 4;
-            shots = 5;
-            inaccuracy = 12f;
-            reloadTime = 2f * 60f;
+            shoot = new ShootBarrel();
+            ((ShootBarrel) shoot).barrelOffset = 5;
+            shoot.shots = 5;
+            reload = 2f * 60f;
             ammoEjectBack = 5f;
             ammoUseEffect = Fx.casing3Double;
             ammoPerShot = 3;
-            cooldown = 0.03f;
-            velocityInaccuracy = 0.2f;
-            restitution = 0.02f;
-            recoilAmount = 6f;
-            shootShake = 2f;
+            cooldownTime = 0.03f;
+            recoil = 6f;
+            shake = 2f;
             range = 28 * 8f;
-            burstSpacing = 5f;
-
             inaccuracy = 20f;
             health = 120 * size * size;
             shootSound = Sounds.artillery;
@@ -512,8 +617,8 @@ public class SBlocks implements ContentList{
             size = 2;
             range = 15 * 8;
             maxAmmo = 30;
-            recoilAmount = 2;
-            reloadTime = 21;
+            recoil = 2;
+            reload = 21;
             ammoPerShot = 2;
             hasPower = true;
 
@@ -531,8 +636,9 @@ public class SBlocks implements ContentList{
             defaultAttribute = Attribute.light;
             configurable = true;
             maxHeatBoost = 2;
-            consumes.power(1.10f);
-            consumes.liquid(Liquids.water, 0.08f).boost();
+            consumePower(1.10f);
+
+            consumeLiquid(Liquids.water, 0.08f).boost();
         }};
 
         multiDrill = new MultipleDrill("multi-drill"){{
@@ -545,8 +651,8 @@ public class SBlocks implements ContentList{
             drillEffect = Fx.mineBig;
             itemCapacity = 50;
             delay = 2 * 60;
-            consumes.power(1.10f);
-            consumes.liquid(Liquids.water, 0.08f).boost();
+            consumePower(1.10f);
+            consumeLiquid(Liquids.water, 0.08f).boost();
         }};
 
         shieldWall = new ShieldWall("shield-wall"){{
@@ -559,10 +665,22 @@ public class SBlocks implements ContentList{
             requirements(Category.defense, with(Items.lead, 30, Items.silicon, 25, Items.blastCompound, 5));
             size = 2;
             health = 50;
-            cooldown = 50;
+            cooldownTime = 50;
             shots = 10;
             inaccuracy = 15;
-            bullet = Bullets.pyraFlame;
+            bullet = new BulletType(4f, 60f){{
+                ammoMultiplier = 6f;
+                hitSize = 7f;
+                lifetime = 18f;
+                pierce = true;
+                collidesAir = false;
+                statusDuration = 60f * 10;
+                shootEffect = Fx.shootPyraFlame;
+                hitEffect = Fx.hitFlameSmall;
+                despawnEffect = Fx.none;
+                status = StatusEffects.burning;
+                hittable = false;
+            }};
             shotsSpacing = 0.25f;
         }};
 
@@ -621,19 +739,53 @@ public class SBlocks implements ContentList{
                 0f, -10f
             });
 
+            BulletType
+                dense = new ArtilleryBulletType(3f, 20){{
+                    knockback = 0.8f;
+                    lifetime = 80f;
+                    width = height = 11f;
+                    collidesTiles = false;
+                    splashDamageRadius = 25f * 0.75f;
+                    splashDamage = 33f;
+                }},
+                homing = new ArtilleryBulletType(3f, 20){{
+                    knockback = 0.8f;
+                    lifetime = 80f;
+                    width = height = 11f;
+                    collidesTiles = false;
+                    splashDamageRadius = 25f * 0.75f;
+                    splashDamage = 33f;
+                }},
+                incend = new ArtilleryBulletType(3f, 25){{
+                    hitEffect = Fx.blastExplosion;
+                    knockback = 0.8f;
+                    lifetime = 80f;
+                    width = height = 13f;
+                    collidesTiles = false;
+                    splashDamageRadius = 25f * 0.75f;
+                    splashDamage = 45f;
+                    status = StatusEffects.burning;
+                    statusDuration = 60f * 12f;
+                    frontColor = Pal.lightishOrange;
+                    backColor = Pal.lightOrange;
+                    makeFire = true;
+                    trailEffect = Fx.incendTrail;
+                    ammoMultiplier = 4f;
+                }};
+
             for(int i = 0; i < 2; i++) {
                 ammos(MountTurretType.MultiTurretMountType.item,
-                    Items.graphite, Bullets.artilleryDense,
-                    Items.silicon, Bullets.artilleryHoming,
-                    Items.pyratite, Bullets.artilleryIncendiary
+                    Items.graphite, dense,
+                    Items.silicon, homing,
+                    Items.pyratite, incend
                 );
             }
             ammos(MountTurretType.MultiTurretMountType.mass);
             for(int i = 0; i < 2; i++) {
                 ammos(MountTurretType.MultiTurretMountType.item,
-                        Items.graphite, Bullets.artilleryDense,
-                        Items.silicon, Bullets.artilleryHoming,
-                        Items.pyratite, Bullets.artilleryIncendiary
+                    Items.graphite, dense,
+                    Items.silicon, homing,
+                    Items.pyratite, incend
                 );
             }
             ammos(MountTurretType.MultiTurretMountType.power);

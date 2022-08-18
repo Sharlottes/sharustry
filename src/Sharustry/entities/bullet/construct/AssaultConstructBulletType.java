@@ -19,8 +19,8 @@ public class AssaultConstructBulletType extends ConstructBulletType {
     public BulletType fragBulletType;
     public float fragSpeed = 10f;
 
-    public float range = 45f, minRange = 0, reloadTime = 60;
-    public BulletType bullet = Bullets.standardDense;
+    public float range = 45f, minRange = 0, reload = 60;
+    public BulletType bullet;
     public float burstSpacing = 5f, spread = 0f, velocityInaccuracy = 0f;
 
     public int shots = 3;
@@ -70,7 +70,7 @@ public class AssaultConstructBulletType extends ConstructBulletType {
     public void init(Bullet b) {
         super.init(b);
 
-        b.data = new Float[]{0f, 0f, 0f, Mathf.random(0.5f, 1), 0f}; //reload, shotCounter, heat for drawing, rotRand, frag
+        b.data = new Float[]{0f, 0f, 0f, Mathf.random(0.5f, 1), 0f}; //reloadCounter, shotCounter, heat for drawing, rotRand, frag
     }
 
     @Override
@@ -78,7 +78,7 @@ public class AssaultConstructBulletType extends ConstructBulletType {
         super.update(b);
         ((Float[])b.data)[2] = Mathf.lerpDelta(((Float[])b.data)[2], 0f, heatCooldown);
         Unit target = Units.closestEnemy(b.team, b.x, b.y, range, u -> u.checkTarget(collidesAir, collidesGround));
-        if(target != null){
+        if(target != null && bullet != null){
             shooting(bullet, b);
         }
         ((Float[])b.data)[4] += fragSpeed * Time.delta;
@@ -90,7 +90,7 @@ public class AssaultConstructBulletType extends ConstructBulletType {
 
     public void shooting(BulletType type, Bullet b){
         Unit target = Units.closestEnemy(b.team, b.x, b.y, range, u -> u.checkTarget(collidesAir, collidesGround));
-        if(((Float[])b.data)[0] >= reloadTime){
+        if(((Float[])b.data)[0] >= reload){
             if(burstSpacing > 0.0001f){
                 for(int i = 0; i < shots; i++){
                     Time.run(burstSpacing * i, () -> {
@@ -128,8 +128,8 @@ public class AssaultConstructBulletType extends ConstructBulletType {
         if(targetPos.isZero()){
             targetPos.set(pos);
         }
-        float lifeScl = type.scaleVelocity ? Mathf.clamp(Mathf.dst(b.x, b.y, targetPos.x, targetPos.y) / type.range(), minRange / type.range(), range / type.range()) : 1f;
+        float lifeScl = type.scaleLife ? Mathf.clamp(Mathf.dst(b.x, b.y, targetPos.x, targetPos.y) / type.range, minRange / type.range, range / type.range) : 1f;
 
-        type.create((Entityc) b, b.team, b.x, b.y, angle, 1f + Mathf.range(velocityInaccuracy), lifeScl);
+        type.create(b, b.team, b.x, b.y, angle, 1f + Mathf.range(velocityInaccuracy), lifeScl);
     }
 }

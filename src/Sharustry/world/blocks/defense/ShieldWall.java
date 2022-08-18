@@ -31,7 +31,7 @@ public class ShieldWall extends Wall {
     public void setBars() {
         super.setBars();
 
-        bars.add("shield", (ShieldWall.ShieldWallBuild e) -> new Bar(Core.bundle.format("bar.shield"), Pal.accent, ()->e.shield/health));
+            addBar("shield", (ShieldWall.ShieldWallBuild e) -> new Bar(Core.bundle.format("bar.shield"), Pal.accent, ()->e.shield/health));
     }
 
     public class ShieldWallBuild extends WallBuild {

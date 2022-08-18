@@ -79,68 +79,7 @@ public class SkillTurret extends TemplatedTurret {
 
         @Override
         protected void shoot(BulletType type) {
-            if(chargeTime > 0){
-                tr.trns(rotation, shootLength);
-                chargeBeginEffect.at(x + tr.x, y + tr.y, rotation);
-                chargeSound.at(x + tr.x, y + tr.y, 1);
-
-                for(int i = 0; i < chargeEffects; i++){
-                    Time.run(Mathf.random(chargeMaxDelay), () -> {
-                        if(!isValid()) return;
-                        tr.trns(rotation, shootLength);
-                        chargeEffect.at(x + tr.x, y + tr.y, rotation);
-                    });
-                }
-
-                charging = true;
-
-                Time.run(chargeTime, () -> {
-                    if(!isValid()) return;
-                    tr.trns(rotation, shootLength);
-                    recoil = recoilAmount;
-                    heat = 1f;
-                    bullet(type, rotation + Mathf.range(inaccuracy));
-                    effects();
-                    charging = false;
-                });
-
-                //when burst spacing is enabled, use the burst pattern
-            }else if(burstSpacing > 0.0001f){
-                for(int i = 0; i < shots; i++){
-                    Time.run(burstSpacing * i, () -> {
-                        if(!isValid() || !hasAmmo()) return;
-
-                        recoil = recoilAmount;
-
-                        tr.trns(rotation, shootLength, Mathf.range(xRand));
-                        bullet(type, rotation + Mathf.range(inaccuracy));
-                        effects();
-                        useAmmo();
-                        recoil = recoilAmount;
-                        heat = 1f;
-                    });
-                }
-
-            }else{
-                if(alternate){
-                    float i = (shotCounter % shots) - (shots-1)/2f;
-
-                    tr.trns(rotation - 90, spread * i + Mathf.range(xRand), shootLength);
-                    bullet(type, rotation + Mathf.range(inaccuracy));
-                }else{
-                    tr.trns(rotation, shootLength, Mathf.range(xRand));
-
-                    for(int i = 0; i < shots; i++)
-                        bullet(type, rotation + Mathf.range(inaccuracy + type.inaccuracy) + (i - (int)(shots / 2f)) * spread);
-                }
-
-                shotCounter++;
-                recoil = recoilAmount;
-                heat = 1f;
-                effects();
-                useAmmo();
-            }
-
+            super.shoot(type);
             for(int i = 0; i < skillDelays.size; i++) {
                 shotcounters.set(i, shotcounters.get(i) + 1);
                 if(Objects.equals(shotcounters.get(i), skillDelays.get(i))) {

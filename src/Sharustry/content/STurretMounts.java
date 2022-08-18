@@ -2,26 +2,18 @@ package Sharustry.content;
 
 import arc.graphics.Color;
 import arc.struct.Seq;
-import mindustry.content.Bullets;
-import mindustry.content.Fx;
-import mindustry.content.Items;
-import mindustry.content.Liquids;
-import mindustry.ctype.ContentList;
-import mindustry.entities.bullet.LaserBoltBulletType;
-import mindustry.entities.bullet.LaserBulletType;
-import mindustry.entities.bullet.LightningBulletType;
-import mindustry.entities.bullet.MissileBulletType;
+import mindustry.content.*;
+import mindustry.entities.bullet.*;
 import mindustry.gen.Sounds;
 import Sharustry.world.blocks.defense.turret.MountTurretType;
 import mindustry.graphics.Pal;
 
 import static Sharustry.content.SBullets.*;
 
-public class STurretMounts implements ContentList {
+public class STurretMounts {
     public static MountTurretType miniDrillMount, miniMassMount, drillMount, massMount, electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
     public static Seq<MountTurretType> mounttypes = new Seq<>();
-    @Override
-    public void load() {
+    public static void load() {
         miniDrillMount = new MountTurretType("mineM", MountTurretType.MultiTurretMountType.drill){{
             title = "Mini Minor";
             mountType = MultiTurretMountType.drill;
@@ -54,7 +46,7 @@ public class STurretMounts implements ContentList {
             shake = 3f;
             powerUse = 3f;
             title = "Mini MassDriver";
-            reloadTime = 100f;
+            reload = 100f;
             range = 440f;
 
             mountType = MultiTurretMountType.mass;
@@ -90,7 +82,7 @@ public class STurretMounts implements ContentList {
             shake = 3f;
             powerUse = 3f;
             title = "MassDriver";
-            reloadTime = 100f;
+            reload = 100f;
             range = 440f;
         }};
         electricLaserMountL = new MountTurretType("electLaserML", MountTurretType.MultiTurretMountType.power, new LaserBulletType(140){{
@@ -111,7 +103,7 @@ public class STurretMounts implements ContentList {
             title = "Electric Laser Left";
 
             recoilAmount = 2f;
-            reloadTime = 80f;
+            reload = 80f;
             cooldown = 0.03f;
             shootEffect = Fx.lancerLaserShoot;
             smokeEffect = Fx.none;
@@ -143,7 +135,7 @@ public class STurretMounts implements ContentList {
             title = "Electric Laser Right";
 
             recoilAmount = 2f;
-            reloadTime = 80f;
+            reload = 80f;
             cooldown = 0.03f;
             shootEffect = Fx.lancerLaserShoot;
             smokeEffect = Fx.none;
@@ -177,7 +169,7 @@ public class STurretMounts implements ContentList {
         }}){{
             healBlock = true;
             title = "HealMissileRight";
-            reloadTime = 40f;
+            reload = 40f;
             shots = 3;
             inaccuracy = 5f;
             shootSound = Sounds.missile;
@@ -210,7 +202,7 @@ public class STurretMounts implements ContentList {
 
             healBlock = true;
             title = "HealMissileLeft";
-            reloadTime = 40f;
+            reload = 40f;
             shots = 3;
             inaccuracy = 5f;
             shootSound = Sounds.missile;
@@ -249,7 +241,7 @@ public class STurretMounts implements ContentList {
             burstSpacing = 6.5f;
             range = 15 * 8f;
             shootSound = Sounds.lasershoot;
-            reloadTime = 85f;
+            reload = 85f;
             recoilAmount = 2.5f;
             heatColor = Pal.turretHeat;
             powerUse = 2.5f;
@@ -281,7 +273,7 @@ public class STurretMounts implements ContentList {
             burstSpacing = 6.5f;
             range = 15 * 8f;
             shootSound = Sounds.lasershoot;
-            reloadTime = 85f;
+            reload = 85f;
             recoilAmount = 2.5f;
             heatColor = Pal.turretHeat;
             powerUse = 2.5f;
@@ -304,7 +296,7 @@ public class STurretMounts implements ContentList {
             burstSpacing = 5;
             range = 10 * 8f;
             shootSound = Sounds.lasershoot;
-            reloadTime = 105f;
+            reload = 105f;
             recoilAmount = 1.5f;
             heatColor = Pal.turretHeat;
             powerUse = 1.25f;
@@ -341,7 +333,7 @@ public class STurretMounts implements ContentList {
             shootCone = 5f;
             shootLength = 5f;
             bulletDamage = 30f;
-            reloadTime = 9f;
+            reload = 9f;
         }};
 
         tractMount = new MountTurretType("miniTractM", MountTurretType.MultiTurretMountType.tract){{
@@ -361,7 +353,7 @@ public class STurretMounts implements ContentList {
             barrels = 2;
             spread = 4f;
             shots = 2;
-            reloadTime = 20f;
+            reload = 20f;
             restitution = 0.03f;
             range = 100;
             shootCone = 15f;
@@ -378,7 +370,7 @@ public class STurretMounts implements ContentList {
             title = "Arc";
             x = -4f;
             y = -4.75f;
-            reloadTime = 35f;
+            reload = 35f;
             shootCone = 40f;
             rotateSpeed = 8f;
             powerUse = 3.3f;
@@ -408,7 +400,7 @@ public class STurretMounts implements ContentList {
             title = "Uno";
 
             recoilAmount = 2f;
-            reloadTime = 80f;
+            reload = 80f;
             cooldown = 0.03f;
             shootEffect = Fx.lancerLaserShoot;
             smokeEffect = Fx.none;
@@ -424,12 +416,47 @@ public class STurretMounts implements ContentList {
 
 
         hailMount = new MountTurretType("hailM", MountTurretType.MultiTurretMountType.item,
-                Items.graphite, Bullets.artilleryDense,
-                Items.silicon, Bullets.artilleryHoming,
-                Items.pyratite, Bullets.artilleryIncendiary
+            Items.graphite, new ArtilleryBulletType(3f, 20, "shell"){{
+                hitEffect = Fx.flakExplosion;
+                knockback = 0.8f;
+                lifetime = 80f;
+                width = height = 11f;
+                collidesTiles = false;
+                splashDamageRadius = 25f * 0.75f;
+                splashDamage = 33f;
+            }},
+            Items.silicon, new ArtilleryBulletType(3f, 20, "shell"){{
+                hitEffect = Fx.flakExplosion;
+                knockback = 0.8f;
+                lifetime = 80f;
+                width = height = 11f;
+                collidesTiles = false;
+                splashDamageRadius = 25f * 0.75f;
+                splashDamage = 33f;
+                reloadMultiplier = 1.2f;
+                ammoMultiplier = 3f;
+                homingPower = 0.08f;
+                homingRange = 50f;
+            }},
+            Items.pyratite, new ArtilleryBulletType(3f, 20, "shell"){{
+                hitEffect = Fx.blastExplosion;
+                knockback = 0.8f;
+                lifetime = 80f;
+                width = height = 13f;
+                collidesTiles = false;
+                splashDamageRadius = 25f * 0.75f;
+                splashDamage = 35f;
+                status = StatusEffects.burning;
+                statusDuration = 60f * 12f;
+                frontColor = Pal.lightishOrange;
+                backColor = Pal.lightOrange;
+                makeFire = true;
+                trailEffect = Fx.incendTrail;
+                ammoMultiplier = 4f;
+            }}
         ){{
             targetAir = false;
-            reloadTime = 60;
+            reload = 60;
             ammoPerShot = 5;
             x = -3.75f;
             y = -4f;
@@ -443,12 +470,38 @@ public class STurretMounts implements ContentList {
         }};
 
         waveMount = new MountTurretType("waveM", MountTurretType.MultiTurretMountType.liquid,
-                Liquids.water, SBullets.miniWater,
-                Liquids.slag, SBullets.miniSlag,
-                Liquids.cryofluid, SBullets.miniCryo,
-                Liquids.oil, SBullets.miniOil
+            Liquids.water, new LiquidBulletType(){{
+                collidesAir = false;
+                liquid = Liquids.water;
+                knockback = 0.25f;
+                drag = 0.03f;
+                puddleSize = 2;
+                orbSize = 1;
+            }},
+            Liquids.slag, new LiquidBulletType(){{
+                collidesAir = false;
+                liquid = Liquids.slag;
+                damage = 1;
+                drag = 0.03f;
+                puddleSize = 2;
+                orbSize = 1;
+            }},
+            Liquids.cryofluid, new LiquidBulletType(){{
+                collidesAir = false;
+                liquid = Liquids.cryofluid;
+                drag = 0.03f;
+                puddleSize = 2;
+                orbSize = 1;
+            }},
+            Liquids.oil, new LiquidBulletType(){{
+                collidesAir = false;
+                liquid = Liquids.oil;
+                drag = 0.03f;
+                puddleSize = 2;
+                orbSize = 1;
+            }}
         ){{
-            reloadTime = 3;
+            reload = 3;
             x = 4.25f;
             y = -3.5f;
             shootY = 16/4f;

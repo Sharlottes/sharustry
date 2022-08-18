@@ -65,7 +65,7 @@ public class HeatTractorBeamTurret extends BaseTurret {
     public void setBars()
     {
         super.setBars();
-        bars.add("heat", (HeatTractorBeamBuild entity) -> new Bar("bar.heat", Pal.lightishOrange, () -> entity.heat));
+        addBar("heat", (HeatTractorBeamBuild entity) -> new Bar("bar.heat", Pal.lightishOrange, () -> entity.heat));
     }
 
     @Override
@@ -113,32 +113,21 @@ public class HeatTractorBeamTurret extends BaseTurret {
 
         @Override
         public void updateTile(){
-
-            if (target != null)
-            {
+            if (target != null) {
                 heat += Time.delta / 10;
                 heat = heat * heat;
-            }
-            else
-            {
+            } else {
                 heat = 0;
             }
-            if (heat >= 0.999f)
-            {
-                heat = 1;
-            }
+
+            if (heat >= 0.999f) heat = 1;
 
             if(timer(timerTarget, retargetTime))
-            {
                 target = Units.closestEnemy(team, x, y, range, u -> u.checkTarget(targetAir, targetGround));
-            }
 
-            if(target != null && acceptCoolant)
-            {
-                float maxUsed = consumes.<ConsumeLiquidBase>get(ConsumeType.liquid).amount;
-
+            if(target != null) {
+                float maxUsed = block.<ConsumeLiquidBase>findConsumer(consume -> consume instanceof ConsumeLiquidBase).amount;
                 Liquid liquid = liquids.current();
-
                 float used = Math.min(Math.min(liquids.get(liquid), maxUsed * Time.delta), Math.max(0, (1f / coolantMultiplier) / liquid.heatCapacity));
 
                 liquids.remove(liquid, used);
@@ -203,7 +192,7 @@ public class HeatTractorBeamTurret extends BaseTurret {
 
                 Draw.mixcol(laserColor, Mathf.absin(4f, 0.6f));
 
-                Drawf.laser(team, laser, laserStart, laserEnd,
+                Drawf.laser(laser, laserStart, laserEnd,
                         x + Angles.trnsx(ang, shootLength), y + Angles.trnsy(ang, shootLength),
                         lastX, lastY, strength * efficiency() * laserWidth);
 

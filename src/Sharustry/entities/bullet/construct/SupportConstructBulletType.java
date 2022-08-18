@@ -1,6 +1,5 @@
 package Sharustry.entities.bullet.construct;
 
-import Sharustry.entities.bullet.construct.ConstructBulletType;
 import arc.Core;
 import arc.audio.Sound;
 import arc.graphics.Color;
@@ -71,7 +70,7 @@ public class SupportConstructBulletType extends ConstructBulletType {
     public void init(Bullet b) {
         super.init(b);
 
-        b.data = new Float[]{0f, 0f, 0f, 0f, 0f, 0f, Mathf.random(0.5f, 1)}; //tract, repair, repairbuild, lastX, lastY, reload, rotRand
+        b.data = new Float[]{0f, 0f, 0f, 0f, 0f, 0f, Mathf.random(0.5f, 1)}; //tract, repair, repairbuild, lastX, lastY, reloadCounter, rotRand
     }
 
     @Override
@@ -126,7 +125,7 @@ public class SupportConstructBulletType extends ConstructBulletType {
 
             Draw.mixcol(tractColor, Mathf.absin(4f, 0.6f));
 
-            Drawf.laser(b.team, tractLaser, tractLaserEnd,
+            Drawf.laser(tractLaser, tractLaserEnd,
                     b.x + Angles.trnsx(ang, shootLength), b.y + Angles.trnsy(ang, shootLength),
                     ((Float[])b.data)[3], ((Float[])b.data)[4], ((Float[])b.data)[0] * tractLaserWidth);
 
@@ -139,7 +138,7 @@ public class SupportConstructBulletType extends ConstructBulletType {
             float len = 5f;
 
             Draw.color(repairColor);
-            Drawf.laser(b.team, repairLaser, repairLaserEnd, b.x + Angles.trnsx(ang, len), b.y + Angles.trnsy(ang, len), repairTarget.x(), repairTarget.y(), ((Float[])b.data)[1]);
+            Drawf.laser(repairLaser, repairLaserEnd, b.x + Angles.trnsx(ang, len), b.y + Angles.trnsy(ang, len), repairTarget.x(), repairTarget.y(), ((Float[])b.data)[1]);
             Draw.color();
         }
         if(repairTargetbuild != null && Angles.angleDist(b.angleTo(repairTargetbuild), b.rotation()) < 30f){
@@ -148,7 +147,7 @@ public class SupportConstructBulletType extends ConstructBulletType {
             float len = 5f;
 
             Draw.color(repairColor);
-            Drawf.laser(b.team, repairLaser, repairLaserEnd, b.x + Angles.trnsx(ang, len), b.y + Angles.trnsy(ang, len), repairTargetbuild.x(), repairTargetbuild.y(), ((Float[])b.data)[2]);
+            Drawf.laser(repairLaser, repairLaserEnd, b.x + Angles.trnsx(ang, len), b.y + Angles.trnsy(ang, len), repairTargetbuild.x(), repairTargetbuild.y(), ((Float[])b.data)[2]);
             Draw.color();
         }
     }

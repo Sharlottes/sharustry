@@ -47,7 +47,6 @@ import mindustry.ui.*;
 import mindustry.world.Tile;
 import mindustry.world.blocks.distribution.MassDriver;
 import mindustry.world.consumers.ConsumeLiquidBase;
-import mindustry.world.consumers.ConsumeType;
 import mindustry.world.meta.BlockStatus;
 
 import static mindustry.Vars.*;
@@ -57,7 +56,7 @@ public class MountTurret {
     public int skillCounter;
     public int totalAmmo;
     public int targetID;
-    public float reload;
+    public float reloadCounter;
     public float recoil;
     public float shotCounter;
     public float rotation;
@@ -109,7 +108,7 @@ public class MountTurret {
         skillCounter = 0;
         totalAmmo = 0;
         targetID = -1;
-        reload = 0f;
+        reloadCounter = 0f;
         _heat = 0f;
         __heat = 0f;
         ___heat = 0f;
@@ -146,7 +145,7 @@ public class MountTurret {
     public float[] mountLocations(MultiTurret.MultiTurretBuild build){
         Tmp.v1.trns(build.rotation - 90, x, y);
         Tmp.v1.add(build.x, build.y);
-        Tmp.v2.trns(rotation, -(recoil+build.recoil));
+        Tmp.v2.trns(rotation, -(recoil+build.curRecoil));
         float i = (shotCounter % type.barrels) - (type.barrels - 1) / 2;
         Tmp.v3.trns(rotation - 90, type.shootX + type.barrelSpacing * i + type.xRand, type.shootY + type.yRand);
 
@@ -221,10 +220,8 @@ public class MountTurret {
     }
 
     public boolean acceptItem(MultiTurret.MultiTurretBuild build, Item item){
-        boolean h = false;
-            if((build.hasMass() && build.items.total() < block.itemCapacity) || (type.mountAmmoType != null && type.mountAmmoType.get(item) != null && totalAmmo + type.mountAmmoType.get(item).ammoMultiplier <= type.maxAmmo)
-                    || (block.ammoTypes.get(item) != null && totalAmmo + block.ammoTypes.get(item).ammoMultiplier <= block.maxAmmo)) h = true;
-        return h;
+        return (build.hasMass() && build.items.total() < block.itemCapacity) || (type.mountAmmoType != null && type.mountAmmoType.get(item) != null && totalAmmo + type.mountAmmoType.get(item).ammoMultiplier <= type.maxAmmo)
+                || (block.ammoTypes.get(item) != null && totalAmmo + block.ammoTypes.get(item).ammoMultiplier <= block.maxAmmo);
     }
 
     public boolean acceptLiquid(MultiTurret.MultiTurretBuild build, Liquid liquid){
@@ -254,7 +251,7 @@ public class MountTurret {
                 if(type.mountType == MountTurretType.MultiTurretMountType.item) {
                     MultiReqImage itemReq = new MultiReqImage();
 
-                    for(Item item : type.mountAmmoType.keys()) itemReq.add(new ReqImage(item.icon(Cicon.tiny), () -> hasAmmo(build)));
+                    for(Item item : type.mountAmmoType.keys()) itemReq.add(new ReqImage(item.uiIcon, () -> hasAmmo(build)));
 
                     h.add(new Stack(){{
                         add(new Table(e -> {
@@ -276,8 +273,8 @@ public class MountTurret {
                             e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
                             Bar reloadBar = new Bar(
                                     () -> "",
-                                    () -> Pal.accent.cpy().lerp(Color.orange, reload / type.reloadTime),
-                                    () -> reload / type.reloadTime);
+                                    () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / type.reload),
+                                    () -> reloadCounter / type.reload);
                             e.add(reloadBar);
                             e.pack();
                         }));
@@ -286,19 +283,19 @@ public class MountTurret {
                             e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
                             Bar chargeBar = new Bar(
                                     () -> "",
-                                    () -> Pal.surge.cpy().lerp(Pal.accent, reload / type.reloadTime),
+                                    () -> Pal.surge.cpy().lerp(Pal.accent, reloadCounter / type.reload),
                                     () -> charge);
                             e.add(chargeBar);
                             e.pack();
                         }));
-                        add(hasAmmo(build) ? new Table(e -> e.add(new ItemImage(ammos.peek().item.icon(Cicon.tiny)))) : new Table(e -> e.add(itemReq).size(Cicon.tiny.size)));
+                        add(hasAmmo(build) ? new Table(e -> e.add(new ItemImage(ammos.peek().item.fullIcon, totalAmmo))) : new Table(e -> e.add(itemReq).size(18f)));
                     }}).padTop(2*8).padLeft(2*8);
 
                 }
                 else if(type.mountType == MountTurretType.MultiTurretMountType.liquid) {
                     MultiReqImage liquidReq = new MultiReqImage();
 
-                    for(Liquid liquid : type.liquidMountAmmoType.keys()) liquidReq.add(new ReqImage(liquid.icon(Cicon.tiny), () -> hasAmmo(build)));
+                    for(Liquid liquid : type.liquidMountAmmoType.keys()) liquidReq.add(new ReqImage(liquid.uiIcon, () -> hasAmmo(build)));
 
                     h.add(new Stack(){{
                         add(new Table(e -> {
@@ -315,8 +312,8 @@ public class MountTurret {
                             e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
                             Bar reloadBar = new Bar(
                                     () -> "",
-                                    () -> Pal.accent.cpy().lerp(Color.orange, reload / type.reloadTime),
-                                    () -> reload / type.reloadTime);
+                                    () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / type.reload),
+                                    () -> reloadCounter / type.reload);
                             e.add(reloadBar);
                             e.pack();
                         }));
@@ -325,12 +322,12 @@ public class MountTurret {
                             e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
                             Bar chargeBar = new Bar(
                                     () -> "",
-                                    () -> Pal.surge.cpy().lerp(Pal.accent, reload / type.reloadTime),
+                                    () -> Pal.surge.cpy().lerp(Pal.accent, reloadCounter / type.reload),
                                     () -> charge);
                             e.add(chargeBar);
                             e.pack();
                         }));
-                        add(hasAmmo(build) ? new Table(e -> e.add(new ItemImage(build.liquids.current().icon(Cicon.tiny)))) : new Table(e -> e.add(liquidReq).size(Cicon.tiny.size)));
+                        add(hasAmmo(build) ? new Table(e -> e.add(new ItemImage(build.liquids.current().fullIcon, totalAmmo))) : new Table(e -> e.add(liquidReq).size(18f)));
                     }}).padTop(2*8).padLeft(2*8);
 
                 } else {
@@ -355,8 +352,8 @@ public class MountTurret {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
                                 Bar reloadBar = new Bar(
                                         () -> "",
-                                        () -> Pal.accent.cpy().lerp(Color.orange, reload / type.reloadTime),
-                                        () -> reload / type.reloadTime);
+                                        () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / type.reload),
+                                        () -> reloadCounter / type.reload);
                                 e.add(reloadBar);
                                 e.pack();
                             }));
@@ -365,7 +362,7 @@ public class MountTurret {
                             e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
                             Bar chargeBar = new Bar(
                                     () -> "",
-                                    () -> Pal.surge.cpy().lerp(Pal.accent, reload / type.reloadTime),
+                                    () -> Pal.surge.cpy().lerp(Pal.accent, reloadCounter / type.reload),
                                     () -> charge);
                             e.add(chargeBar);
                             e.pack();
@@ -401,7 +398,7 @@ public class MountTurret {
             float ang = build.angleTo(lastX, lastY);
 
             Draw.mixcol(type.laserColor, Mathf.absin(4f, 0.6f));
-            Drawf.laser(build.team, type.tractLaser, type.tractLaserEnd,
+            Drawf.laser(type.tractLaser, type.tractLaserEnd,
                     loc[2] + Angles.trnsx(ang, type.shootLength), loc[3] + Angles.trnsy(ang, type.shootLength),
                     lastX, lastY, strength * getPowerEfficiency(build) * type.laserWidth);
 
@@ -417,7 +414,7 @@ public class MountTurret {
             float scl = repairTarget.hitSize / 8f;
             float random = Mathf.randomSeedRange(build.id, scl / 2f);
             Draw.color(type.laserColor);
-            Drawf.laser(build.team, type.laser, type.laserEnd,
+            Drawf.laser(type.laser, type.laserEnd,
                     loc[2] + Angles.trnsx(ang, len), loc[3] + Angles.trnsy(ang, len),
                     repairTarget.x +
                             Mathf.sin((Time.time + 6 * 8f) * scl / 3, (swingScl + random) * scl, swingMag * scl),
@@ -441,7 +438,7 @@ public class MountTurret {
 
             Draw.z(Layer.flyingUnit + 0.1f);
             Draw.color(Color.lightGray, Color.white, 1f - flashScl + Mathf.absin(Time.time, 0.5f, flashScl));
-            Drawf.laser(build.team, type.laser, type.laserEnd, px, py, ex, ey, type.laserWidth);
+            Drawf.laser(type.laser, type.laserEnd, px, py, ex, ey, type.laserWidth);
 
             Draw.reset();
         }
@@ -567,8 +564,8 @@ public class MountTurret {
 
         if(hasLink) this.link = link.pos();
 
-        //reload regardless of state
-        if(reload < type.reloadTime) reload += build.delta() * getPowerEfficiency(build);
+        //reloadCounter regardless of state
+        if(reloadCounter < type.reload) reloadCounter += build.delta() * getPowerEfficiency(build);
 
 
         //cleanup waiting shooters that are not valid
@@ -612,20 +609,19 @@ public class MountTurret {
                     build.items.total() >= type.minDistribute && //must shoot minimum amount of items
                     link.block.itemCapacity - link.items.total() >= type.minDistribute //must have minimum amount of space
             ){
-                if(link instanceof BattleCore.BattleCoreBuild){
+                if(link instanceof BattleCore.BattleCoreBuild other){
                     float targetRotation = Angles.angle(mountLocations(build)[0], mountLocations(build)[1], ((BattleCore.BattleCoreBuild)link).mountLocations(linkIndex)[0], ((BattleCore.BattleCoreBuild)link).mountLocations(linkIndex)[1]);
 
-                    BattleCore.BattleCoreBuild other = (BattleCore.BattleCoreBuild)link;
                     other.waitingShooters.add(build.tile);
 
-                    if(reload >= type.reloadTime && !charging){
+                    if(reloadCounter >= type.reload && !charging){
                         rotation = Mathf.slerpDelta(rotation, targetRotation, type.rotateSpeed * getPowerEfficiency(build));
                         //fire when it's the first in the queue and angles are ready.
                         if(other.currentShooter() == build.tile &&
                                 other.massState == MassDriver.DriverState.accepting
                                 && Angles.near(rotation, targetRotation, 2f)
                                 && Angles.near(other._rotations.get(i), targetRotation + 180f, 2f)){
-                            reload = 0f;
+                            reloadCounter = 0f;
 
                             DriverBulletData data = Pools.obtain(DriverBulletData.class, DriverBulletData::new);
                             data.massMount = i;
@@ -662,22 +658,21 @@ public class MountTurret {
                         }
                     }
                 }
-                else if(link instanceof MultiTurret.MultiTurretBuild){
+                else if(link instanceof MultiTurret.MultiTurretBuild other){
                     if(((MultiTurret.MultiTurretBuild)link).mounts.get(i).type.mountType != MountTurretType.MultiTurretMountType.mass) linkIndex = ((MultiTurret.MultiTurretBuild)link).mounts.indexOf(((MultiTurret.MultiTurretBuild)link).mounts.copy().filter(m -> m.type.mountType == MountTurretType.MultiTurretMountType.mass).peek());
 
                     float targetRotation = Angles.angle(mountLocations(build)[0], mountLocations(build)[1], ((MultiTurret.MultiTurretBuild)link).mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild)link))[0], ((MultiTurret.MultiTurretBuild)link).mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild)link))[1]);
 
-                    MultiTurret.MultiTurretBuild other = (MultiTurret.MultiTurretBuild)link;
                     other.mounts.get(linkIndex).waitingShooters.add(build.tile);
 
-                    if(reload >= type.reloadTime && !charging){
+                    if(reloadCounter >= type.reload && !charging){
                         rotation = Mathf.slerpDelta(rotation, targetRotation, type.rotateSpeed * getPowerEfficiency(build));
                         //fire when it's the first in the queue and angles are ready.
                         if(other.mounts.get(linkIndex).currentShooter() == build.tile &&
                                 other.mounts.get(linkIndex).massState == MassDriver.DriverState.accepting
                                 && Angles.near(rotation, targetRotation, 2f)
                                 && Angles.near(other.mounts.get(linkIndex).rotation, targetRotation + 180f, 2f)){
-                            reload = 0f;
+                            reloadCounter = 0f;
 
                             DriverBulletData data = Pools.obtain(DriverBulletData.class, DriverBulletData::new);
                             data.massMount = i;
@@ -739,7 +734,7 @@ public class MountTurret {
         Effect.shake(type.shake, type.shake, build);
         type.receiveEffect.at(bullet);
 
-        reload = 0f;
+        reloadCounter = 0f;
         bullet.remove();
     }
 
@@ -811,7 +806,7 @@ public class MountTurret {
 
                 if(state.rules.sector != null && build.team() == state.rules.defaultTeam) state.rules.sector.info.handleProduction(item, 1);
 
-                //items are synced anyways
+                //items are synced anyway
                 InputHandler.transferItemTo(null, item, 1,
                         mineTile.worldx() + Mathf.range(tilesize / 2f),
                         mineTile.worldy() + Mathf.range(tilesize / 2f),
@@ -866,10 +861,10 @@ public class MountTurret {
                 && pointTarget.type().hittable){
             float dest = build.angleTo(pointTarget);
             targetTurn(build, dest);
-            reload += build.delta() * getPowerEfficiency(build);
+            reloadCounter += build.delta() * getPowerEfficiency(build);
 
             //shoot when possible
-            if(Angles.within(rotation, dest, type.shootCone) && reload >= type.reloadTime){
+            if(Angles.within(rotation, dest, type.shootCone) && reloadCounter >= type.reload){
                 if(pointTarget.damage() > type.bulletDamage) pointTarget.damage(pointTarget.damage() - type.bulletDamage);
                 else pointTarget.remove();
 
@@ -880,7 +875,7 @@ public class MountTurret {
                 type.hitEffect.at(pointTarget.x, pointTarget.y, type.colorPoint);
                 type.shootSound.at(loc[0] + Tmp.v1.x, loc[1] + Tmp.v1.y, Mathf.random(0.9f, 1.1f));
 
-                reload = 0f;
+                reloadCounter = 0f;
             }
         }
     }
@@ -984,14 +979,14 @@ public class MountTurret {
 
 
     public void updateShooting(MultiTurret.MultiTurretBuild build){
-        if(reload >= type.reloadTime){
+        if(reloadCounter >= type.reload){
             shoot(build, type.mountType == MountTurretType.MultiTurretMountType.liquid ? type.liquidMountAmmoType.get(build.liquids.current()) : peekAmmo(build));
-            reload = 0f;
+            reloadCounter = 0f;
         }else {
             float speed = build.delta() * peekAmmo(build).reloadMultiplier;
             if(type.mountType == MountTurretType.MultiTurretMountType.power || type.powerUse > 0.001f) speed *= getPowerEfficiency(build);
             else speed *= build.efficiency();
-            if(speed >= 0.001f) reload += speed;
+            if(speed >= 0.001f) reloadCounter += speed;
         }
     }
 
@@ -1070,7 +1065,7 @@ public class MountTurret {
     public void bullet(MultiTurret.MultiTurretBuild build, BulletType bullet, float spreadAmount){
         float[] loc = mountLocations(build);
 
-        float lifeScl = bullet.scaleVelocity ? Mathf.clamp(Mathf.dst(loc[4], loc[5], targetPos.x, targetPos.y) / bullet.range(), type.minRange / bullet.range(), type.range / bullet.range()) : 1;
+        float lifeScl = bullet.scaleLife ? Mathf.clamp(Mathf.dst(loc[4], loc[5], targetPos.x, targetPos.y) / bullet.range, type.minRange / bullet.range, type.range / bullet.range) : 1;
         float angle = rotation + Mathf.range(type.inaccuracy + bullet.inaccuracy) + (spreadAmount - (type.shots / 2f)) * type.spread;
         bullet.create(build, build.team, loc[4], loc[5], angle, 1 + Mathf.range(type.velocityInaccuracy), lifeScl);
     }
@@ -1094,7 +1089,7 @@ public class MountTurret {
             ItemEntry entry = ammos.peek();
             entry.amount -= type.ammoPerShot;
             if(entry.amount <= 0) ammos.pop();
-            totalAmmo = Math.max(totalAmmo -= type.ammoPerShot, 0);
+            totalAmmo = Math.max(totalAmmo - type.ammoPerShot, 0);
 
             ejectEffects(build);
             return entry.types(this);
@@ -1117,7 +1112,7 @@ public class MountTurret {
         if(type.mountType == MountTurretType.MultiTurretMountType.liquid) {
             return type.liquidMountAmmoType != null
                     && type.liquidMountAmmoType.get(build.liquids.current()) != null
-                    && build.liquids.total() >= 1f / type.liquidMountAmmoType.get(build.liquids.current()).ammoMultiplier;
+                    && build.liquids.currentAmount() >= 1f / type.liquidMountAmmoType.get(build.liquids.current()).ammoMultiplier;
         }
         return false;
     }
@@ -1144,14 +1139,14 @@ public class MountTurret {
 
     /*TODO make multi cooling*/
     protected void updateCoolingBase(MultiTurret.MultiTurretBuild build) {
-        float maxUsed = block.consumes.<ConsumeLiquidBase>get(ConsumeType.liquid).amount / block.basicMounts.size;
+        float maxUsed = block.<ConsumeLiquidBase>findConsumer(consumer -> consumer instanceof ConsumeLiquidBase).amount / block.basicMounts.size;
         Liquid liquid = build.liquids.current();
 
         if(!(type.acceptCooling) || type.liquidMountAmmoType == null) return;
-        float used = Math.min(Math.min(build.liquids.get(liquid), maxUsed * Time.delta), Math.max(0, ((type.reloadTime - reload) / type.coolantMultiplier) / liquid.heatCapacity));
+        float used = Math.min(Math.min(build.liquids.get(liquid), maxUsed * Time.delta), Math.max(0, ((type.reload - reloadCounter) / type.coolantMultiplier) / liquid.heatCapacity));
         if(type.powerUse > 0.001f) used *= getPowerEfficiency(build);
         else used *= build.efficiency();
-        reload += used * liquid.heatCapacity * type.coolantMultiplier;
+        reloadCounter += used * liquid.heatCapacity * type.coolantMultiplier;
 
         build.liquids.remove(liquid, used);
 
@@ -1253,7 +1248,7 @@ public class MountTurret {
 
     public void write(Writes write){
         try{
-            write.f(reload);
+            write.f(reloadCounter);
             write.f(rotation);
         } catch(Throwable e){
             Log.warn(String.valueOf(e));
@@ -1275,7 +1270,7 @@ public class MountTurret {
 
     public void read(Reads read, byte revision){
         try{
-            reload = read.f();
+            reloadCounter = read.f();
             rotation = read.f();
         } catch(Throwable e){
             Log.warn(String.valueOf(e));

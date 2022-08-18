@@ -6,11 +6,12 @@ import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.Vec2;
+import arc.struct.Seq;
+import arc.util.Structs;
 import arc.util.Tmp;
 import mindustry.content.Items;
 import mindustry.entities.*;
 import mindustry.entities.abilities.ForceFieldAbility;
-import mindustry.game.Team;
 import mindustry.gen.Groups;
 import mindustry.graphics.*;
 import Sharustry.graphics.*;
@@ -30,7 +31,7 @@ public class SFx {
         float range = 30 * 8;
         e.scaled(cooldown, e1 -> {
                 Draw.color(Pal.health, e1.fout(0.125f));
-        Lines.polySeg(60, 0, (int) (70 * (e1.fin(Interp.pow2))), e.x, e.y, range/3, 0);
+        Lines.arc(e.x, e.y, range/3, 70 * (e1.fin(Interp.pow2)), 0, 60);
     });
 
         if(e.time >= cooldown){
@@ -148,7 +149,7 @@ public class SFx {
             ea.lifetime = 360;
             Draw.color(Pal.accent);
 
-            ea.scaled(40, e1 -> Lines.polySeg(60, 0, Mathf.round(70 * (e1.fin(Interp.pow2))), eh.x, eh.y, range, 0));
+            ea.scaled(40, e1 -> Lines.arc(eh.x, eh.y, range, Mathf.round(70 * (e1.fin(Interp.pow2))), 0, 60));
             if(ea.time >= 40){
                 ea.scaled(40 + 20, e1 ->{
                     Draw.color(Pal.accent, 1);
@@ -172,7 +173,7 @@ public class SFx {
                     Fill.light(eh.x, eh.y, Lines.circleVertices(range), range * ((0.5f - Math.abs((1 - e1.fout(30/40f)) - 0.5f)) * 2),  col,  col1);
                 });
             }
-            ea.scaled(60 + 180, e2 -> Groups.unit.each(u -> Mathf.dst(ea.x, ea.y, u.x, u.y) <= range && u.abilities.find(a -> a instanceof ForceFieldAbility) != null, u -> {
+            ea.scaled(60 + 180, e2 -> Groups.unit.each(u -> Mathf.dst(ea.x, ea.y, u.x, u.y) <= range && Structs.contains(u.abilities,  a -> a instanceof ForceFieldAbility), u -> {
                 Color col1 = Pal.accent.cpy();
                 col1.a = 0.7f * e2.fin() + 0.25f *  Mathf.sin(e2.fin() * 15);
                 Draw.color(Pal.accent, col1, Mathf.sin(e2.fin() * 15));
@@ -183,7 +184,7 @@ public class SFx {
 
     public static void part1(Effect.EffectContainer ew, float range) {
         float[] xy = {0f, 0f};
-        Groups.unit.each(u -> Mathf.dst(ew.x, ew.y, u.x, u.y) <= range && u.abilities.find(a -> a instanceof ForceFieldAbility) != null, target -> {
+        Groups.unit.each(u -> Mathf.dst(ew.x, ew.y, u.x, u.y) <= range && Structs.contains(u.abilities, a -> a instanceof ForceFieldAbility), target -> {
             long id = ew.id;
             float tx = target.x;
             float ty = target.y;
@@ -197,7 +198,7 @@ public class SFx {
             x0 = xy[0];
             y0 = xy[1];
             Draw.color(Pal.accent, ew.fout(0.5f));
-            Drawf.laser(Team.sharded, Core.atlas.find("laser"), Core.atlas.find("laser-end"), ew.x, ew.y,  x0, y0, ew.fout(0.5f));
+            Drawf.laser(Core.atlas.find("laser"), Core.atlas.find("laser-end"), ew.x, ew.y,  x0, y0, ew.fout(0.5f));
             Draw.color(Pal.accent);
 
             if(ew.fout() <= 0.5) {

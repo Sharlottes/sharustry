@@ -37,7 +37,7 @@ public class AttributeDrill extends Drill{
     public void setBars(){
         super.setBars();
 
-        bars.add("attribute", (AttributeDrillBuild e) ->
+        addBar("attribute", (AttributeDrillBuild e) ->
             new Bar(() -> Core.bundle.format("bar.attribute", (int)((baseEfficiency + Math.min(maxHeatBoost, boostScale * sumAttribute(e.attribute, e.tile.x, e.tile.y))) * 100f), e.attributeStr), () -> e.attributeColor, () -> (baseEfficiency + Math.min(maxHeatBoost, boostScale * sumAttribute(e.attribute, e.tile.x, e.tile.y)))/maxHeatBoost)
         );
     }
@@ -52,7 +52,7 @@ public class AttributeDrill extends Drill{
                 if(attr==Attribute.heat) {table.row();}
                 table.add("[lightgray] "+ attr +": []").left();
                 for (Floor block : Vars.content.blocks()
-                        .select(block -> (block instanceof Floor) && ((Floor) block).attributes.get(attr) != 0 && !(((Floor) block).isLiquid && !floating))
+                        .select(block -> (block instanceof Floor floor) && floor.attributes.get(attr) != 0 && !(floor.isLiquid && !floating))
                         .<Floor>as().with(s -> s.sort(f -> f.attributes.get(attr)))) {
                     StatValues.blockEfficiency(block, block.attributes.get(attr) * boostScale, false).display(table);
                 }
@@ -91,8 +91,7 @@ public class AttributeDrill extends Drill{
             attribute = defaultAttribute;
             attributeStr = defaultAttribute.toString();
             attributeColor = Color.lightGray;
-
-            for(Attribute attr : Attribute.all){
+            for(Attribute ignored : Attribute.all){
                 attributeClicked.add(false);
             }
         }
@@ -121,11 +120,11 @@ public class AttributeDrill extends Drill{
         public void buildConfiguration(Table table){
             super.buildConfiguration(table);
 
-            table.button(new TextureRegionDrawable(Core.atlas.find("status-tarred")).tint(attributeClicked.get(new Seq(Attribute.all).indexOf(Attribute.oil)) ? Color.valueOf("313131") : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-tarred")).tint(attributeClicked.get(Structs.indexOf(Attribute.all, Attribute.oil)) ? Color.valueOf("313131") : Color.white), 40, () -> {
                 configure(Attribute.oil);
                 for(Attribute attr : Attribute.all){
-                    attributeClicked.set(new Seq(Attribute.all).indexOf(attr), false);
-                    if(attr == attribute) attributeClicked.set(new Seq(Attribute.all).indexOf(attr), true);
+                    attributeClicked.set(Structs.indexOf(Attribute.all, attr), false);
+                    if(attr == attribute) attributeClicked.set(Structs.indexOf(Attribute.all, attr), true);
                 }
                 table.clear();
                 buildConfiguration(table);
@@ -133,11 +132,11 @@ public class AttributeDrill extends Drill{
                 attributeColor = Color.valueOf("313131");
                 attributeStr = "oil";
             }).size(40).color(Color.valueOf("313131"));
-            table.button(new TextureRegionDrawable(Core.atlas.find("status-burning")).tint(attributeClicked.get(new Seq(Attribute.all).indexOf(Attribute.heat)) ? Color.valueOf("ffc455") : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-burning")).tint(attributeClicked.get(Structs.indexOf(Attribute.all, Attribute.heat)) ? Color.valueOf("ffc455") : Color.white), 40, () -> {
                 configure(Attribute.heat);
                 for(Attribute attr : Attribute.all){
-                    attributeClicked.set(new Seq(Attribute.all).indexOf(attr), false);
-                    if(attr == attribute) attributeClicked.set(new Seq(Attribute.all).indexOf(attr), true);
+                    attributeClicked.set(Structs.indexOf(Attribute.all, attr), false);
+                    if(attr == attribute) attributeClicked.set(Structs.indexOf(Attribute.all, attr), true);
                 }
                 table.clear();
                 buildConfiguration(table);
@@ -145,11 +144,11 @@ public class AttributeDrill extends Drill{
                 attributeColor = Color.valueOf("ffc455");
                 attributeStr = "heat";
             }).size(40).color(Color.valueOf("ffc455"));
-            table.button(new TextureRegionDrawable(Core.atlas.find("status-spore-slowed")).tint(attributeClicked.get(new Seq(Attribute.all).indexOf(Attribute.spores)) ? Pal.spore : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-spore-slowed")).tint(attributeClicked.get(Structs.indexOf(Attribute.all, Attribute.spores)) ? Pal.spore : Color.white), 40, () -> {
                 configure(Attribute.spores);
                 for(Attribute attr : Attribute.all){
-                    attributeClicked.set(new Seq(Attribute.all).indexOf(attr), false);
-                    if(attr == attribute) attributeClicked.set(new Seq(Attribute.all).indexOf(attr), true);
+                    attributeClicked.set(Structs.indexOf(Attribute.all, attr), false);
+                    if(attr == attribute) attributeClicked.set(Structs.indexOf(Attribute.all, attr), true);
                 }
                 table.clear();
                 buildConfiguration(table);
@@ -157,11 +156,11 @@ public class AttributeDrill extends Drill{
                 attributeColor = Pal.spore;
                 attributeStr = "spores";
             }).size(40).color(Pal.spore);
-            table.button(new TextureRegionDrawable(Core.atlas.find("status-wet")).tint(attributeClicked.get(new Seq(Attribute.all).indexOf(Attribute.water)) ? Color.royal : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-wet")).tint(attributeClicked.get(Structs.indexOf(Attribute.all, Attribute.water)) ? Color.royal : Color.white), 40, () -> {
                 configure(Attribute.water);
                 for(Attribute attr : Attribute.all){
-                    attributeClicked.set(new Seq(Attribute.all).indexOf(attr), false);
-                    if(attr == attribute) attributeClicked.set(new Seq(Attribute.all).indexOf(attr), true);
+                    attributeClicked.set(Structs.indexOf(Attribute.all, attr), false);
+                    if(attr == attribute) attributeClicked.set(Structs.indexOf(Attribute.all, attr), true);
                 }
                 table.clear();
                 buildConfiguration(table);
@@ -169,11 +168,11 @@ public class AttributeDrill extends Drill{
                 attributeColor = Color.royal;
                 attributeStr = "water";
             }).size(40).color(Color.royal);
-            table.button(new TextureRegionDrawable(Core.atlas.find("status-blasted")).tint(attributeClicked.get(new Seq(Attribute.all).indexOf(Attribute.light)) ? Color.lightGray : Color.white), 40, () -> {
+            table.button(new TextureRegionDrawable(Core.atlas.find("status-blasted")).tint(attributeClicked.get(Structs.indexOf(Attribute.all, Attribute.light)) ? Color.lightGray : Color.white), 40, () -> {
                 configure(Attribute.light);
                 for(Attribute attr : Attribute.all){
-                    attributeClicked.set(new Seq(Attribute.all).indexOf(attr), false);
-                    if(attr == attribute) attributeClicked.set(new Seq(Attribute.all).indexOf(attr), true);
+                    attributeClicked.set(Structs.indexOf(Attribute.all, attr), false);
+                    if(attr == attribute) attributeClicked.set(Structs.indexOf(Attribute.all, attr), true);
                 }
                 table.clear();
                 buildConfiguration(table);
@@ -185,13 +184,13 @@ public class AttributeDrill extends Drill{
 
         @Override
         public void drawLight(){
-            Drawf.light(team, x, y, (30f + Mathf.absin(10f, 7f)) * smoothTime * block.size, Tmp.c1.set(color), brightness * super.efficiency());
+            Drawf.light(x, y, (30f + Mathf.absin(10f, 7f)) * smoothTime * block.size, Tmp.c1.set(color), brightness * super.efficiency());
         }
 
         @Override
         public void write(Writes write){
             super.write(write);
-            write.i(new Seq(Attribute.all).indexOf(attribute));
+            write.i(Structs.indexOf(Attribute.all, attribute));
         }
 
         public Attribute attributeInit(Attribute attribute){
@@ -216,8 +215,8 @@ public class AttributeDrill extends Drill{
                 attributeStr = "light";
             }
             for(Attribute attr : Attribute.all){
-                attributeClicked.set(new Seq(Attribute.all).indexOf(attr), false);
-                if(attr == attribute) attributeClicked.set(new Seq(Attribute.all).indexOf(attr), true);
+                attributeClicked.set(Structs.indexOf(Attribute.all, attr), false);
+                if(attr == attribute) attributeClicked.set(Structs.indexOf(Attribute.all, attr), true);
             }
             return attribute;
         }

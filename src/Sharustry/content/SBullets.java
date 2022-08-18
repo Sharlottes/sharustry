@@ -13,6 +13,7 @@ import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.ctype.*;
 import mindustry.entities.bullet.*;
+import mindustry.entities.effect.MultiEffect;
 import mindustry.gen.*;
 import mindustry.content.*;
 
@@ -23,13 +24,12 @@ import mindustry.graphics.Trail;
 
 import static Sharustry.content.SFx.missileDead;
 
-public class SBullets implements ContentList{
+public class SBullets {
     public static BulletType
             fossers, mountDriverBolt, force, assault, artilleryHealBig, artilleryHeal,
-            jumbleBullet, miniSlag, miniWater, miniCryo, miniOil, miniAccelMissile, accelMissile, accelerMissile, accelBullet, trailBullet, testLaser;
+            jumbleBullet, miniAccelMissile, trailBullet, testLaser;
 
-    @Override
-    public void load(){
+    public static void load(){
         mountDriverBolt = new MountDriverBolt();
 
         fossers = new ForceShieldConstructBulletType(){{
@@ -106,7 +106,22 @@ public class SBullets implements ContentList{
             sprite = "shar-sGemini";
             drag = 0.015f;
 
-            fragBulletType = Bullets.standardIncendiary;
+            fragBulletType = new BasicBulletType(3.2f, 16, "bullet"){{
+                width = 10f;
+                height = 12f;
+                frontColor = Pal.lightishOrange;
+                backColor = Pal.lightOrange;
+                status = StatusEffects.burning;
+                hitEffect = new MultiEffect(Fx.hitBulletSmall, Fx.fireHit);
+
+                ammoMultiplier = 5;
+
+                splashDamage = 10f;
+                splashDamageRadius = 22f;
+
+                makeFire = true;
+                lifetime = 60f;
+            }};
             lifetime = 12 * 60f;
             width = height = 17f;
             collidesTiles = false;
@@ -163,41 +178,6 @@ public class SBullets implements ContentList{
            smokeEffect = Fx.shootSmallSmoke;
         }};
 
-
-        miniSlag = new LiquidBulletType(){{
-            collidesAir = false;
-            liquid = Liquids.slag;
-            damage = 1;
-            drag = 0.03f;
-            puddleSize = 2;
-            orbSize = 1;
-        }};
-
-        miniWater = new LiquidBulletType(){{
-            collidesAir = false;
-            liquid = Liquids.water;
-            knockback = 0.25f;
-            drag = 0.03f;
-            puddleSize = 2;
-            orbSize = 1;
-        }};
-
-        miniCryo = new LiquidBulletType(){{
-            collidesAir = false;
-            liquid = Liquids.cryofluid;
-            drag = 0.03f;
-            puddleSize = 2;
-            orbSize = 1;
-        }};
-
-        miniOil = new LiquidBulletType(){{
-            collidesAir = false;
-            liquid = Liquids.oil;
-            drag = 0.03f;
-            puddleSize = 2;
-            orbSize = 1;
-        }};
-
         miniAccelMissile = new AccelBulletType(2f, 5){{
             backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
             frontColor = trailColor = SPal.cryoium;
@@ -212,47 +192,6 @@ public class SBullets implements ContentList{
             homing = true;
         }};
 
-        accelMissile = new AccelBulletType(2.5f, 25){{
-            backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
-            frontColor = trailColor = SPal.cryoium;
-            shrinkY = 0f;
-            width = 4f;
-            height = 16f;
-            hitSound = Sounds.explosion;
-            trailChance = 0.2f;
-            lifetime = 47f;
-            sprite = "bullet";
-            pierce = true;
-            pierceBuilding = true;
-            pierceCap = 3;
-            pierceDec = 0.5f;
-            damageMultiplier = 1.3f;
-            shootEffect = SFx.balkanShoot;
-            despawnEffect = missileDead;
-            hitEffect = missileDead;
-        }};
-
-        accelerMissile = new AccelBulletType(3f, 45){{
-            backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
-            frontColor = trailColor = SPal.cryoium;
-            shrinkY = 0f;
-            width = 4f;
-            height = 16f;
-            hitSound = Sounds.explosion;
-            trailChance = 0.2f;
-            lifetime = 67f;
-            sprite = "bullet";
-            homing = true;
-            pierce = true;
-            pierceBuilding = true;
-            pierceCap = 5;
-            pierceDec = 0.75f;
-            damageMultiplier = 1.5f;
-            shootEffect = SFx.balkanShoot;
-            despawnEffect = missileDead;
-            hitEffect = missileDead;
-        }};
-        
         trailBullet = new EnergyBulletType(0, 0.5f){{
             lifetime = 120f;
             height = 15f;
@@ -273,64 +212,6 @@ public class SBullets implements ContentList{
             }
         };
 
-        accelBullet = new BasicBulletType(4f, 75){{
-            frontColor = trailColor = SPal.cryoium;
-            width = 4f;
-            height = 16f;
-            hitSound = Sounds.explosion;
-            trailChance = 0.2f;
-            lifetime = 120f;
-            sprite = "bullet";
-            pierce = true;
-            pierceBuilding = true;
-            absorbable = false;
-            pierceCap = 12;
-            shootEffect = SFx.balkanShoot;
-            despawnEffect = missileDead;
-            hitEffect = missileDead;
-        }
-            @Override
-            public void update(Bullet b){
-                super.update(b);
-                b.damage += Time.delta * 1.5f;
-                ((BulletData)b.data).heat += Time.delta;
-                if(((BulletData)b.data).heat > 2.5) {
-                    ((BulletData)b.data).heat = 0f;
-                    trailBullet.create(b, b.team, b.x, b.y, b.rotation(),  0f, 1);
-                }
-            }
-
-            @Override
-            public void init(Bullet b){
-                b.data = new BulletData(Seq.with(new Trail(6), new Trail(3)), 0f);
-            }
-
-            @Override
-            public void draw(Bullet b){
-                drawTrail(b);
-                Draw.color(Pal.lancerLaser);
-                ((BulletData)b.data).trails.each(t->t.draw(this.frontColor, this.width));
-
-                Drawf.tri(b.x, b.y, width, height, b.rotation());
-                Drawf.tri(b.x, b.y, width, height/2, b.rotation()+180);
-            }
-
-            @Override
-            public void hit(Bullet b, float x, float y) {
-                super.hit(b, x, y);
-                b.damage*=0.75f;
-            }
-
-            class BulletData {
-                final Seq<Trail> trails;
-                float heat;
-
-                public BulletData(Seq<Trail> trails, float heat) {
-                    this.trails = trails;
-                    this.heat = heat;
-                }
-            }
-        };
 
         testLaser = new ContinuousLaserBulletType(70){{
             length = 200f;

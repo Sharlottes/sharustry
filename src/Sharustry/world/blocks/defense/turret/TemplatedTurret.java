@@ -7,17 +7,17 @@ import arc.graphics.g2d.TextureRegion;
 import arc.math.Mathf;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
+import arc.util.Nullable;
 import arc.util.Strings;
 import arc.util.Time;
+import arc.util.Tmp;
 import arc.util.io.*;
 import mindustry.*;
 import mindustry.content.*;
-import mindustry.entities.Effect;
 import mindustry.entities.Fires;
 import mindustry.entities.Units;
 import mindustry.entities.bullet.*;
 import mindustry.game.EventType.*;
-import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.LAccess;
@@ -26,6 +26,7 @@ import mindustry.ui.*;
 import mindustry.world.Tile;
 import mindustry.world.blocks.defense.turrets.Turret;
 import mindustry.world.consumers.*;
+import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
 
 import java.util.Objects;
@@ -44,6 +45,7 @@ public class TemplatedTurret extends Turret {
     public ObjectMap<Liquid, BulletType> liqAmmoTypes = new ObjectMap<>();
     public TextureRegion liquidRegion;
     public TextureRegion topRegion;
+    TextureRegion chargeRegion;
     public boolean extinguish = true;
 
     public TemplatedTurret(String name){
@@ -51,7 +53,6 @@ public class TemplatedTurret extends Turret {
         if(Objects.equals(ammoType, "item")) hasItems = true;
         if(Objects.equals(ammoType, "power")) hasPower = true;
         if(Objects.equals(ammoType, "liquid")){
-            acceptCoolant = false;
             hasLiquids = true;
             loopSound = Sounds.spray;
             shootSound = Sounds.none;
@@ -64,6 +65,7 @@ public class TemplatedTurret extends Turret {
         super.load();
         liquidRegion = Core.atlas.find("shar-" + name + "-liquid");
         topRegion = Core.atlas.find("shar-" + name + "-top");
+        chargeRegion = Core.atlas.find(name + "-charge");
     }
 
     /** Initializes accepted ammo map. Format: [item1, bullet1, item2, bullet2...] */
@@ -86,13 +88,13 @@ public class TemplatedTurret extends Turret {
 
     @Override
     public void init(){
-        if(Objects.equals(ammoType, "item")) consumes.add(new ConsumeItemFilter(i -> ammoTypes.containsKey(i)) {
+        if(Objects.equals(ammoType, "item")) consume(new ConsumeItemFilter(i -> ammoTypes.containsKey(i)) {
             @Override
             public void build(Building tile, Table table) {
                 MultiReqImage image = new MultiReqImage();
                 content.items().each(
                     i -> filter.get(i) && i.unlockedNow(),
-                    item -> image.add(new ReqImage(new ItemImage(item.icon(Cicon.medium)),
+                    item -> image.add(new ReqImage(new ItemImage(item.uiIcon, 1),
                         () -> tile instanceof TemplatedTurretBuild && !((TemplatedTurretBuild) tile).ammo.isEmpty() && ((ItemEntry) ((TemplatedTurretBuild) tile).ammo.peek()).item == item)
                     )
                 );
@@ -101,9 +103,9 @@ public class TemplatedTurret extends Turret {
             }
 
             @Override
-            public boolean valid(Building entity) {
+            public float efficiency(Building entity) {
                 //valid when there's any ammo in the turret
-                return entity instanceof TemplatedTurretBuild && !((TemplatedTurretBuild) entity).ammo.isEmpty();
+                return entity instanceof TemplatedTurretBuild && !((TemplatedTurretBuild) entity).ammo.isEmpty() ? super.efficiency(entity) : 0;
             }
 
             @Override
@@ -112,12 +114,12 @@ public class TemplatedTurret extends Turret {
             }
         });
 
-        if(Objects.equals(ammoType, "power")) consumes.powerCond(powerUse, TurretBuild::isActive);
+        if(Objects.equals(ammoType, "power")) consumePowerCond(powerUse, TurretBuild::isActive);
 
-        if(Objects.equals(ammoType, "liquid")) consumes.add(new ConsumeLiquidFilter(i -> liqAmmoTypes.containsKey(i), 1f){
+        if(Objects.equals(ammoType, "liquid")) consume(new ConsumeLiquidFilter(i -> liqAmmoTypes.containsKey(i), 1f){
             @Override
-            public boolean valid(Building entity){
-                return entity.liquids.total() > 0.001f;
+            public float efficiency(Building entity){
+                return entity.liquids.currentAmount() > 0.001f ? super.efficiency(entity) : 0;
             }
 
             @Override
@@ -136,7 +138,7 @@ public class TemplatedTurret extends Turret {
 
     @Override
     public TextureRegion[] icons(){
-        if(Objects.equals(ammoType, "liquid") && topRegion.found()) return new TextureRegion[]{baseRegion, region, topRegion};
+        if(Objects.equals(ammoType, "liquid") && topRegion.found()) return new TextureRegion[]{((DrawTurret) drawer).base, region, topRegion};
         return super.icons();
     }
 
@@ -151,7 +153,10 @@ public class TemplatedTurret extends Turret {
 
     public class TemplatedTurretBuild extends TurretBuild {
         float charge;
+        float heat = 0f;
 
+        @Override
+        public void handleBullet(@Nullable Bullet bullet, float offsetX, float offsetY, float angleOffset){ }
         @Override
         public void drawSelect() {
             super.drawSelect();
@@ -164,9 +169,11 @@ public class TemplatedTurret extends Turret {
         @Override
         public void draw(){
             super.draw();
-            if(Objects.equals(ammoType, "liquid")){
-                if(liquidRegion.found()) Drawf.liquid(liquidRegion, x + tr2.x, y + tr2.y, liquids.total() / liquidCapacity, liquids.current().color, rotation - 90);
-                if(topRegion.found()) Draw.rect(topRegion, x + tr2.x, y + tr2.y, rotation - 90);
+            if(charging()) {
+                Draw.color(Tmp.c1.set(Color.white).lerp(Pal.lancerLaser, 1-heat/shoot.firstShotDelay).a(0.5f+heat/shoot.firstShotDelay/2));
+                Tmp.v1.set(x, y).trns(rotation, -recoil);
+                Draw.rect(chargeRegion, x+Tmp.v1.x, y+Tmp.v1.y, rotation-90);
+                Draw.reset();
             }
         }
 
@@ -189,8 +196,9 @@ public class TemplatedTurret extends Turret {
             if(Objects.equals(ammoType, "power")) unit.ammo(power.status * unit.type().ammoCapacity);
             if(Objects.equals(ammoType, "liquid")) unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
 
-            if(chargeTime >= 0.001 && charging && hasAmmo() && consValid()) charge = Mathf.clamp(charge + Time.delta / chargeTime);
+            if(charging()) charge = Mathf.clamp(charge + Time.delta / shoot.firstShotDelay);
             else charge = 0;
+            if(charging()) heat = Time.delta;
 
             super.updateTile();
         }
@@ -221,22 +229,6 @@ public class TemplatedTurret extends Turret {
         }
 
         @Override
-        protected void effects(){
-            if(Objects.equals(ammoType, "liquid")){
-                BulletType type = peekAmmo();
-
-                type.shootEffect.at(x + tr.x, y + tr.y, rotation, liquids.current().color);
-                type.smokeEffect.at(x + tr.x, y + tr.y, rotation, liquids.current().color);
-                shootSound.at(tile);
-
-                if(shootShake > 0) Effect.shake(shootShake, shootShake, tile.build);
-
-                recoil = recoilAmount;
-            }
-            else super.effects();
-        }
-
-        @Override
         public double sense(LAccess sensor){
             if(Objects.equals(ammoType, "power")){
                 if(sensor == LAccess.ammo) return power.status;
@@ -263,7 +255,7 @@ public class TemplatedTurret extends Turret {
         @Override
         public boolean hasAmmo(){
             if(Objects.equals(ammoType, "power")) return true;
-            else if(Objects.equals(ammoType, "liquid")) return liqAmmoTypes.get(liquids.current()) != null && liquids.total() >= 1f / liqAmmoTypes.get(liquids.current()).ammoMultiplier;
+            else if(Objects.equals(ammoType, "liquid")) return liqAmmoTypes.get(liquids.current()) != null && liquids.currentAmount() >= 1f / liqAmmoTypes.get(liquids.current()).ammoMultiplier;
             else return super.hasAmmo();
         }
 
@@ -285,19 +277,19 @@ public class TemplatedTurret extends Turret {
 
             bars.add(new Bar(
                     () -> {
-                        float value = Mathf.clamp(reload / reloadTime) * 100f;
-                        return Core.bundle.format("bar.shar-reload", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
+                        float value = Mathf.clamp(reloadCounter / reload) * 100f;
+                        return Core.bundle.format("bar.shar-reloadCounter", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
                     },
-                    () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime),
-                    () -> reload / reloadTime)).growX();
+                    () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / reload),
+                    () -> reloadCounter / reload)).growX();
             bars.row();
 
-            if(chargeTime >= 0.001) bars.add(new Bar(
+            if(shoot.firstShotDelay >= 0.001) bars.add(new Bar(
                     () -> {
                         float value = Mathf.clamp(charge) * 100f;
                         return Core.bundle.format("bar.shar-charge", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
                     },
-                    () -> Pal.surge.cpy().lerp(Pal.accent, charge / chargeTime),
+                    () -> Pal.surge.cpy().lerp(Pal.accent, charge / shoot.firstShotDelay),
                     () -> charge)).growX();
             bars.row();
         }

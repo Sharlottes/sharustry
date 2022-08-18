@@ -70,7 +70,7 @@ public class TractorUnitType extends UnitType {
 
                 Draw.mixcol(tractColor, Mathf.absin(4f, 0.6f));
 
-                Drawf.laser(unit.team, tractLaser, tractLaserEnd,
+                Drawf.laser(tractLaser, tractLaserEnd,
                         unit.x + Angles.trnsx(ang, shootLength), unit.y + Angles.trnsy(ang, shootLength),
                         tractTargets.get(i).x, tractTargets.get(i).y, unit.shieldAlpha * tractLaserWidth);
                 Draw.mixcol();

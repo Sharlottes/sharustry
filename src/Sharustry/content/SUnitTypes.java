@@ -4,7 +4,6 @@ import Sharustry.ai.types.TractorAI;
 import Sharustry.type.TractorUnitType;
 import arc.graphics.Color;
 import mindustry.content.Fx;
-import mindustry.ctype.ContentList;
 import mindustry.entities.bullet.BulletType;
 import mindustry.entities.bullet.LaserBoltBulletType;
 import mindustry.gen.*;
@@ -14,13 +13,12 @@ import mindustry.type.ammo.PowerAmmoType;
 
 import static Sharustry.graphics.SPal.paradium;
 
-public class SUnitTypes implements ContentList {
+public class SUnitTypes {
     public static UnitType momo, monopoly;
 
-    @Override
-    public void load() {
+    public static void load() {
         momo = new TractorUnitType("momo"){{
-            defaultController = TractorAI::new;
+            aiController = TractorAI::new;
             flying = true;
             drag = 0.06f;
             accel = 0.12f;
@@ -29,7 +27,6 @@ public class SUnitTypes implements ContentList {
             engineSize = 1.8f;
             engineOffset = 5f;
             range = 10 * 8f;
-            isCounted = false;
 
             ammoType = new PowerAmmoType(500);
 
@@ -40,7 +37,7 @@ public class SUnitTypes implements ContentList {
         }};
 
         monopoly = new TractorUnitType("monopoly"){{
-            defaultController = TractorAI::new;
+            aiController = TractorAI::new;
 
             tractRange = 8 * 30f;
             tractForce = 6f;
@@ -94,9 +91,9 @@ public class SUnitTypes implements ContentList {
                     recoil = 2f;
                     shootSound = Sounds.lasershoot;
                     alternate = false;
-                    shotDelay = 0.1f * 60;
+                    shoot.shotDelay = 0.1f * 60;
+                    shoot.shots = 2;
                     inaccuracy = 15f;
-                    shots = 2;
                     bullet = beam;
                 }},
                 new Weapon(name + "-weapon"){{
@@ -108,9 +105,9 @@ public class SUnitTypes implements ContentList {
                     recoil = 2f;
                     shootSound = Sounds.lasershoot;
                     alternate = false;
-                    shotDelay = 0.1f * 60;
+                    shoot.shotDelay = 0.1f * 60;
+                    shoot.shots = 2;
                     inaccuracy = 15f;
-                    shots = 2;
                     bullet = beam;
                 }}
             );

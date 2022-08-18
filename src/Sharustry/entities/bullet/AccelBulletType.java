@@ -1,11 +1,9 @@
 package Sharustry.entities.bullet;
 
-import Sharustry.world.blocks.defense.turret.TemplatedTurret;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.Angles;
 import arc.math.Interp;
-import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.*;
 import mindustry.content.*;
@@ -13,7 +11,6 @@ import mindustry.entities.Units;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
-import mindustry.logic.Ranged;
 import mindustry.world.blocks.defense.turrets.Turret;
 
 public class AccelBulletType extends BasicBulletType {

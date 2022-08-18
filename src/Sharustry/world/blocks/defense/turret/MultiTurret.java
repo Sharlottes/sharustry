@@ -30,6 +30,7 @@ import mindustry.logic.LAccess;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.Tile;
+import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
 
 import java.util.Objects;
@@ -134,9 +135,7 @@ public class MultiTurret extends TemplatedTurret {
         super.load();
 
         teamRegion = Core.atlas.find("error");
-        baseRegion = Core.atlas.find(name + "-base", "block-" + this.size);
         region = Core.atlas.find(name + "-baseTurret");
-        heatRegion = Core.atlas.find(name + "-heat");
         outline = Core.atlas.find(name + "-outline");
         baseTurret = Core.atlas.find(name + "-baseTurret");
     }
@@ -151,7 +150,7 @@ public class MultiTurret extends TemplatedTurret {
     @Override
     public TextureRegion[] icons() {
         return new TextureRegion[]{
-            this.baseRegion,
+            ((DrawTurret)this.drawer).base,
             Core.atlas.find(name + "-icon")
         };
     }
@@ -172,11 +171,11 @@ public class MultiTurret extends TemplatedTurret {
             h.left().defaults().padRight(3).left();
 
             rowAdd(h, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((range) / tilesize, 1) + " " + StatUnit.blocks);
-            rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reloadTime * shots, 1));
+            rowAdd(h, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reload * shoot.shots, 1));
             rowAdd(h, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes")));
             rowAdd(h, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes")));
             if(inaccuracy > 0) rowAdd(h, "[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (inaccuracy) + " " + StatUnit.degrees.localized());
-            if(chargeTime > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
+            if(shoot.firstShotDelay > 0.001f) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.shoot.firstShotDelay") + ": [white]" + Mathf.round(shoot.firstShotDelay/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
             if(Objects.equals(ammoType, "item")) rowAdd(h, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (ammoPerShot));
 
             h.row();
@@ -205,7 +204,7 @@ public class MultiTurret extends TemplatedTurret {
                             if(bullet.buildingDamageMultiplier != 1) rowAdd(e, Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1)));
                             if(bullet.splashDamage > 0) rowAdd(e, Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1)));
                             if(bullet.ammoMultiplier > 0 && !(bullet instanceof LiquidBulletType) && !Mathf.equal(bullet.ammoMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1)));
-                            if(!Mathf.equal(bullet.reloadMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.reload", bullet.reloadMultiplier));
+                            if(!Mathf.equal(bullet.reloadMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.reloadCounter", bullet.reloadMultiplier));
                             if(bullet.knockback > 0) rowAdd(e, Core.bundle.format("bullet.knockback", Strings.fixed(bullet.knockback, 1)));
                             if(bullet.healPercent > 0) rowAdd(e, Core.bundle.format("bullet.healpercent", bullet.healPercent));
                             if(bullet.pierce || bullet.pierceCap != -1) rowAdd(e, bullet.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", bullet.pierceCap));
@@ -293,7 +292,6 @@ public class MultiTurret extends TemplatedTurret {
         public Seq<Integer> shotcounters = new Seq<>();
         public Seq<MountTurret> mounts = new Seq<>();
         public MountTurret linkmount = null;
-        public float _heat;
 
         @Override
         public void remove(){
@@ -365,7 +363,7 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public void displayBars(Table bars){
-            for(Func<Building, Bar> bar : block.bars.list()){
+            for(Func<Building, Bar> bar : block.listBars()){
                 try{
                     bars.add(bar.get(self())).growX();
                     bars.row();
@@ -378,19 +376,19 @@ public class MultiTurret extends TemplatedTurret {
 
             bars.add(new Bar(
                     () -> {
-                        float value = Mathf.clamp(reload / reloadTime) * 100f;
-                        return Core.bundle.format("bar.shar-reload", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
+                        float value = Mathf.clamp(reloadCounter / reload) * 100f;
+                        return Core.bundle.format("bar.shar-reloadCounter", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
                     },
-                    () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime),
-                    () -> reload / reloadTime)).growX();
+                    () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / reload),
+                    () -> reloadCounter / reload)).growX();
             bars.row();
 
-            if(chargeTime >= 0.001) bars.add(new Bar(
+            if(shoot.firstShotDelay >= 0.001) bars.add(new Bar(
                     () -> {
                         float value = Mathf.clamp(charge) * 100f;
                         return Core.bundle.format("bar.shar-charge", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
                     },
-                    () -> Pal.surge.cpy().lerp(Pal.accent, charge / chargeTime),
+                    () -> Pal.surge.cpy().lerp(Pal.accent, charge / shoot.firstShotDelay),
                     () -> charge)).growX();
             bars.row();
 
@@ -405,11 +403,11 @@ public class MultiTurret extends TemplatedTurret {
 
             bars.add(new SBar(
                     () -> {
-                        float value = Mathf.clamp(reload / reloadTime) * 100f;
-                        return Core.bundle.format("bar.shar-reload", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
+                        float value = Mathf.clamp(reloadCounter / reload) * 100f;
+                        return Core.bundle.format("bar.shar-reloadCounter", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
                     },
-                    () -> Pal.accent.cpy().lerp(Color.orange, reload / reloadTime),
-                    () -> reload / reloadTime)).growX();
+                    () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / reload),
+                    () -> reloadCounter / reload)).growX();
             bars.row();
         }
 
@@ -501,27 +499,8 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public void draw() {
-            Draw.rect(baseRegion, x, y);
-
-            Draw.z(Layer.turret);
-            Tmp.v4.trns(rotation, -recoil);
-            Tmp.v4.add(x, y);
-
-            Drawf.shadow(outline, Tmp.v4.x - (size / 2f), Tmp.v4.y - (size / 2f), rotation - 90);
-            Draw.rect(outline, Tmp.v4.x, Tmp.v4.y, rotation - 90);
-            Draw.rect(region, Tmp.v4.x, Tmp.v4.y, rotation - 90);
-
-            if(heatRegion != Core.atlas.find("error") && _heat > 0.00001){
-                Draw.color(heatColor, _heat);
-                Draw.blend(Blending.additive);
-                Draw.rect(heatRegion, Tmp.v4.x, Tmp.v4.y, rotation - 90);
-                Draw.blend();
-                Draw.color();
-            }
-
+            super.draw();
             for(MountTurret mount : mounts) mount.draw(this);
-
-            Draw.reset();
         }
 
         @Override
@@ -598,7 +577,7 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         @Override
-        public boolean onConfigureTileTapped(Building other){
+        public boolean onConfigureBuildTapped(Building other){
             for(MountTurret mount : mounts){
                 boolean h = mount.onConfigureTileTapped(this, other);
                 if(!h) return false;
@@ -609,7 +588,7 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public boolean shouldTurn(){
-            boolean h = !charging;
+            boolean h = !charging();
             for(MountTurret mount : mounts) {
                 h = mount.shouldTurn();
                 if(!h) break;

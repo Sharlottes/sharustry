@@ -2,6 +2,7 @@ package Sharustry.ai.types;
 
 import arc.math.*;
 import arc.math.geom.Position;
+import mindustry.ai.UnitCommand;
 import mindustry.ai.types.FlyingAI;
 import mindustry.entities.Units;
 import mindustry.entities.units.*;
@@ -36,21 +37,17 @@ public class TractorAI extends FlyingAI {
     }
 
     @Override
-    public void updateMovement(){
+    public void updateMovement() {
         Unit target = Units.closestEnemy(unit.team, unit.x, unit.y, tractRange, u -> true);
 
-        if(target != null && command() == UnitCommand.attack){
-            moveTo(target, Math.max(approach, Math.max(approach, target.hitSize())) - 16f, 16);
-            unit.lookAt(target);
+        if(target != null) {
+            if(unit.hasWeapons()) {
+                moveTo(target, Math.max(approach, Math.max(approach, target.hitSize())) - 16f, 16);
+                unit.lookAt(target);
+            }
+        } else if (state.rules.waves && unit.team == state.rules.defaultTeam) {
+            moveTo(getClosestSpawner(), state.rules.dropZoneRadius + 120f);
         }
-
-        if(target == null)
-            if(command() == UnitCommand.attack && state.rules.waves && unit.team == state.rules.defaultTeam) moveTo(getClosestSpawner(), state.rules.dropZoneRadius + 120f);
-
-
-        if(command() == UnitCommand.rally)
-            moveTo(targetFlag(unit.x, unit.y, BlockFlag.rally, false), 60f);
-
     }
 }
 

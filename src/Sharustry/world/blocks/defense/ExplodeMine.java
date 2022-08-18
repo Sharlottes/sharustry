@@ -14,7 +14,7 @@ import mindustry.gen.Unit;
 import mindustry.world.Block;
 
 public class ExplodeMine extends Block {
-    public float cooldown = 50f;
+    public float cooldownTime = 50f;
     public int shots = 6;
     public float shotsSpacing = 0f;
     public @Nullable BulletType bullet;
@@ -68,17 +68,15 @@ public class ExplodeMine extends Block {
         }
 
         public void triggered(){
-            SFx.mineExplode.at(x, y, 0, cooldown);
+            SFx.mineExplode.at(x, y, 0, cooldownTime);
             if(bullet != null){
-                Time.run(cooldown, () -> {
+                Time.run(cooldownTime, () -> {
                     if(dead) return;
                     for(int i = 0; i < shots; i++)  {
                         int finalI = i;
-                        Time.run(i * shotsSpacing/60, () -> {
-                            Units.nearbyEnemies(team, x, y, 30 * 8f, u -> {
-                                bullet.create(this, u.x, u.y, (360f / shots) * finalI + Mathf.random(inaccuracy));
-                            });
-                        });
+                        Time.run(i * shotsSpacing/60, () ->
+                            Units.nearbyEnemies(team, x, y, 30 * 8f, u -> bullet.create(this, u.x, u.y, (360f / shots) * finalI + Mathf.random(inaccuracy)))
+                        );
                     }
                     kill();
                 });

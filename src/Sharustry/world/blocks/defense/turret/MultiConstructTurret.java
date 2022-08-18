@@ -3,7 +3,6 @@ package Sharustry.world.blocks.defense.turret;
 import Sharustry.entities.bullet.construct.ConstructBulletType;
 import arc.*;
 import arc.graphics.*;
-import arc.math.Mathf;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
@@ -12,12 +11,7 @@ import mindustry.Vars;
 import mindustry.entities.bullet.BulletType;
 import mindustry.gen.*;
 import mindustry.type.*;
-import mindustry.ui.*;
 import mindustry.world.meta.*;
-
-import java.util.Iterator;
-
-import static mindustry.Vars.*;
 
 public class MultiConstructTurret extends MultiTurret {
     public int maxConstruct = 10;
@@ -38,90 +32,15 @@ public class MultiConstructTurret extends MultiTurret {
         }
 
         @Override
-        protected void shoot(BulletType type){
-            //when charging is enabled, use the charge shoot pattern
-            if(chargeTime > 0){
-                useAmmo();
-
-                tr.trns(rotation, shootLength);
-                chargeBeginEffect.at(x + tr.x, y + tr.y, rotation);
-                chargeSound.at(x + tr.x, y + tr.y, 1);
-
-                for(int i = 0; i < chargeEffects; i++){
-                    Time.run(Mathf.random(chargeMaxDelay), () -> {
-                        if(!isValid()) return;
-                        tr.trns(rotation, shootLength);
-                        chargeEffect.at(x + tr.x, y + tr.y, rotation);
-                    });
-                }
-
-                charging = true;
-
-                Time.run(chargeTime, () -> {
-                    if(!isValid()) return;
-                    tr.trns(rotation, shootLength);
-                    recoil = recoilAmount;
-                    heat = 1f;
-                    bullet(type, rotation + Mathf.range(inaccuracy));
-                    effects();
-                    charging = false;
-                });
-
-                //when burst spacing is enabled, use the burst pattern
-            }else if(burstSpacing > 0.0001f){
-                for(int i = 0; i < shots; i++){
-                    if(!(totalConstruct < maxConstruct)) return;
-                    Time.run(burstSpacing * i, () -> {
-                        if(!isValid() || !hasAmmo()) return;
-
-                        recoil = recoilAmount;
-
-                        tr.trns(rotation, shootLength, Mathf.range(xRand));
-                        bullet(type, rotation + Mathf.range(inaccuracy));
-                        effects();
-                        useAmmo();
-                        recoil = recoilAmount;
-                        heat = 1f;
-                    });
-                }
-
-            }else{
-                //otherwise, use the normal shot pattern(s)
-
-                if(alternate){
-                    float i = (shotCounter % shots) - (shots-1)/2f;
-
-                    tr.trns(rotation - 90, spread * i + Mathf.range(xRand), shootLength);
-                    bullet(type, rotation + Mathf.range(inaccuracy));
-                }else{
-                    tr.trns(rotation, shootLength, Mathf.range(xRand));
-
-                    for(int i = 0; i < shots; i++){
-                        bullet(type, rotation + Mathf.range(inaccuracy + type.inaccuracy) + (i - (int)(shots / 2f)) * spread);
-                    }
-                }
-
-                shotCounter++;
-
-                recoil = recoilAmount;
-                heat = 1f;
-                effects();
-                useAmmo();
-            }
-
-            doSkill();
-        }
-
-        @Override
         protected void updateShooting(){
             if(!(totalConstruct < maxConstruct)) return;
 
-            if(reload >= reloadTime && !charging){
+            if(reloadCounter >= reload && !charging()){
                 BulletType type = peekAmmo();
                 shoot(type);
-                reload = 0f;
+                reloadCounter = 0f;
             }else{
-                reload += delta() * peekAmmo().reloadMultiplier * baseReloadSpeed();
+                reloadCounter += delta() * peekAmmo().reloadMultiplier * baseReloadSpeed();
             }
         }
 
@@ -186,32 +105,23 @@ public class MultiConstructTurret extends MultiTurret {
                             Runnable rebuild = () -> {
                                 l.clearChildren();
                                 l.left();
-                                Iterator var3 = Vars.content.items().iterator();
 
-                                while (var3.hasNext()) {
-                                    Item item = (Item) var3.next();
+                                for (Item item : Vars.content.items()) {
                                     if (this.items.hasFlowItem(item)) {
                                         l.image(item.uiIcon).padRight(3.0F);
-                                        l.label(() -> {
-                                            return this.items.getFlowRate(item) < 0.0F ? "..." : Strings.fixed(this.items.getFlowRate(item), 1) + ps;
-                                        }).color(Color.lightGray);
+                                        l.label(() -> this.items.getFlowRate(item) < 0.0F ? "..." : Strings.fixed(this.items.getFlowRate(item), 1) + ps).color(Color.lightGray);
                                         l.row();
                                     }
                                 }
-
                             };
                             rebuild.run();
                             l.update(() -> {
-                                Iterator var3 = Vars.content.items().iterator();
-
-                                while (var3.hasNext()) {
-                                    Item item = (Item) var3.next();
+                                for (Item item : Vars.content.items()) {
                                     if (this.items.hasFlowItem(item) && !current.get(item.id)) {
                                         current.set(item.id);
                                         rebuild.run();
                                     }
                                 }
-
                             });
                         }).left();
                     }
@@ -223,15 +133,11 @@ public class MultiConstructTurret extends MultiTurret {
                             Runnable rebuild = () -> {
                                 l.clearChildren();
                                 l.left();
-                                l.image(() -> {
-                                    return this.liquids.current().uiIcon;
-                                }).padRight(3.0F);
-                                l.label(() -> {
-                                    return this.liquids.getFlowRate() < 0.0F ? "..." : Strings.fixed(this.liquids.getFlowRate(), 2) + ps;
-                                }).color(Color.lightGray);
+                                l.image(() -> this.liquids.current().uiIcon).padRight(3.0F);
+                                l.label(() -> this.liquids.getFlowRate(this.liquids.current()) < 0.0F ? "..." : Strings.fixed(this.liquids.getFlowRate(this.liquids.current()), 2) + ps).color(Color.lightGray);
                             };
                             l.update(() -> {
-                                if (!had[0] && this.liquids.hadFlow()) {
+                                if (!had[0] && this.liquids.hasFlowLiquid(this.liquids.current())) {
                                     had[0] = true;
                                     rebuild.run();
                                 }
@@ -243,7 +149,7 @@ public class MultiConstructTurret extends MultiTurret {
 
                 if (Vars.net.active() && this.lastAccessed != null) {
                     table.row();
-                    table.add(Core.bundle.format("lastaccessed", new Object[]{this.lastAccessed})).growX().wrap().left();
+                    table.add(Core.bundle.format("lastaccessed", this.lastAccessed)).growX().wrap().left();
                 }
 
                 table.marginBottom(-5.0F);

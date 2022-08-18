@@ -16,11 +16,10 @@ public class MountDriverBolt extends MassDriverBolt {
     @Override
     public void update(Bullet b){
         //data MUST be an instance of DriverBulletData
-        if(!(b.data() instanceof DriverBulletData)){
+        if(!(b.data() instanceof DriverBulletData data)){
             hit(b);
             return;
         }
-        DriverBulletData data = ((DriverBulletData) b.data());
         float hitDst = 7f;
 
         //if the target is dead, just keep flying until the bullet explodes
@@ -103,8 +102,7 @@ public class MountDriverBolt extends MassDriverBolt {
     public void despawned(Bullet b){
         super.despawned(b);
 
-        if(!(b.data() instanceof DriverBulletData)) return;
-        DriverBulletData data = ((DriverBulletData) b.data());
+        if(!(b.data() instanceof DriverBulletData data)) return;
 
         for(int i = 0; i < data.items.length; i++){
             int amountDropped = Mathf.random(0, data.items[i]);

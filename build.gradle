@@ -2,12 +2,13 @@ plugins {
     id 'java'
 }
 
-group pGroup
+ext{
+    sdkRoot = System.getenv("ANDROID_HOME")
+    sdkVersion = '30'
+    artifactFilename = "sharustry.jar"
+}
 
-version '1.0'
-
-sourceCompatibility = 16
-
+group "sharlotte"
 
 sourceSets.main {
     java.srcDir("src/")
@@ -19,38 +20,41 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 
-jar {
-    archiveFileName.set pArtifactFilename
-
-    from {
-        configurations.runtimeClasspath.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-}
-
-
 dependencies {
-    implementation  'com.github.younggam:multi-lib:java-v1.1.0'
-
-    compileOnly "com.github.Anuken.Arc:arc-core:$pMindustryVersion"
-    compileOnly "com.github.Anuken.Mindustry:core:$pMindustryVersion"
+    annotationProcessor 'com.github.Anuken:jabel:0.8.0'
+    compileOnly "com.github.Anuken.Mindustry:core:v137"
+    compileOnly "com.github.Anuken.Arc:arc-core:dfcb21ce56"
 }
 
-task dexify(type: Jar) {
-    archiveName "dexed-$pArtifactFilename"
+jar.archiveFileName.set("raw-$artifactFilename")
 
-    final File jarArtifact = new File(tasks.jar.archiveFile.get().asFile.parent, pArtifactFilename),
+def isWindows = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")
+
+task dexify(type: Jar){
+    archiveFileName.set(artifactFilename)
+
+    final File jarArtifact = new File(tasks.jar.archiveFile.get().asFile.parent, "raw-$artifactFilename"),
                dexedArtifact = new File(tasks.dexify.getTemporaryDir(), "dexed.jar")
-    doFirst {
-        exec {
-            workingDir dexedArtifact.parent
-            def command = ["d8", "--min-api", pMinApi, "--output", dexedArtifact, jarArtifact]
-            if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows'))
-                commandLine("cmd", "/c", *command)
-            else
-                commandLine(*command)
 
+    doFirst{
+        //collect dependencies needed for desugaring
+        def files = (configurations.compileClasspath.asList() + configurations.runtimeClasspath.asList() + [new File("$sdkRoot/platforms/android-$sdkVersion/android.jar")])
+
+        exec{
+            workingDir dexedArtifact.parent
+            def command = ["d8", "--min-api", "14"]
+            for(def file : files){
+                command += "--classpath"
+                command += file.path
+            }
+
+            command += ["--output", dexedArtifact, jarArtifact]
+
+            if(isWindows){
+                commandLine("cmd", "/c", *command)
+            }else{
+                commandLine(*command)
+            }
         }
     }
 
@@ -58,4 +62,23 @@ task dexify(type: Jar) {
 }
 
 task buildDex dependsOn "build", "dexify"
-targetCompatibility = JavaVersion.VERSION_16
+
+task buildMove(dependsOn: build) {
+    doLast {
+        copy {
+            from "build/libs/sharustry.jar"
+            into System.getenv("destination")
+        }
+    }
+}
+
+tasks.withType(JavaCompile){
+    targetCompatibility = 8
+    sourceCompatibility = JavaVersion.VERSION_17
+    options.encoding = "UTF-8"
+    options.compilerArgs += ["-Xlint:deprecation"]
+    if(JavaVersion.current() != JavaVersion.VERSION_1_8){
+        options.compilerArgs.addAll(['--release', '8'])
+    }
+    compileJava.options.fork = true
+}

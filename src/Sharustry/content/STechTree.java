@@ -10,11 +10,10 @@ import static mindustry.content.Blocks.*;
 import static mindustry.content.TechTree.*;
 import static Sharustry.content.SBlocks.*;
 
-public class STechTree implements ContentList{
+public class STechTree {
     static TechTree.TechNode context = null;
 
-    @Override
-    public void load(){
+    public static void load(){
         margeNode(laserDrill, () -> {
             node(adaptDrill, () -> {
                 node(multiDrill);
@@ -53,8 +52,7 @@ public class STechTree implements ContentList{
         });
     }
     private static void margeNode(UnlockableContent parent, Runnable children){
-        TechNode parnode = TechTree.all.find(t -> t.content == parent);
-        context = parnode;
+        context = TechTree.all.find(t -> t.content == parent);
         children.run();
     }
 
@@ -82,17 +80,5 @@ public class STechTree implements ContentList{
 
     private static void node(UnlockableContent block){
         node(block, () -> {});
-    }
-
-    private static void nodeProduce(UnlockableContent content, Seq<Objective> objectives, Runnable children){
-        node(content, content.researchRequirements(), objectives.and(new Produce(content)), children);
-    }
-
-    private static void nodeProduce(UnlockableContent content, Runnable children){
-        nodeProduce(content, Seq.with(), children);
-    }
-
-    private static void nodeProduce(UnlockableContent content){
-        nodeProduce(content, Seq.with(), () -> {});
     }
 }

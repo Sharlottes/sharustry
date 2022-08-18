@@ -18,34 +18,29 @@ import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.util.*;
 import mindustry.game.*;
+import mindustry.graphics.MultiPacker;
 import mindustry.world.*;
 /** @author sk7726 */
 public class Drawm {
     /** Generates all team regions and returns the sharded team region for icon. */
-    public static @Nullable TextureRegion generateTeamRegion(Block b){
-        TextureRegion shardTeamTop = null;
+    public static void generateTeamRegion(MultiPacker packer, Block b){
         PixmapRegion teamr = Core.atlas.getPixmap(b.name + "-team");
 
         for(Team team : Team.all){
             if(team.hasPalette){
-                Pixmap out = new Pixmap(teamr.width, teamr.height, teamr.pixmap.getFormat());
-                out.setBlending(Pixmap.Blending.none);
-                Color pixel = new Color();
+                Pixmap out = new Pixmap(teamr.width, teamr.height);
                 for(int x = 0; x < teamr.width; x++){
                     for(int y = 0; y < teamr.height; y++){
-                        int color = teamr.getPixel(x, y);
+                        int color = teamr.getRaw(x, y);
                         int index = color == 0xffffffff ? 0 : color == 0xdcc6c6ff ? 1 : color == 0x9d7f7fff ? 2 : -1;
-                        out.draw(x, y, index == -1 ? pixel.set(teamr.getPixel(x, y)) : team.palette[index]);
+                        out.setRaw(x, y, index == -1 ? teamr.getRaw(x, y) : team.palettei[index]);
                     }
                 }
-                Texture texture  = new Texture(out);
-                TextureRegion res = Core.atlas.addRegion(b.name + "-team-" + team.name, new TextureRegion(texture));
-
-                if(team == Team.sharded){
-                    shardTeamTop = res;
-                }
+                packer.add(MultiPacker.PageType.main, b.name + "-team-" + team.name, out);
             }
         }
-        return shardTeamTop;
+
+        //force reloadCounter of team region
+        b.load();
     }
 }

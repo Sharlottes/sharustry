@@ -22,7 +22,6 @@ public class GetlingTurret extends TemplatedTurret {
             super.draw();
             Fonts.outline.draw(""+missiles, x, y-8, Color.white, 0.25f, true, Align.center);
             Draw.color(Tmp.c1.set(Color.white).lerp(heatColor, 1-delay/delayTime).a(1-delay/delayTime));
-            Draw.rect(heatRegion, x, y, rotation);
         }
 
         @Override
@@ -40,14 +39,14 @@ public class GetlingTurret extends TemplatedTurret {
 
         @Override
         protected void updateShooting(){
-            reload += delta() * peekAmmo().reloadMultiplier * baseReloadSpeed();
-            if(delay>0&&reload >= delay && !charging && missiles>0){
+            reloadCounter += delta() * peekAmmo().reloadMultiplier * baseReloadSpeed();
+            if(delay > 0 && reloadCounter >= delay && !charging() && missiles>0){
 
                 missiles--;
                 shoot(peekAmmo());
                 if(delay > 5) delay = Mathf.approachDelta(delay, 0, missiles/maxMissile);
                 else damage(delay);
-                if(delay > 0) reload %= delay;
+                if(delay > 0) reloadCounter %= delay;
             }
         }
 
