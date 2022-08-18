@@ -5,7 +5,7 @@ import arc.struct.Seq;
 import mindustry.content.*;
 import mindustry.entities.bullet.*;
 import mindustry.gen.Sounds;
-import Sharustry.world.blocks.defense.turret.MountTurretType;
+import Sharustry.world.blocks.defense.turret.mounts.*;
 import mindustry.graphics.Pal;
 
 import static Sharustry.content.SBullets.*;
@@ -14,10 +14,8 @@ public class STurretMounts {
     public static MountTurretType miniDrillMount, miniMassMount, drillMount, massMount, electricLaserMountL, electricLaserMountR, healMissileMountL, healMissileMountR, healBeamMountL, healBeamMountR, healLaserMount2, healLaserMount, healBeamMount, repairMount, pointMount, tractMount, laserMount, arcMount, unoMount, hailMount, waveMount;
     public static Seq<MountTurretType> mounttypes = new Seq<>();
     public static void load() {
-        miniDrillMount = new MountTurretType("mineM", MountTurretType.MultiTurretMountType.drill){{
+        miniDrillMount = new DrillMountTurretType("mineM"){{
             title = "Mini Minor";
-            mountType = MultiTurretMountType.drill;
-
             laserWidth = 0.75f;
             shootSound = Sounds.minebeam;
             shootSoundVolume = 0.9f;
@@ -32,7 +30,7 @@ public class STurretMounts {
             range = 60f;
         }};
 
-        miniMassMount = new MountTurretType("massM", MountTurretType.MultiTurretMountType.mass){{
+        miniMassMount = new MassMountTurretType("massM"){{
             rotateSpeed = 0.04f;
             translation = 7f;
             minDistribute = 10;
@@ -48,11 +46,9 @@ public class STurretMounts {
             title = "Mini MassDriver";
             reload = 100f;
             range = 440f;
-
-            mountType = MultiTurretMountType.mass;
         }};
 
-        drillMount = new MountTurretType("DrillM", MountTurretType.MultiTurretMountType.drill){{
+        drillMount = new DrillMountTurretType("DrillM"){{
             title = "Minor";
 
             laserWidth = 0.75f;
@@ -68,7 +64,7 @@ public class STurretMounts {
 
             range = 60f;
         }};
-        massMount = new MountTurretType("miniMassDriver", MountTurretType.MultiTurretMountType.mass){{
+        massMount = new MassMountTurretType("miniMassDriver"){{
             rotateSpeed = 0.04f;
             translation = 7f;
             minDistribute = 10;
@@ -85,7 +81,7 @@ public class STurretMounts {
             reload = 100f;
             range = 440f;
         }};
-        electricLaserMountL = new MountTurretType("electLaserML", MountTurretType.MultiTurretMountType.power, new LaserBulletType(140){{
+        electricLaserMountL = new PowerMountTurretType("electLaserML", new LaserBulletType(140){{
             colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
             hitEffect = Fx.hitLancer;
             despawnEffect = Fx.none;
@@ -117,7 +113,7 @@ public class STurretMounts {
             maxAmmo = 30;
         }};
 
-        electricLaserMountR = new MountTurretType("electLaserMR", MountTurretType.MultiTurretMountType.power, new LaserBulletType(140){{
+        electricLaserMountR = new PowerMountTurretType("electLaserMR", new LaserBulletType(140){{
             colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
             hitEffect = Fx.hitLancer;
             despawnEffect = Fx.none;
@@ -149,7 +145,7 @@ public class STurretMounts {
             maxAmmo = 30;
         }};
 
-        healMissileMountR = new MountTurretType("healMissileMR", MountTurretType.MultiTurretMountType.power, new MissileBulletType(3.5f, 15){{
+        healMissileMountR = new PowerMountTurretType("healMissileMR", new MissileBulletType(3.5f, 15){{
             despawnEffect = hitEffect = Fx.healWave;
             healPercent = 5;
             width = 8f;
@@ -181,7 +177,7 @@ public class STurretMounts {
             barrels = 5;
         }};
 
-        healMissileMountL = new MountTurretType("healMissileML", MountTurretType.MultiTurretMountType.power, new MissileBulletType(3.5f, 15){{
+        healMissileMountL = new PowerMountTurretType("healMissileML", new MissileBulletType(3.5f, 15){{
             despawnEffect = hitEffect = Fx.healWave;
             healPercent = 5;
             width = 8f;
@@ -215,7 +211,7 @@ public class STurretMounts {
 
         }};
 
-        healBeamMountL = new MountTurretType("healBeamM2L", MountTurretType.MultiTurretMountType.power, new LaserBoltBulletType(6.2f, 20){{
+        healBeamMountL = new PowerMountTurretType("healBeamM2L", new LaserBoltBulletType(6.2f, 20){{
             lifetime = 55f;
             healPercent = 8.5f;
             collidesTeam = true;
@@ -247,7 +243,7 @@ public class STurretMounts {
             powerUse = 2.5f;
         }};
 
-        healBeamMountR = new MountTurretType("healBeamM2R", MountTurretType.MultiTurretMountType.power, new LaserBoltBulletType(6.2f, 20){{
+        healBeamMountR = new PowerMountTurretType("healBeamM2R", new LaserBoltBulletType(6.2f, 20){{
             lifetime = 55f;
             healPercent = 8.5f;
             collidesTeam = true;
@@ -279,7 +275,7 @@ public class STurretMounts {
             powerUse = 2.5f;
         }};
 
-        healBeamMount = new MountTurretType("healBeamM", MountTurretType.MultiTurretMountType.power, new LaserBoltBulletType(5.2f, 10){{
+        healBeamMount = new PowerMountTurretType("healBeamM", new LaserBoltBulletType(5.2f, 10){{
             lifetime = 35f;
             healPercent = 5.5f;
             collidesTeam = true;
@@ -302,7 +298,7 @@ public class STurretMounts {
             powerUse = 1.25f;
         }};
 
-        healLaserMount2 = new MountTurretType("healLaserM2", MountTurretType.MultiTurretMountType.repair){{
+        healLaserMount2 = new RepairMountTurretType("healLaserM2"){{
             title = "HealLaser";
             repairSpeed = 0.75f;
             repairRadius = 75f;
@@ -310,7 +306,7 @@ public class STurretMounts {
             laserColor = Color.valueOf("e8ffd7");
         }};
 
-        healLaserMount = new MountTurretType("healLaserM", MountTurretType.MultiTurretMountType.repair){{
+        healLaserMount = new RepairMountTurretType("healLaserM"){{
             title = "HealLaser";
             repairSpeed = 0.5f;
             repairRadius = 55f;
@@ -318,7 +314,7 @@ public class STurretMounts {
             laserColor = Color.valueOf("e8ffd7");
         }};
 
-        repairMount = new MountTurretType("miniRepairM", MountTurretType.MultiTurretMountType.repair){{
+        repairMount = new RepairMountTurretType("miniRepairM"){{
             title = "Mini repairPoint";
             repairSpeed = 0.5f;
             repairRadius = 65f;
@@ -326,7 +322,7 @@ public class STurretMounts {
             laserColor = Color.valueOf("e8ffd7");
         }};
 
-        pointMount = new MountTurretType("miniSegmentM", MountTurretType.MultiTurretMountType.point){{
+        pointMount = new PointMountTurretType("miniSegmentM"){{
             title = "Mini Segment";
             powerUse = 8f;
             range = 180f;
@@ -336,7 +332,7 @@ public class STurretMounts {
             reload = 9f;
         }};
 
-        tractMount = new MountTurretType("miniTractM", MountTurretType.MultiTurretMountType.tract){{
+        tractMount = new TractMountTurretType("miniTractM"){{
             title = "Mini Parallax";
             shootCone = 6f;
             shootLength = 5f;
@@ -348,7 +344,7 @@ public class STurretMounts {
             powerUse = 3f;
         }};
 
-        laserMount = new MountTurretType("laserM", MountTurretType.MultiTurretMountType.power, miniAccelMissile){{
+        laserMount = new PowerMountTurretType("laserM", miniAccelMissile){{
             title = "Laser";
             barrels = 2;
             spread = 4f;
@@ -362,7 +358,7 @@ public class STurretMounts {
             powerUse = 6.3f;
         }};
 
-        arcMount = new MountTurretType("arcM", MountTurretType.MultiTurretMountType.power, new LightningBulletType(){{
+        arcMount = new PowerMountTurretType("arcM", new LightningBulletType(){{
             damage = 20;
             lightningLength = 25;
             collidesAir = false;
@@ -381,8 +377,7 @@ public class STurretMounts {
             shootSound = Sounds.spark;
         }};
 
-
-        unoMount = new MountTurretType("unoM", MountTurretType.MultiTurretMountType.power, new LaserBulletType(140){{
+        unoMount = new PowerMountTurretType("unoM", new LaserBulletType(140){{
             colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
             hitEffect = Fx.hitLancer;
             despawnEffect = Fx.none;
@@ -414,8 +409,7 @@ public class STurretMounts {
             maxAmmo = 30;
         }};
 
-
-        hailMount = new MountTurretType("hailM", MountTurretType.MultiTurretMountType.item,
+        hailMount = new ItemMountTurretType("hailM", null,
             Items.graphite, new ArtilleryBulletType(3f, 20, "shell"){{
                 hitEffect = Fx.flakExplosion;
                 knockback = 0.8f;
@@ -469,7 +463,7 @@ public class STurretMounts {
             maxAmmo = 50;
         }};
 
-        waveMount = new MountTurretType("waveM", MountTurretType.MultiTurretMountType.liquid,
+        waveMount = new LiquidMountTurretType("waveM", null,
             Liquids.water, new LiquidBulletType(){{
                 collidesAir = false;
                 liquid = Liquids.water;

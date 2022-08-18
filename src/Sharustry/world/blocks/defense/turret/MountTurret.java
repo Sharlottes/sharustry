@@ -1,9 +1,7 @@
 package Sharustry.world.blocks.defense.turret;
 
-import Sharustry.content.SBullets;
-import Sharustry.world.blocks.storage.BattleCore;
+import Sharustry.world.blocks.defense.turret.mounts.*;
 import arc.Core;
-import arc.Events;
 import arc.graphics.Blending;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
@@ -22,24 +20,19 @@ import arc.util.Time;
 import arc.util.Tmp;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
-import arc.util.pooling.Pools;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
-import mindustry.content.Items;
-import mindustry.content.StatusEffects;
 import mindustry.core.World;
 import mindustry.entities.Effect;
 import mindustry.entities.Fires;
 import mindustry.entities.Predict;
 import mindustry.entities.Units;
 import mindustry.entities.bullet.BulletType;
-import mindustry.game.EventType;
 import mindustry.gen.*;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
-import mindustry.input.InputHandler;
 import mindustry.logic.LAccess;
 import mindustry.type.Item;
 import mindustry.type.Liquid;
@@ -50,7 +43,6 @@ import mindustry.world.consumers.ConsumeLiquidBase;
 import mindustry.world.meta.BlockStatus;
 
 import static mindustry.Vars.*;
-import static mindustry.Vars.control;
 
 public class MountTurret {
     public int skillCounter;
@@ -134,8 +126,6 @@ public class MountTurret {
         ammos = new Seq<>();
         proxItems = new Seq<>();
         proxOres = new Seq<>();
-
-        if(type.mountType == MountTurretType.MultiTurretMountType.drill) mountReMap(build);
     }
 
     public float getPowerEfficiency(MultiTurret.MultiTurretBuild build){
@@ -190,33 +180,7 @@ public class MountTurret {
     }
 
     public void handleItem(Item item){
-        if(!((type.mountAmmoType != null && type.mountAmmoType.get(item) != null
-                && totalAmmo + type.mountAmmoType.get(item).ammoMultiplier <= type.maxAmmo)
-            || (block.ammoTypes.get(item) != null
-                && totalAmmo + block.ammoTypes.get(item).ammoMultiplier <= block.maxAmmo))
-            || type.mountType != MountTurretType.MultiTurretMountType.item) return;
 
-        if (item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
-
-        BulletType bullet = type.mountAmmoType.get(item);
-        if(bullet == null) return;
-        totalAmmo = (int)(totalAmmo + bullet.ammoMultiplier);
-
-        boolean asdf = true;
-        for(int i = 0; i < ammos.size; i++) {
-            ItemEntry entry = ammos.get(i);
-
-            if(entry.item == item) {
-                entry.amount += (int)bullet.ammoMultiplier;
-                ammos.swap(i, ammos.size - 1);
-                asdf = false;
-                break;
-            }
-        }
-
-        if(asdf) {
-            ammos.add(new ItemEntry(item, (int)bullet.ammoMultiplier < type.ammoPerShot ? (int)bullet.ammoMultiplier + type.ammoPerShot : (int)bullet.ammoMultiplier));
-        }
     }
 
     public boolean acceptItem(MultiTurret.MultiTurretBuild build, Item item){
@@ -248,7 +212,7 @@ public class MountTurret {
             }));
 
             add(new Table(h -> {
-                if(type.mountType == MountTurretType.MultiTurretMountType.item) {
+                if(type instanceof ItemMountTurretType) {
                     MultiReqImage itemReq = new MultiReqImage();
 
                     for(Item item : type.mountAmmoType.keys()) itemReq.add(new ReqImage(item.uiIcon, () -> hasAmmo(build)));
@@ -292,7 +256,7 @@ public class MountTurret {
                     }}).padTop(2*8).padLeft(2*8);
 
                 }
-                else if(type.mountType == MountTurretType.MultiTurretMountType.liquid) {
+                else if(type instanceof LiquidMountTurretType) {
                     MultiReqImage liquidReq = new MultiReqImage();
 
                     for(Liquid liquid : type.liquidMountAmmoType.keys()) liquidReq.add(new ReqImage(liquid.uiIcon, () -> hasAmmo(build)));
@@ -300,10 +264,9 @@ public class MountTurret {
                     h.add(new Stack(){{
                         add(new Table(e -> {
                             e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
-                            Bar liquidBar = hasAmmo(build) ? new Bar(
-                                    "",
-                                    build.liquids.current().color,
-                                    () -> build.liquids.get(build.liquids.current()) / block.liquidCapacity) : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0);
+                            Bar liquidBar = hasAmmo(build) && block.hasLiquids ?
+                                new Bar("", build.liquids.current().color, () -> build.liquids.get(build.liquids.current()) / block.liquidCapacity)
+                                : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0);
                             e.add(liquidBar);
                             e.pack();
                         }));
@@ -344,25 +307,20 @@ public class MountTurret {
                             e.add(liquidBar);
                             e.pack();
                         }));
-
-                        if(type.mountType == MountTurretType.MultiTurretMountType.power
-                                || type.mountType == MountTurretType.MultiTurretMountType.point
-                                || type.mountType == MountTurretType.MultiTurretMountType.mass)
-                            add(new Table(e -> {
-                                e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
-                                Bar reloadBar = new Bar(
-                                        () -> "",
-                                        () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / type.reload),
-                                        () -> reloadCounter / type.reload);
-                                e.add(reloadBar);
-                                e.pack();
-                            }));
-
-                        if(type.chargeTime >= 0.001) add(new Table(e -> {
+                        add(new Table(e -> {
+                            e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*5f);
+                            Bar reloadBar = new Bar(
+                                    () -> "",
+                                    () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / type.reload),
+                                    () -> reloadCounter / type.reload);
+                            e.add(reloadBar);
+                            e.pack();
+                        }));
+                        if(type.chargeTime > 0) add(new Table(e -> {
                             e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*8f);
                             Bar chargeBar = new Bar(
                                     () -> "",
-                                    () -> Pal.surge.cpy().lerp(Pal.accent, reloadCounter / type.reload),
+                                    () -> Pal.surge.cpy().lerp(Pal.accent, charge / type.chargeTime),
                                     () -> charge);
                             e.add(chargeBar);
                             e.pack();
@@ -375,8 +333,6 @@ public class MountTurret {
             }));
         }}).left().size(7*8f);
     }
-
-
 
     public void draw(MultiTurret.MultiTurretBuild build) {
         float[] loc = mountLocations(build);
@@ -391,56 +347,6 @@ public class MountTurret {
             Draw.rect(type.turrets[2], loc[2], loc[3], rotation - 90);
             Draw.blend();
             Draw.color();
-        }
-
-        if(type.mountType == MountTurretType.MultiTurretMountType.tract && any){
-            Draw.z(Layer.bullet);
-            float ang = build.angleTo(lastX, lastY);
-
-            Draw.mixcol(type.laserColor, Mathf.absin(4f, 0.6f));
-            Drawf.laser(type.tractLaser, type.tractLaserEnd,
-                    loc[2] + Angles.trnsx(ang, type.shootLength), loc[3] + Angles.trnsy(ang, type.shootLength),
-                    lastX, lastY, strength * getPowerEfficiency(build) * type.laserWidth);
-
-            Draw.reset();
-        }
-        if(type.mountType == MountTurretType.MultiTurretMountType.repair
-                && repairTarget != null
-                && Angles.angleDist(build.angleTo(repairTarget), rotation) < 30f){
-            Draw.z(Layer.flyingUnit + 1); //above all units
-            float ang = build.angleTo(repairTarget);
-            float len = 5f + Mathf.absin(Time.time, 1.1f, 0.5f);
-            float swingScl = 12f, swingMag = tilesize / 8f;
-            float scl = repairTarget.hitSize / 8f;
-            float random = Mathf.randomSeedRange(build.id, scl / 2f);
-            Draw.color(type.laserColor);
-            Drawf.laser(type.laser, type.laserEnd,
-                    loc[2] + Angles.trnsx(ang, len), loc[3] + Angles.trnsy(ang, len),
-                    repairTarget.x +
-                            Mathf.sin((Time.time + 6 * 8f) * scl / 3, (swingScl + random) * scl, swingMag * scl),
-                    repairTarget.y +
-                            Mathf.sin((Time.time + 6 * 8f) * scl / 3, ((swingScl + random) + 2f) * scl, swingMag * scl)
-                    , strength);
-
-            Draw.reset();
-        }
-        if(type.mountType == MountTurretType.MultiTurretMountType.drill
-                && mineTile != null){
-            float focusLen = type.laserOffset / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);
-            float swingScl = 12f, swingMag = tilesize / 8f;
-            float flashScl = 0.3f;
-
-            float px = loc[2] + Angles.trnsx(rotation, focusLen);
-            float py = loc[3] + Angles.trnsy(rotation, focusLen);
-
-            float ex = mineTile.worldx() + Mathf.sin(Time.time + 48, swingScl, swingMag);
-            float ey = mineTile.worldy() + Mathf.sin(Time.time + 48, swingScl + 2f, swingMag);
-
-            Draw.z(Layer.flyingUnit + 0.1f);
-            Draw.color(Color.lightGray, Color.white, 1f - flashScl + Mathf.absin(Time.time, 0.5f, flashScl));
-            Drawf.laser(type.laser, type.laserEnd, px, py, ex, ey, type.laserWidth);
-
-            Draw.reset();
         }
     }
 
@@ -460,19 +366,10 @@ public class MountTurret {
             Lines.poly(mineTile.worldx(), mineTile.worldy(), 4, tilesize / 2f * Mathf.sqrt2, Time.time);
             Draw.alpha(fade);
         }
-        if(type.mountType == MountTurretType.MultiTurretMountType.repair){
-            Lines.dashCircle(loc[0], loc[1], type.repairRadius);
-            Lines.stroke(1, Pal.heal);
-            Draw.alpha(fade);
-            Lines.dashCircle(loc[0], loc[1], type.repairRadius);
-        }
-        else{
-            Lines.dashCircle(loc[0], loc[1], type.range);
-            Lines.stroke(1, build.team.color);
-            Draw.alpha(fade);
-            Lines.dashCircle(loc[0], loc[1], type.range);
-        }
-
+        Lines.dashCircle(loc[0], loc[1], type instanceof RepairMountTurretType ? type.repairRadius : type.range);
+        Lines.stroke(1, type instanceof RepairMountTurretType ? Pal.heal : build.team.color);
+        Draw.alpha(fade);
+        Lines.dashCircle(loc[0], loc[1], type instanceof RepairMountTurretType ? type.repairRadius : type.range);
         Draw.z(Layer.turret + 1);
         Draw.color(build.team.color, fade);
         Draw.rect(type.turrets[3], loc[2], loc[3], rotation - 90);
@@ -480,7 +377,7 @@ public class MountTurret {
     }
 
     public void drawConfigure(MultiTurret.MultiTurretBuild build) {
-        if(type.mountType != MountTurretType.MultiTurretMountType.mass || (build.linkmount != this && build.linkmount != null)) return;
+        if(type instanceof MassMountTurretType || (build.linkmount != this && build.linkmount != null)) return;
 
         float[] loc = mountLocations(build);
         float sin = Mathf.absin(Time.time, 6 / 2f, 1f);
@@ -511,9 +408,9 @@ public class MountTurret {
     }
 
     public void updateAmmo(MultiTurret.MultiTurretBuild build) {
-        build.unit.ammo((float)build.unit.type().ammoCapacity * totalAmmo /  type.maxAmmo);
-        build.unit.ammo(build.unit.type().ammoCapacity * build.liquids.currentAmount() / block.liquidCapacity);
-        build.unit.ammo(build.power.status * build.unit.type().ammoCapacity);
+        if(block.hasItems) build.unit.ammo((float)build.unit.type().ammoCapacity * totalAmmo /  type.maxAmmo);
+        if(block.hasLiquids) build.unit.ammo(build.unit.type().ammoCapacity * build.liquids.currentAmount() / block.liquidCapacity);
+        if(block.hasPower) build.unit.ammo(build.power.status * build.unit.type().ammoCapacity);
     }
     
     public void updateTarget(MultiTurret.MultiTurretBuild build){
@@ -536,7 +433,7 @@ public class MountTurret {
         if(type.chargeTime >= 0.001 && charging && hasAmmo(build)) charge = Mathf.clamp(charge + Time.delta / type.chargeTime);
         else charge = 0;
 
-        if(!targetValid(build)) {
+        if(isTargetInvalid(build)) {
             target = null;
             tractTarget = null;
             pointTarget = null;
@@ -547,175 +444,10 @@ public class MountTurret {
         ___heat -= build.delta();
     }
     public void updateTile(MultiTurret.MultiTurretBuild build) {
-        if(!hasAmmo(build)) return;
-
-        if(type.mountType == MountTurretType.MultiTurretMountType.mass) mountUpdateMass(build);
-        else if(type.mountType == MountTurretType.MultiTurretMountType.drill) updateDrill(build);
-        else if(type.mountType == MountTurretType.MultiTurretMountType.tract) updateTract(build);
-        else if(type.mountType == MountTurretType.MultiTurretMountType.point) updatePoint(build);
-        else if(type.mountType == MountTurretType.MultiTurretMountType.repair) updateRepair(build);
-        else updateNormal(build);
-    }
-
-    public void mountUpdateMass(MultiTurret.MultiTurretBuild build){
-        Building link = world.build(this.link);
-        boolean hasLink = linkValid(build);
-        float[] loc = mountLocations(build);
-
-        if(hasLink) this.link = link.pos();
-
-        //reloadCounter regardless of state
-        if(reloadCounter < type.reload) reloadCounter += build.delta() * getPowerEfficiency(build);
-
-
-        //cleanup waiting shooters that are not valid
-        if(!shooterValid(build, currentShooter(), i)){
-            waitingShooters.remove(currentShooter());
-        }
-
-        //switch states
-        if(massState == MassDriver.DriverState.idle){
-            //start accepting when idle and there's space
-            if(!waitingShooters.isEmpty() && (block.itemCapacity - build.items.total() >= type.minDistribute)){
-                massState = MassDriver.DriverState.accepting;
-            }else if(hasLink){ //switch to shooting if there's a valid link.
-                massState = MassDriver.DriverState.shooting;
-            }
-        }
-
-        //dump when idle or accepting
-        if(massState == MassDriver.DriverState.idle
-                || massState == MassDriver.DriverState.accepting
-                || build.mounts.find(m -> m.type.mountType == MountTurretType.MultiTurretMountType.drill && m.mineTile == null) == null) build.dump();
-        //skip when there's no power
-        if(getPowerEfficiency(build) <= 0.001f) return;
-
-        if(massState == MassDriver.DriverState.accepting){
-            //if there's nothing shooting at this, bail - OR, items full
-            if(currentShooter() == null || (block.itemCapacity - build.items.total() < type.minDistribute)){
-                massState = MassDriver.DriverState.idle;
-                return;
-            }
-            rotation = Mathf.slerpDelta(rotation, build.tile.angleTo(currentShooter()), type.rotateSpeed * getPowerEfficiency(build));
-
-        }else if(massState == MassDriver.DriverState.shooting){
-            //if there's nothing to shoot at OR someone wants to shoot at this thing, bail
-            if(!hasLink || (!waitingShooters.isEmpty() && (block.itemCapacity - build.items.total() >= type.minDistribute))){
-                massState = MassDriver.DriverState.idle;
-                return;
-            }
-
-            if(
-                    build.items.total() >= type.minDistribute && //must shoot minimum amount of items
-                    link.block.itemCapacity - link.items.total() >= type.minDistribute //must have minimum amount of space
-            ){
-                if(link instanceof BattleCore.BattleCoreBuild other){
-                    float targetRotation = Angles.angle(mountLocations(build)[0], mountLocations(build)[1], ((BattleCore.BattleCoreBuild)link).mountLocations(linkIndex)[0], ((BattleCore.BattleCoreBuild)link).mountLocations(linkIndex)[1]);
-
-                    other.waitingShooters.add(build.tile);
-
-                    if(reloadCounter >= type.reload && !charging){
-                        rotation = Mathf.slerpDelta(rotation, targetRotation, type.rotateSpeed * getPowerEfficiency(build));
-                        //fire when it's the first in the queue and angles are ready.
-                        if(other.currentShooter() == build.tile &&
-                                other.massState == MassDriver.DriverState.accepting
-                                && Angles.near(rotation, targetRotation, 2f)
-                                && Angles.near(other._rotations.get(i), targetRotation + 180f, 2f)){
-                            reloadCounter = 0f;
-
-                            DriverBulletData data = Pools.obtain(DriverBulletData.class, DriverBulletData::new);
-                            data.massMount = i;
-                            data.from = build;
-                            data.to = other;
-
-                            int totalUsed = 0;
-                            for(int h = 0; h < content.items().size; h++){
-                                int maxTransfer = Math.min(build.items.get(content.item(h)), build.tile.block().itemCapacity - totalUsed);
-                                data.items[h] = maxTransfer;
-                                totalUsed += maxTransfer;
-                                build.items.remove(content.item(h), maxTransfer);
-                            }
-
-                            float angle = Angles.angle(loc[0], loc[1], other.mountLocations(((BattleCore) other.block).massIndex)[0], other.mountLocations(((BattleCore) other.block).massIndex)[1]);
-
-                            SBullets.mountDriverBolt.create(build, build.team,
-                                    loc[4] + Angles.trnsx(angle, type.translation), loc[5] + Angles.trnsy(angle, type.translation),
-                                    angle, -1f, type.bulletSpeed, type.bulletLifetime, data);
-
-                            type.shootEffect.at(loc[4] + Angles.trnsx(angle, type.translation), loc[5] + Angles.trnsy(angle, type.translation), angle);
-                            type.smokeEffect.at(loc[4] + Angles.trnsx(angle, type.translation), loc[5] + Angles.trnsy(angle, type.translation), angle);
-                            Effect.shake(type.shake, type.shake, new Vec2(loc[4], loc[5]));
-                           type.shootSound.at(build.tile, Mathf.random(0.9f, 1.1f));
-
-                            float timeToArrive = Math.min(type.bulletLifetime, Mathf.dst(loc[4], loc[5], other.x, other.y) / type.bulletSpeed);
-                            Time.run(timeToArrive, () -> {
-                                //remove waiting shooters, it's done firing
-                                other.waitingShooters.remove(build.tile);
-                                other.massState = MassDriver.DriverState.idle;
-                            });
-                            //driver is immediately idle
-                            massState = MassDriver.DriverState.idle;
-                        }
-                    }
-                }
-                else if(link instanceof MultiTurret.MultiTurretBuild other){
-                    if(((MultiTurret.MultiTurretBuild)link).mounts.get(i).type.mountType != MountTurretType.MultiTurretMountType.mass) linkIndex = ((MultiTurret.MultiTurretBuild)link).mounts.indexOf(((MultiTurret.MultiTurretBuild)link).mounts.copy().filter(m -> m.type.mountType == MountTurretType.MultiTurretMountType.mass).peek());
-
-                    float targetRotation = Angles.angle(mountLocations(build)[0], mountLocations(build)[1], ((MultiTurret.MultiTurretBuild)link).mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild)link))[0], ((MultiTurret.MultiTurretBuild)link).mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild)link))[1]);
-
-                    other.mounts.get(linkIndex).waitingShooters.add(build.tile);
-
-                    if(reloadCounter >= type.reload && !charging){
-                        rotation = Mathf.slerpDelta(rotation, targetRotation, type.rotateSpeed * getPowerEfficiency(build));
-                        //fire when it's the first in the queue and angles are ready.
-                        if(other.mounts.get(linkIndex).currentShooter() == build.tile &&
-                                other.mounts.get(linkIndex).massState == MassDriver.DriverState.accepting
-                                && Angles.near(rotation, targetRotation, 2f)
-                                && Angles.near(other.mounts.get(linkIndex).rotation, targetRotation + 180f, 2f)){
-                            reloadCounter = 0f;
-
-                            DriverBulletData data = Pools.obtain(DriverBulletData.class, DriverBulletData::new);
-                            data.massMount = i;
-                            data.from = build;
-                            data.to = other;
-                            data.link = linkIndex;
-
-                            int totalUsed = 0;
-                            for(int h = 0; h < content.items().size; h++){
-                                int maxTransfer = Math.min(build.items.get(content.item(h)), build.tile.block().itemCapacity - totalUsed);
-                                data.items[h] = maxTransfer;
-                                totalUsed += maxTransfer;
-                                build.items.remove(content.item(h), maxTransfer);
-                            }
-
-                            float angle = Angles.angle(loc[4], loc[5], other.mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild)link))[4], other.mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild)link))[5]);
-
-                            SBullets.mountDriverBolt.create(build, build.team,
-                                    loc[4] + Angles.trnsx(angle, type.translation), loc[5] + Angles.trnsy(angle, type.translation),
-                                    angle, -1f, type.bulletSpeed, type.bulletLifetime, data);
-
-                            type.shootEffect.at(loc[4] + Angles.trnsx(angle, type.translation), loc[5] + Angles.trnsy(angle, type.translation), angle);
-                            type.smokeEffect.at(loc[4] + Angles.trnsx(angle, type.translation), loc[5] + Angles.trnsy(angle, type.translation), angle);
-                            Effect.shake(type.shake, type.shake, new Vec2(loc[4], loc[5]));
-                            type.shootSound.at(build.tile, Mathf.random(0.9f, 1.1f));
-
-                            float timeToArrive = Math.min(type.bulletLifetime, Mathf.dst(loc[4], loc[5], other.mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild)link))[4], other.mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild)link))[5]) / type.bulletSpeed);
-                            Time.run(timeToArrive, () -> {
-                                //remove waiting shooters, it's done firing
-                                other.mounts.get(linkIndex).waitingShooters.remove(build.tile);
-                                other.mounts.get(linkIndex).massState = MassDriver.DriverState.idle;
-                            });
-                            //driver is immediately idle
-                            massState = MassDriver.DriverState.idle;
-                        }
-                    }
-                }
-            }
-        }
     }
 
     public void handlePayload(MultiTurret.MultiTurretBuild build,Bullet bullet, DriverBulletData data){
-        if(type.mountType != MountTurretType.MultiTurretMountType.mass) return;
+        if(!(type instanceof MassMountTurretType)) return;
 
         int totalItems = build.items.total();
 
@@ -744,16 +476,19 @@ public class MountTurret {
 
     public boolean shooterValid(MultiTurret.MultiTurretBuild build, Tile other, int mount){
         if(other == null) return true;
-        return (other.build instanceof BattleCore.BattleCoreBuild && ((BattleCore.BattleCoreBuild)other.build).link == build.tile.pos()) || (other.build instanceof MultiTurret.MultiTurretBuild && ((MultiTurret.MultiTurretBuild)other.build).mounts.get(linkIndex).link == build.tile.pos()) && build.tile.dst(other) <= type.range;
+        return other.build instanceof MultiTurret.MultiTurretBuild
+                && ((MultiTurret.MultiTurretBuild)other.build).mounts.get(linkIndex).link == build.tile.pos()
+                && build.tile.dst(other) <= type.range;
     }
 
     public boolean linkValid(MultiTurret.MultiTurretBuild build){
         if(link == -1) return false;
 
         Building link = world.build(this.link);
-        return ((link instanceof MultiTurret.MultiTurretBuild && ((MultiTurret)link.block).basicMounts.size - 1 >= i && ((MultiTurret)link.block).basicMounts.get(linkIndex).mountType == MountTurretType.MultiTurretMountType.mass)
-                || (link instanceof BattleCore.BattleCoreBuild && ((BattleCore)link.block).mounts.size - 1 >= i && ((BattleCore)link.block).mounts.get(linkIndex).mountType == MountTurretType.MultiTurretMountType.mass))
-                    && link.team == build.team && build.within(link, type.range);
+        return (link instanceof MultiTurret.MultiTurretBuild
+                && ((MultiTurret)link.block).basicMounts.size - 1 >= i
+                && ((MultiTurret)link.block).basicMounts.get(linkIndex) instanceof MassMountTurretType)
+                && link.team == build.team && build.within(link, type.range);
     }
 
     public boolean onConfigureTileTapped(MultiTurret.MultiTurretBuild build, Building other){
@@ -767,8 +502,8 @@ public class MountTurret {
             build.configure(IntSeq.with(i, -1));
             return false;
         }
-        else if(((other instanceof MultiTurret.MultiTurretBuild && ((MultiTurret.MultiTurretBuild)other).hasMass())
-                || (other.block instanceof BattleCore && ((BattleCore)other.block).mounts.find(m -> m.mountType == MountTurretType.MultiTurretMountType.mass) != null))
+        else if(other instanceof MultiTurret.MultiTurretBuild
+                && ((MultiTurret.MultiTurretBuild)other).hasMass()
                 && other.dst(build.tile) <= type.range && other.team == build.team){
             build.configure(IntSeq.with(i, other.pos()));
             return false;
@@ -776,159 +511,9 @@ public class MountTurret {
         return true;
     }
 
-    public void updateDrill(MultiTurret.MultiTurretBuild build){
-        float[] loc = this.mountLocations(build);
-
-        Building core = state.teams.closestCore(loc[4], loc[5], build.team);
-
-        //target ore
-        targetMine(build, core);
-        if(core == null
-                || mineTile == null
-                || Mathf.clamp(build.power.graph.getPowerBalance()/type.powerUse, 0, 1) <= 0.001f
-                || !Angles.within(rotation, build.angleTo(mineTile), type.shootCone)
-                || build.items.get(mineTile.drop()) >= block.itemCapacity){
-            mineTile = null;
-            mineTimer = 0f;
-        }
-
-        if(mineTile != null){
-            //mine tile
-            Item item = mineTile.drop();
-            mineTimer += Time.delta * type.mineSpeed * getPowerEfficiency(build);
-
-            if(Mathf.chance(0.06 * Time.delta)){
-                Fx.pulverizeSmall.at(mineTile.worldx() + Mathf.range(tilesize / 2f), mineTile.worldy() + Mathf.range(tilesize / 2f), 0f, item.color);
-            }
-
-            if(mineTimer >= 50f + item.hardness * 15f){
-                mineTimer = 0;
-
-                if(state.rules.sector != null && build.team() == state.rules.defaultTeam) state.rules.sector.info.handleProduction(item, 1);
-
-                //items are synced anyway
-                InputHandler.transferItemTo(null, item, 1,
-                        mineTile.worldx() + Mathf.range(tilesize / 2f),
-                        mineTile.worldy() + Mathf.range(tilesize / 2f),
-                        build);
-            }
-
-            if(!headless) control.sound.loop(type.shootSound, build, type.shootSoundVolume);
-        }
-    }
-
-    public void updateTract(MultiTurret.MultiTurretBuild build){
-        float[] loc = this.mountLocations(build);
-        any = false;
-
-        //look at target
-        if(tractTarget != null
-                && tractTarget.within(new Vec2(loc[0], loc[1]), type.range + tractTarget.hitSize/2f)
-                && tractTarget.team() != build.team
-                && tractTarget.checkTarget(type.targetAir, type.targetGround)
-                && getPowerEfficiency(build) > 0.02f){
-            if(!headless) control.sound.loop(type.shootSound, new Vec2(loc[0], loc[1]), type.shootSoundVolume);
-
-            float dest = build.angleTo(tractTarget);
-            targetTurn(build, dest);
-            lastX = tractTarget.x;
-            lastY = tractTarget.y;
-            strength = Mathf.lerpDelta(strength, 1f, 0.1f);
-
-            //shoot when possible
-            if(Angles.within(rotation, dest, type.shootCone)){
-                if(type.damage > 0) tractTarget.damageContinuous(type.damage * getPowerEfficiency(build));
-
-                if(type.status != StatusEffects.none) tractTarget.apply(type.status, type.statusDuration);
-
-                any = true;
-                tractTarget.impulseNet(
-                        Tmp.v1.set(new Vec2(loc[0], loc[1])).
-                                sub(tractTarget).
-                                limit((type.force + (1f - tractTarget.dst(new Vec2(loc[0], loc[1])) / type.range) * type.scaledForce) * build.delta() * getPowerEfficiency(build)));
-            }
-        }else {
-            strength = Mathf.lerpDelta(strength, 0, 0.1f);
-        }
-    }
-
-    public void updatePoint(MultiTurret.MultiTurretBuild build){
-        float[] loc = this.mountLocations(build);
-        if(pointTarget != null
-                && pointTarget.within(new Vec2(loc[0], loc[1]), type.range)
-                && pointTarget.team != build.team
-                && pointTarget.type() != null
-                && pointTarget.type().hittable){
-            float dest = build.angleTo(pointTarget);
-            targetTurn(build, dest);
-            reloadCounter += build.delta() * getPowerEfficiency(build);
-
-            //shoot when possible
-            if(Angles.within(rotation, dest, type.shootCone) && reloadCounter >= type.reload){
-                if(pointTarget.damage() > type.bulletDamage) pointTarget.damage(pointTarget.damage() - type.bulletDamage);
-                else pointTarget.remove();
-
-                Tmp.v1.trns(rotation, type.shootLength);
-
-                type.beamEffect.at(loc[0] + Tmp.v1.x, loc[1] + Tmp.v1.y, rotation, type.colorPoint, new Vec2().set(pointTarget));
-                type.shootEffect.at(loc[0] + Tmp.v1.x, loc[1] + Tmp.v1.y, rotation, type.colorPoint);
-                type.hitEffect.at(pointTarget.x, pointTarget.y, type.colorPoint);
-                type.shootSound.at(loc[0] + Tmp.v1.x, loc[1] + Tmp.v1.y, Mathf.random(0.9f, 1.1f));
-
-                reloadCounter = 0f;
-            }
-        }
-    }
-
-    public void updateRepair(MultiTurret.MultiTurretBuild build){
-        float[] loc = this.mountLocations(build);
-        boolean targetIsBeingRepaired = false;
-        if(repairTarget != null){
-            if(repairTarget.dead()
-                    || repairTarget.dst(loc[0], loc[1]) - repairTarget.hitSize / 2f > type.repairRadius
-                    || repairTarget.health() >= repairTarget.maxHealth()) repairTarget = null;
-            else {
-                repairTarget.heal(type.repairSpeed * Time.delta * strength * getPowerEfficiency(build));
-                float dest = build.angleTo(repairTarget);
-                targetTurn(build, dest);
-                targetIsBeingRepaired = true;
-            }
-            if(targetIsBeingRepaired) strength = Mathf.lerpDelta(strength, 1f, 0.08f * Time.delta);
-        }
-        else strength = Mathf.lerpDelta(strength, 0f, 0.07f * Time.delta);
-    }
-
-    //item, liquid, power
-    public void updateNormal(MultiTurret.MultiTurretBuild build) {
-        if(!targetValid(build)) return;
-        float[] loc = this.mountLocations(build);
-        boolean canShoot = true;
-
-        if(build.isControlled()) { //player behavior
-            targetPos.set(build.unit().aimX, build.unit().aimY);
-            canShoot = build.unit().isShooting;
-        }else if(build.logicControlled()) { //logic behavior
-            targetPos = build.targetPos;
-            canShoot = build.logicShooting;
-        }else { //default AI behavior
-            targetPosition(build, target, loc[0], loc[1]);
-            if(Float.isNaN(rotation)) rotation = 0f;
-        }
-
-        float targetRot = Angles.angle(loc[0], loc[1], targetPos.x, targetPos.y);
-
-        if(!charging) targetTurn(build, targetRot);
-
-        if (Angles.angleDist(rotation, targetRot) < type.shootCone && canShoot) {
-            build.wasShooting = true;
-            wasShooting = true;
-            updateShooting(build);
-        }
-    }
-
     public void targetTurn(MultiTurret.MultiTurretBuild build, float target){
         float speed = type.rotateSpeed * build.delta();
-        if(type.mountType == MountTurretType.MultiTurretMountType.power || type.powerUse > 0.001f) speed *= getPowerEfficiency(build);
+        if(type instanceof PowerMountTurretType || type.powerUse > 0.001f) speed *= getPowerEfficiency(build);
         else speed *= build.efficiency();
         rotation = Angles.moveToward(rotation, target, speed);
     }
@@ -936,7 +521,7 @@ public class MountTurret {
     public Posc targetFind(MultiTurret.MultiTurretBuild build){
         float[] loc = this.mountLocations(build);
 
-        if(type.mountType == MountTurretType.MultiTurretMountType.liquid && type.extinguish && build.liquids.current().canExtinguish()) {
+        if(type instanceof LiquidMountTurretType && type.extinguish && build.liquids.current().canExtinguish()) {
             int tr = (int) (type.range / tilesize);
             for(int x = -tr; x <= tr; x++) for(int y = -tr; y <= tr; y++) {
                 Tile other = world.tileWorld(x + (int)loc[4]/8f, y + (int)loc[5]/8f);
@@ -951,16 +536,16 @@ public class MountTurret {
         else return Units.bestTarget(build.team, loc[0], loc[1], type.range, e -> !e.dead && (e.isGrounded() || type.targetAir) && (!e.isGrounded() || type.targetGround), b -> true, type.unitSort);
     }
 
-    public boolean targetValid(MultiTurret.MultiTurretBuild build){
+    public boolean isTargetInvalid(MultiTurret.MultiTurretBuild build){
         float[] loc = mountLocations(build);
         if(type.healBlock && Units.findAllyTile(build.team, loc[0], loc[1], type.range, Building::damaged) != null)
-            return (type.healBlock
-                    && Units.findAllyTile(build.team, loc[0], loc[1], type.range, Building::damaged) != null)
-                    && ((target != null && !(target instanceof Teamc && ((Teamc) target).team() != build.team)
-                            && !(target instanceof Healthc && !((Healthc) target).isValid()))
-                        || build.isControlled() || build.logicControlled());
+            return (!type.healBlock
+                    || Units.findAllyTile(build.team, loc[0], loc[1], type.range, Building::damaged) == null)
+                    || ((target == null || target instanceof Teamc && ((Teamc) target).team() != build.team
+                    || target instanceof Healthc && !((Healthc) target).isValid())
+                    && !build.isControlled() && !build.logicControlled());
 
-        return !Units.invalidateTarget(target, build.team, loc[0], loc[1]) || build.isControlled() || build.logicControlled();
+        return Units.invalidateTarget(target, build.team, loc[0], loc[1]) && !build.isControlled() && !build.logicControlled();
     }
 
     public void targetPosition(MultiTurret.MultiTurretBuild build, Posc pos, float x, float y){
@@ -980,11 +565,11 @@ public class MountTurret {
 
     public void updateShooting(MultiTurret.MultiTurretBuild build){
         if(reloadCounter >= type.reload){
-            shoot(build, type.mountType == MountTurretType.MultiTurretMountType.liquid ? type.liquidMountAmmoType.get(build.liquids.current()) : peekAmmo(build));
+            shoot(build, type instanceof LiquidMountTurretType && block.hasLiquids ? type.liquidMountAmmoType.get(build.liquids.current()) : peekAmmo(build));
             reloadCounter = 0f;
         }else {
             float speed = build.delta() * peekAmmo(build).reloadMultiplier;
-            if(type.mountType == MountTurretType.MultiTurretMountType.power || type.powerUse > 0.001f) speed *= getPowerEfficiency(build);
+            if(type instanceof PowerMountTurretType || type.powerUse > 0.001f) speed *= getPowerEfficiency(build);
             else speed *= build.efficiency();
             if(speed >= 0.001f) reloadCounter += speed;
         }
@@ -1071,52 +656,16 @@ public class MountTurret {
     }
 
     public BulletType peekAmmo(MultiTurret.MultiTurretBuild build){
-        if(type.mountType == MountTurretType.MultiTurretMountType.power) return type.bullet;
-        if(type.mountType == MountTurretType.MultiTurretMountType.item) return ammos.peek().types(this);
-        if(type.mountType == MountTurretType.MultiTurretMountType.liquid) return type.liquidMountAmmoType.get(build.liquids.current());
-
         return null;
     }
 
     public BulletType useAmmo(MultiTurret.MultiTurretBuild build){
-        if(type.mountType == MountTurretType.MultiTurretMountType.power) return type.bullet;
-        if(build.cheating()){
-            if(type.mountType == MountTurretType.MultiTurretMountType.item) return peekAmmo(build);
-            if(type.mountType == MountTurretType.MultiTurretMountType.liquid) return type.liquidMountAmmoType.get(build.liquids.current());
-        }
-
-        if(type.mountType == MountTurretType.MultiTurretMountType.item){
-            ItemEntry entry = ammos.peek();
-            entry.amount -= type.ammoPerShot;
-            if(entry.amount <= 0) ammos.pop();
-            totalAmmo = Math.max(totalAmmo - type.ammoPerShot, 0);
-
-            ejectEffects(build);
-            return entry.types(this);
-        }
-
         return null;
     }
 
     public boolean hasAmmo(MultiTurret.MultiTurretBuild build){
-        if(type.mountType == MountTurretType.MultiTurretMountType.power
-                || type.mountType == MountTurretType.MultiTurretMountType.tract
-                || type.mountType == MountTurretType.MultiTurretMountType.point
-                || type.mountType == MountTurretType.MultiTurretMountType.repair
-                || type.mountType == MountTurretType.MultiTurretMountType.mass
-                || type.mountType == MountTurretType.MultiTurretMountType.drill) return true;
-        if(type.mountType == MountTurretType.MultiTurretMountType.item) {
-            if (ammos.size >= 2 && ammos.peek().amount < type.ammoPerShot) ammos.pop();
-            return ammos.size > 0 && ammos.peek().amount >= type.ammoPerShot;
-        }
-        if(type.mountType == MountTurretType.MultiTurretMountType.liquid) {
-            return type.liquidMountAmmoType != null
-                    && type.liquidMountAmmoType.get(build.liquids.current()) != null
-                    && build.liquids.currentAmount() >= 1f / type.liquidMountAmmoType.get(build.liquids.current()).ammoMultiplier;
-        }
-        return false;
+        return true;
     }
-
 
     public boolean shouldTurn(){
         return !charging;
@@ -1253,19 +802,6 @@ public class MountTurret {
         } catch(Throwable e){
             Log.warn(String.valueOf(e));
         }
-        if(type.mountType == MountTurretType.MultiTurretMountType.item) {
-            write.b(ammos.size);
-            for(ItemEntry entry : ammos) {
-                write.s(entry.item.id);
-                write.s(entry.amount);
-            }
-        }
-        if(type.mountType == MountTurretType.MultiTurretMountType.mass){
-            write.i(link);
-            write.i(i);
-            write.i(linkIndex);
-            write.b((byte) massState.ordinal());
-        }
     }
 
     public void read(Reads read, byte revision){
@@ -1274,23 +810,6 @@ public class MountTurret {
             rotation = read.f();
         } catch(Throwable e){
             Log.warn(String.valueOf(e));
-        }
-
-        if(type.mountType == MountTurretType.MultiTurretMountType.item) {
-            int amount = read.ub();
-            for(int i = 0; i < amount; i++) {
-                Item item = Vars.content.item(revision < 2 ? read.ub() : read.s());
-                short a = read.s();
-                totalAmmo += a;
-
-                if(item != null && type.mountAmmoType != null && type.mountAmmoType.containsKey(item)) ammos.add(new ItemEntry(item, a));
-            }
-        }
-        if(type.mountType == MountTurretType.MultiTurretMountType.mass){
-            link = read.i();
-            i = read.i();
-            linkIndex = read.i();
-            massState = MassDriver.DriverState.all[read.b()];
         }
     }
 }

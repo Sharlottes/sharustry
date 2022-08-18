@@ -2,14 +2,14 @@ package Sharustry.world.blocks.defense.turret;
 
 import Sharustry.content.STurretMounts;
 import Sharustry.ui.SBar;
-import Sharustry.world.blocks.storage.BattleCore;
+import Sharustry.world.blocks.defense.turret.mounts.MassMountTurretType;
+import Sharustry.world.blocks.defense.turret.mounts.MountTurretType;
 import arc.*;
 import arc.func.Cons;
 import arc.func.Func;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
-import arc.math.geom.Point2;
 import arc.scene.ui.Button;
 import arc.scene.ui.Image;
 import arc.scene.ui.Label;
@@ -64,15 +64,6 @@ public class MultiTurret extends TemplatedTurret {
     public MultiTurret(String name){
         super(name);
         configurable = true;
-
-        config(Point2.class, (Building tile, Point2 point) -> {
-            if(tile instanceof BattleCore.BattleCoreBuild) ((BattleCore.BattleCoreBuild)tile).link = Point2.pack(point.x + tile.tileX(), point.y + tile.tileY());
-        });
-
-        config(Integer.class, (Building tile, Integer point) -> {
-            if(tile instanceof BattleCore.BattleCoreBuild) ((BattleCore.BattleCoreBuild)tile).link = point;
-        });
-
         config(IntSeq.class, (Building tile, IntSeq index) -> {
             if(index.size != 2 || !(tile instanceof MultiTurretBuild)) return;
             ((MultiTurretBuild)tile).mounts.get(index.get(0)).link = index.get(1);
@@ -321,7 +312,7 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         public boolean hasMass(){
-            return mounts.find(m -> m.type.mountType == MountTurretType.MultiTurretMountType.mass) != null;
+            return mounts.find(m -> m.type instanceof MassMountTurretType) != null;
         }
         @Override
         public void displayConsumption(Table table1){
@@ -570,8 +561,7 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public Object config(){
             for(int i = 0; i < mounts.size; i++){
-                if(mounts.get(i).type.mountType != MountTurretType.MultiTurretMountType.mass) continue;
-                return ObjectMap.of(i, mounts.get(i).link);
+                if(mounts.get(i).type instanceof MassMountTurretType) return ObjectMap.of(i, mounts.get(i).link);
             }
             return null;
         }

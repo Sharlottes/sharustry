@@ -6,7 +6,6 @@ import Sharustry.entities.pattern.ShootAside;
 import Sharustry.graphics.SPal;
 import Sharustry.world.blocks.defense.turret.*;
 import Sharustry.world.blocks.logic.VariableLogicBlock;
-import Sharustry.world.blocks.storage.BattleCore;
 import arc.Core;
 import arc.graphics.g2d.Draw;
 import arc.math.Angles;
@@ -682,116 +681,6 @@ public class SBlocks {
                 hittable = false;
             }};
             shotsSpacing = 0.25f;
-        }};
-
-        armedFoundation = new BattleCore("armedFoundation"){{
-            customMountLocation = true;
-            hasPower = true;
-            requirements(Category.effect, with(Items.copper, 3000, Items.lead, 3000, Items.silicon, 2000));
-
-            unitType = UnitTypes.beta;
-            health = 3500;
-            itemCapacity = 9000;
-            size = 4;
-            configurable = true;
-            unitCapModifier = 16;
-            researchCostMultiplier = 0.02f;
-
-            addMountTurret(healBeamMountR, healBeamMountL, massMount, healLaserMount2);
-            addCustomMountLocation(new Float[]{
-                0f, -10f,
-                0f, 10f,
-                -5f, -5f,
-                0f,0f
-            });
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.mass);
-            ammos(MountTurretType.MultiTurretMountType.repair);
-        }};
-
-        armedNucleus = new BattleCore("armedNucleus"){{
-            configurable = true;
-            customMountLocation = true;
-            hasLiquids = true;
-            hasItems = true;
-            hasPower = true;
-            requirements(Category.effect, with(Items.copper, 8000, Items.lead, 8000, Items.silicon, 5000, Items.thorium, 4000));
-
-            unitType = UnitTypes.gamma;
-            health = 6000;
-            itemCapacity = 13000;
-            size = 5;
-
-            unitCapModifier = 24;
-            researchCostMultiplier = 0.03f;
-
-            addMountTurret(hailMount, hailMount, massMount, hailMount, hailMount, unoMount, unoMount, unoMount, unoMount);
-            addCustomMountLocation(new Float[]{
-                13f, 13f,
-                -13f, 13f,
-                0f, 0f,
-                13f, -13f,
-                -13f, -13f,
-                10f, 0f,
-                0f, 10f,
-                -10f, 0f,
-                0f, -10f
-            });
-
-            BulletType
-                dense = new ArtilleryBulletType(3f, 20){{
-                    knockback = 0.8f;
-                    lifetime = 80f;
-                    width = height = 11f;
-                    collidesTiles = false;
-                    splashDamageRadius = 25f * 0.75f;
-                    splashDamage = 33f;
-                }},
-                homing = new ArtilleryBulletType(3f, 20){{
-                    knockback = 0.8f;
-                    lifetime = 80f;
-                    width = height = 11f;
-                    collidesTiles = false;
-                    splashDamageRadius = 25f * 0.75f;
-                    splashDamage = 33f;
-                }},
-                incend = new ArtilleryBulletType(3f, 25){{
-                    hitEffect = Fx.blastExplosion;
-                    knockback = 0.8f;
-                    lifetime = 80f;
-                    width = height = 13f;
-                    collidesTiles = false;
-                    splashDamageRadius = 25f * 0.75f;
-                    splashDamage = 45f;
-                    status = StatusEffects.burning;
-                    statusDuration = 60f * 12f;
-                    frontColor = Pal.lightishOrange;
-                    backColor = Pal.lightOrange;
-                    makeFire = true;
-                    trailEffect = Fx.incendTrail;
-                    ammoMultiplier = 4f;
-                }};
-
-            for(int i = 0; i < 2; i++) {
-                ammos(MountTurretType.MultiTurretMountType.item,
-                    Items.graphite, dense,
-                    Items.silicon, homing,
-                    Items.pyratite, incend
-                );
-            }
-            ammos(MountTurretType.MultiTurretMountType.mass);
-            for(int i = 0; i < 2; i++) {
-                ammos(MountTurretType.MultiTurretMountType.item,
-                    Items.graphite, dense,
-                    Items.silicon, homing,
-                    Items.pyratite, incend
-                );
-            }
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
-            ammos(MountTurretType.MultiTurretMountType.power);
         }};
     }
 }
