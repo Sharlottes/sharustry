@@ -571,12 +571,11 @@ public class SBlocks {
             requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 180, Items.graphite, 140, Items.silicon, 200, Items.titanium, 180, Items.thorium, 130));
 
             addBaseTurret(SBullets.fossers, Items.plastanium,"Fossor");
-            addMountTurret(miniDrillMount, miniDrillMount, miniMassMount, miniMassMount);
+            addMountTurret(miniDrillMount, miniDrillMount, miniMassMount);
 
             addCustomMountLocation(new Float[]{
                     -7f, -8f,
                     7f, -8f,
-                    0f, 0f,
                     0f, 0f
             });
 

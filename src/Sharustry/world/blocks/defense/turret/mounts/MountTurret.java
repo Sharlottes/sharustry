@@ -195,7 +195,6 @@ public class MountTurret<T extends MountTurretType> {
         Draw.z(Layer.turret + 1);
         Draw.color(build.team.color, fade);
         Draw.rect(type.turrets[3], loc[2], loc[3], rotation - 90);
-        Draw.reset();
     }
 
     public void drawConfigure() { }
