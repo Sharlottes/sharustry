@@ -1,5 +1,7 @@
 package Sharustry.world.blocks.defense.turret;
 
+import Sharustry.world.blocks.defense.turret.mounts.ItemMountTurretType;
+import Sharustry.world.blocks.defense.turret.mounts.MountTurret;
 import mindustry.entities.bullet.BulletType;
 import mindustry.type.Item;
 
@@ -11,7 +13,7 @@ public class ItemEntry {
         this.amount = amount;
     }
 
-    public BulletType types(MountTurret mount){
+    public BulletType types(ItemMountTurretType.ItemMountTurret mount){
         return mount.type.mountAmmoType.get(item);
     }
 }

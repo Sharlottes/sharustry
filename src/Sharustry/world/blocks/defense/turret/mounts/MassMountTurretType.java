@@ -2,31 +2,46 @@ package Sharustry.world.blocks.defense.turret.mounts;
 
 import Sharustry.content.SBullets;
 import Sharustry.world.blocks.defense.turret.DriverBulletData;
-import Sharustry.world.blocks.defense.turret.MountTurret;
 import Sharustry.world.blocks.defense.turret.MultiTurret;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
+import arc.struct.IntSeq;
+import arc.struct.OrderedSet;
 import arc.util.Time;
 import arc.util.Tmp;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import arc.util.pooling.Pools;
+import mindustry.content.Fx;
 import mindustry.entities.Effect;
 import mindustry.gen.Building;
+import mindustry.gen.Bullet;
+import mindustry.graphics.Drawf;
 import mindustry.graphics.Pal;
+import mindustry.world.Tile;
 import mindustry.world.blocks.distribution.MassDriver;
 
 import static mindustry.Vars.*;
 import static mindustry.Vars.content;
 
 public class MassMountTurretType extends MountTurretType {
+    public int minDistribute = 10;
+    public int maxDistribute = 300;
+    public float translation = 7f;
+    public float knockback = 4f;
+    public float bulletSpeed = 5.5f;
+    public float bulletLifetime = 200f;
+    public Effect receiveEffect = Fx.mineBig;
     public MassMountTurretType(String name) {
         super(name);
     }
-
+    @Override
+    public MountTurret create(MultiTurret block, MultiTurret.MultiTurretBuild build, int index, float x, float y) {
+        return new MassMountTurret(this, block, build, index, x, y);
+    }
     @Override
     public void drawPlace(MultiTurret block, int mount, int x, int y, int rotation, boolean valid) {
         super.drawPlace(block, mount, x, y, rotation, valid);
@@ -52,26 +67,122 @@ public class MassMountTurretType extends MountTurretType {
         Draw.reset();
     }
 
-    public class MassMountTurret extends MountTurret {
-        public MassMountTurret(MountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i, float x, float y) {
+    public class MassMountTurret extends MountTurret<MassMountTurretType> {
+        public MassDriver.DriverState massState = MassDriver.DriverState.idle;
+        public OrderedSet<Tile> waitingShooters = new OrderedSet<>();
+        public int link = -1;
+        public int linkIndex = mountIndex;
+
+        public MassMountTurret(MassMountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i, float x, float y) {
             super(type, block, build, i, x, y);
         }
 
         @Override
+        public boolean onConfigureTileTapped(Building other) {
+            if(link == other.pos()) {
+                build.configure(IntSeq.with(mountIndex, -1));
+                return false;
+            }
 
-        public void updateTile(MultiTurret.MultiTurretBuild build) {
+            if(build.linkedMount != this) return true;
+
+            if(build == other){
+                build.configure(IntSeq.with(mountIndex, -1));
+                return false;
+            }
+            else if(other instanceof MultiTurret.MultiTurretBuild turret && turret.hasMass()
+                    && other.dst(build.tile) <= type.range && other.team == build.team){
+                build.configure(IntSeq.with(mountIndex, other.pos()));
+                return false;
+            }
+            return true;
+        }
+
+        Tile currentShooter(){
+            return waitingShooters.isEmpty() ? null : waitingShooters.first();
+        }
+
+        boolean shooterValid(Tile other){
+            if(other == null) return true;
+            return other.build instanceof MultiTurret.MultiTurretBuild turret
+                    && ((MassMountTurret) turret.mounts.get(linkIndex)).link == build.tile.pos()
+                    && build.tile.dst(other) <= type.range;
+        }
+
+        boolean linkValid(){
+            if(link == -1) return false;
+
             Building link = world.build(this.link);
-            boolean hasLink = linkValid(build);
-            float[] loc = mountLocations(build);
+            return (link.block instanceof MultiTurret turret
+                    && turret.basicMounts.size - 1 >= mountIndex
+                    && turret.basicMounts.get(linkIndex) instanceof MassMountTurretType)
+                    && link.team == build.team && build.within(link, type.range);
+        }
+
+        @Override
+        public void handlePayload(Bullet bullet, DriverBulletData data) {
+            int totalItems = build.items.total();
+
+            //add all the items possible
+            for(int i = 0; i < data.items.length; i++){
+                int maxAdd = Math.min(data.items[i], block.itemCapacity * 2 - totalItems);
+                build.items.add(content.item(i), maxAdd);
+                data.items[i] -= maxAdd;
+                totalItems += maxAdd;
+
+                if(totalItems >= block.itemCapacity * 2){
+                    break;
+                }
+            }
+
+            Effect.shake(type.shake, type.shake, build);
+            type.receiveEffect.at(bullet);
+
+            reloadCounter = 0f;
+            bullet.remove();
+        }
+
+        @Override
+        public void drawConfigure() {
+            if(build.linkedMount != this && build.linkedMount != null) return;
+
+            float[] loc = mountLocations();
+            float sin = Mathf.absin(Time.time, 6 / 2f, 1f);
+
+            Draw.color(Pal.accent);
+            Lines.stroke(1f);
+            Drawf.circles(loc[0], loc[1], (build.tile.block().size  / 2f/ 2f + 1) * tilesize + sin - 2f, Pal.accent);
+
+            for(Tile shooter : waitingShooters){
+                Drawf.circles(shooter.drawx(), shooter.drawy(), (build.tile.block().size / 2f / 2f + 1) * tilesize + sin - 2f, Pal.place);
+                Drawf.arrow(shooter.drawx(), shooter.drawy(), loc[0], loc[1], block.size / 2f * tilesize + sin, 4f + sin, Pal.place);
+            }
+
+            if(linkValid()){
+                Building target = world.build(link);
+                Drawf.circles(target.x, target.y, (target.block().size / 2f / 2f + 1) * tilesize + sin - 2f, Pal.place);
+                Drawf.arrow(loc[0], loc[1], target.x, target.y, block.size / 2f * tilesize + sin, 4f + sin);
+            }
+
+            Drawf.dashCircle(loc[0], loc[1], type.range, Pal.accent);
+        }
+
+        @Override
+        public void updateTile() {
+            super.updateTile();
+
+            Building link = world.build(this.link);
+            boolean hasLink = linkValid();
+            float[] loc = mountLocations();
 
             if (hasLink) this.link = link.pos();
 
             //reloadCounter regardless of state
-            if (reloadCounter < reload) reloadCounter += build.delta() * getPowerEfficiency(build);
+            if (reloadCounter < reload) reloadCounter += build.delta() * getPowerEfficiency();
 
 
             //cleanup waiting shooters that are not valid
-            if (!shooterValid(build, currentShooter(), i)) {
+            if (!shooterValid(currentShooter())) {
                 waitingShooters.remove(currentShooter());
             }
 
@@ -88,10 +199,10 @@ public class MassMountTurretType extends MountTurretType {
             //dump when idle or accepting
             if (massState == MassDriver.DriverState.idle
                     || massState == MassDriver.DriverState.accepting
-                    || build.mounts.find(m -> m.type instanceof DrillMountTurretType && m.mineTile == null) == null)
+                    || build.mounts.find(m -> m instanceof DrillMountTurretType.DrillMountTurret drill && drill.mineTile == null) == null)
                 build.dump();
             //skip when there's no power
-            if (getPowerEfficiency(build) <= 0.001f) return;
+            if (getPowerEfficiency() <= 0.001f) return;
 
             if (massState == MassDriver.DriverState.accepting) {
                 //if there's nothing shooting at this, bail - OR, items full
@@ -99,7 +210,7 @@ public class MassMountTurretType extends MountTurretType {
                     massState = MassDriver.DriverState.idle;
                     return;
                 }
-                rotation = Mathf.slerpDelta(rotation, build.tile.angleTo(currentShooter()), rotateSpeed * getPowerEfficiency(build));
+                rotation = Mathf.slerpDelta(rotation, build.tile.angleTo(currentShooter()), rotateSpeed * getPowerEfficiency());
 
             } else if (massState == MassDriver.DriverState.shooting) {
                 //if there's nothing to shoot at OR someone wants to shoot at this thing, bail
@@ -112,24 +223,24 @@ public class MassMountTurretType extends MountTurretType {
                         link.block.itemCapacity - link.items.total() >= minDistribute //must have minimum amount of space
                 ) {
                     if (link instanceof MultiTurret.MultiTurretBuild other) {
-                        if (!(((MultiTurret.MultiTurretBuild) link).mounts.get(i).type instanceof MassMountTurretType))
+                        if (!(((MultiTurret.MultiTurretBuild) link).mounts.get(mountIndex).type instanceof MassMountTurretType))
                             linkIndex = ((MultiTurret.MultiTurretBuild) link).mounts.indexOf(((MultiTurret.MultiTurretBuild) link).mounts.copy().filter(m -> m.type instanceof MassMountTurretType).peek());
-
-                        float targetRotation = Angles.angle(mountLocations(build)[0], mountLocations(build)[1], ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild) link))[0], ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild) link))[1]);
-
-                        other.mounts.get(linkIndex).waitingShooters.add(build.tile);
+                        
+                        float targetRotation = Angles.angle(mountLocations()[0], mountLocations()[1], ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex).mountLocations()[0], ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex).mountLocations()[1]);
+                        MassMountTurret linkedMount = (MassMountTurret) other.mounts.get(linkIndex);
+                        linkedMount.waitingShooters.add(build.tile);
 
                         if (reloadCounter >= reload && !charging) {
-                            rotation = Mathf.slerpDelta(rotation, targetRotation, rotateSpeed * getPowerEfficiency(build));
+                            rotation = Mathf.slerpDelta(rotation, targetRotation, rotateSpeed * getPowerEfficiency());
                             //fire when it's the first in the queue and angles are ready.
-                            if (other.mounts.get(linkIndex).currentShooter() == build.tile &&
-                                    other.mounts.get(linkIndex).massState == MassDriver.DriverState.accepting
+                            if (linkedMount.currentShooter() == build.tile &&
+                                    linkedMount.massState == MassDriver.DriverState.accepting
                                     && Angles.near(rotation, targetRotation, 2f)
-                                    && Angles.near(other.mounts.get(linkIndex).rotation, targetRotation + 180f, 2f)) {
+                                    && Angles.near(linkedMount.rotation, targetRotation + 180f, 2f)) {
                                 reloadCounter = 0f;
 
                                 DriverBulletData data = Pools.obtain(DriverBulletData.class, DriverBulletData::new);
-                                data.massMount = i;
+                                data.massMount = mountIndex;
                                 data.from = build;
                                 data.to = other;
                                 data.link = linkIndex;
@@ -142,22 +253,23 @@ public class MassMountTurretType extends MountTurretType {
                                     build.items.remove(content.item(h), maxTransfer);
                                 }
 
-                                float angle = Angles.angle(loc[4], loc[5], other.mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild) link))[4], other.mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild) link))[5]);
+                                float angle = Angles.angle(loc[2], loc[5], linkedMount.mountLocations()[4], linkedMount.mountLocations()[5]);
 
                                 SBullets.mountDriverBolt.create(build, build.team,
-                                        loc[4] + Angles.trnsx(angle, translation), loc[5] + Angles.trnsy(angle, translation),
+                                        loc[2] + Angles.trnsx(angle, translation), loc[5] + Angles.trnsy(angle, translation),
                                         angle, -1f, bulletSpeed, bulletLifetime, data);
 
-                                shootEffect.at(loc[4] + Angles.trnsx(angle, translation), loc[5] + Angles.trnsy(angle, translation), angle);
-                                smokeEffect.at(loc[4] + Angles.trnsx(angle, translation), loc[5] + Angles.trnsy(angle, translation), angle);
-                                Effect.shake(shake, shake, new Vec2(loc[4], loc[5]));
+                                shootEffect.at(loc[2] + Angles.trnsx(angle, translation), loc[5] + Angles.trnsy(angle, translation), angle);
+                                smokeEffect.at(loc[2] + Angles.trnsx(angle, translation), loc[5] + Angles.trnsy(angle, translation), angle);
+                                Effect.shake(shake, shake, new Vec2(loc[2], loc[5]));
                                 shootSound.at(build.tile, Mathf.random(0.9f, 1.1f));
 
-                                float timeToArrive = Math.min(bulletLifetime, Mathf.dst(loc[4], loc[5], other.mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild) link))[4], other.mounts.get(linkIndex).mountLocations(((MultiTurret.MultiTurretBuild) link))[5]) / bulletSpeed);
+                                float timeToArrive = Math.min(bulletLifetime, Mathf.dst(loc[2], loc[5], linkedMount.mountLocations()[4], linkedMount.mountLocations()[5]) / bulletSpeed);
                                 Time.run(timeToArrive, () -> {
+                                    MassMountTurret currentLinkedMount = (MassMountTurret) other.mounts.get(linkIndex);
                                     //remove waiting shooters, it's done firing
-                                    other.mounts.get(linkIndex).waitingShooters.remove(build.tile);
-                                    other.mounts.get(linkIndex).massState = MassDriver.DriverState.idle;
+                                    currentLinkedMount.waitingShooters.remove(build.tile);
+                                    currentLinkedMount.massState = MassDriver.DriverState.idle;
                                 });
                                 //driver is immediately idle
                                 massState = MassDriver.DriverState.idle;
@@ -172,7 +284,7 @@ public class MassMountTurretType extends MountTurretType {
         public void write(Writes write) {
             super.write(write);
             write.i(link);
-            write.i(i);
+            write.i(mountIndex);
             write.i(linkIndex);
             write.i(massState.ordinal());
         }
@@ -181,7 +293,7 @@ public class MassMountTurretType extends MountTurretType {
         public void read(Reads read, byte revision) {
             super.read(read, revision);
             link = read.i();
-            i = read.i();
+            mountIndex = read.i();
             linkIndex = read.i();
             massState = MassDriver.DriverState.all[read.i()];
         }

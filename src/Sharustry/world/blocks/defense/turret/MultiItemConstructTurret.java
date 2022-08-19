@@ -36,7 +36,6 @@ public class MultiItemConstructTurret extends MultiConstructTurret {
                 Drawf.shadow(i == -1 ? leftOutline : rightOutline, Tmp.v5.x - (size / 2f), Tmp.v5.y - (size / 2f), rotation - 90);
                 Draw.rect(i == -1 ? leftOutline : rightOutline, Tmp.v5.x, Tmp.v5.y, rotation - 90);
             }
-            Draw.rect(region, Tmp.v4.x, Tmp.v4.y, rotation - 90);
             for(int i : Mathf.signs) {
                 Tmp.v5.set(0, 0);
                 Tmp.v5.trns(rotation, offsetX - recoil, i * offsetY);

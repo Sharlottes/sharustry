@@ -1,9 +1,9 @@
 package Sharustry.world.blocks.defense.turret.mounts;
 
-import Sharustry.world.blocks.defense.turret.MountTurret;
 import Sharustry.world.blocks.defense.turret.MultiTurret;
 import arc.Core;
 import arc.audio.Sound;
+import arc.func.Boolf;
 import arc.func.Func2;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
@@ -11,7 +11,6 @@ import arc.graphics.g2d.Lines;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
-import arc.math.geom.Rect;
 import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
@@ -25,28 +24,23 @@ import mindustry.content.StatusEffects;
 import mindustry.ctype.UnlockableContent;
 import mindustry.entities.*;
 import mindustry.entities.bullet.BulletType;
+import mindustry.entities.pattern.ShootPattern;
 import mindustry.gen.*;
 import mindustry.graphics.Pal;
-import mindustry.type.Item;
-import mindustry.type.Liquid;
-import mindustry.type.StatusEffect;
 import mindustry.world.meta.Stat;
 import mindustry.world.meta.StatUnit;
 
 import static mindustry.Vars.*;
 
 public class MountTurretType {
-    public int shots = 1;
-    public int ammoPerShot = 2;
 
     public float x = 0;
     public float y = 0;
-    public float shootX = 0;
-    public float xRand = 0;
-    public float shootY = 0;
-    public float yRand = 0;
-    public float width = 3;
-    public float height = 3;
+    public ShootPattern shoot = new ShootPattern();
+    public float shootCone = 8;
+    public float shootX = 0, shootY = 0;
+    public float xRand = 0, yRand = 0;
+    public float width = 3, height = 3;
     public float elevation = 1;
 
     public float reload = 30;
@@ -54,33 +48,23 @@ public class MountTurretType {
     public float range = 80;
     public float rotateSpeed = 5;
     public float inaccuracy = 0;
-    public float velocityInaccuracy = 0;
-    public float shootCone = 8;
-
+    public float velocityRnd = 0;
     public float recoilAmount = 1;
-    public float restitution = 0.02f;
     public float cooldown = 0.02f;
-
     public float loopVolume = 1;
-    public float shootShake = 0;
-
+    public float shake = 0;
     public float minRange = 0;
-    public float barrels = 1;
-    public float barrelSpacing = 0;
     public float spread = 0;
-    public float burstSpacing = 0;
-
     public float coolantMultiplier = 1;
-
-    public float powerUse = 0f; //mountType: without item and liquid
-
-    public boolean altEject = true;
-    public boolean ejectRight = true;
+    public float powerUse = 0f;
+    public float soundPitchMin = 0.9f, soundPitchMax = 1.1f;
+    public boolean consumeAmmoOnce = false;
+    public boolean moveWhileCharging = false;
     public boolean sequential = false;
     public boolean extinguish = false; //whether can shoot into fire. == targetFire
-    public boolean targetAir = true;
-    public boolean targetGround = true;
-
+    public boolean targetAir = true, targetGround = true;
+    public Boolf<Unit> unitFilter = u -> true;
+    public Boolf<Building> buildingFilter = b -> !b.block.underBullets;
     public BulletType bullet;
     public Color heatColor = Pal.turretHeat;
 
@@ -89,7 +73,7 @@ public class MountTurretType {
 
     public Sound shootSound = Sounds.pew;
     public Sound loopSound = Sounds.none;
-
+    public Effect ammoUseEffect = Fx.none;
     public Effect shootEffect = Fx.none;
     public Effect smokeEffect = Fx.none;
     public Effect coolEffect = Fx.fuelburn;
@@ -101,71 +85,26 @@ public class MountTurretType {
     public float shootLength = 8;
     public float chargeEffects = 5;
     public float chargeMaxDelay = 48;
+    public float ammoEjectBack = 1f;
     public Effect chargeEffect = Fx.none, chargeBeginEffect = Fx.none;
     public Sound chargeSound = Sounds.none;
     //region end
 
-    //tract region, mountType: tract only
-    public float laserWidth = 0.6f;
-    public float force = 0.3f;
-    public float scaledForce = 0f;
-    public float damage = 0f;
-    public float statusDuration = 300;
-    public float shootSoundVolume = 0.9f;
-
     public Color laserColor = Color.white;
-    public StatusEffect status = StatusEffects.none;
-
-    public TextureRegion tractLaser, tractLaserEnd;
-    //region end
-
-    //point region, mountType: point only
-    public Color colorPoint = Color.white;
-    public Effect beamEffect = Fx.pointBeam;
-    public Effect hitEffect = Fx.pointHit;
-
-    public float bulletDamage = 10f;
-    //region end
-
-    //repair region, mountType: repair only
-    public static final Rect rect = new Rect();
-
-    public float repairRadius = 50f;
-    public float repairSpeed = 0.3f;
-
-    public TextureRegion laser, laserEnd;
-    //region end
-
-    //mass region, mountType: mass only
-    public float translation = 7f;
-    public int minDistribute = 10;
-    public int maxDistribute = 300;
-    public float knockback = 4f;
-    public float bulletSpeed = 5.5f;
-    public float bulletLifetime = 200f;
-    public Effect receiveEffect = Fx.mineBig;
-    public float shake = 3f;
-    //region end
-
-    //drill region, mountType: drill only
-    /** Drill tiers, inclusive */
-    public int minDrillTier = 0, maxDrillTier = 3;
-    public float mineSpeed = 0.75f;
-    public float laserOffset = 4f;
-    //region end
-
-    public boolean healBlock = false;
-    public boolean acceptCooling = false;
-
+    public boolean targetHealing = false;
+    public boolean accurateDelay = true;
+    public boolean linearWarmup = false;
+    public float shootWarmupSpeed = 0.1f;
+    public float minWarmup = 0f;
+    public float laserWidth = 0.6f;
+    public float shootSoundVolume = 0.9f;
     //skill
     public Seq<Integer> skillDelays = new Seq<>();
     public Seq<Func2<Building, MountTurretType, Runnable>> skillSeq = new Seq<>();
 
-    public ObjectMap<Liquid, BulletType> liquidMountAmmoType;
-    public ObjectMap<Item, BulletType> mountAmmoType;
+    public TextureRegion laser, laserEnd;
 
     public TextureRegion[] turrets = new TextureRegion[]{};
-
     public SoundLoop loopSoundLoop;
 
     public MountTurretType(String name) {
@@ -177,6 +116,9 @@ public class MountTurretType {
         this.bullet = bullet;
     }
 
+    public MountTurret<MountTurretType> create(MultiTurret block, MultiTurret.MultiTurretBuild build, int index, float x, float y) {
+        return new MountTurret(this, block, build, index, x, y);
+    }
 
     public void load(){
         //[Sprite, Outline, Heat, Fade Mask]
@@ -187,13 +129,9 @@ public class MountTurretType {
                 Core.atlas.find("shar-" + name + "-mask")
         };
 
-        //for some unknown reason, mounts cannot use @Load annotations...hmm
+        loopSoundLoop = new SoundLoop(loopSound, loopVolume);
         laser = Core.atlas.find("shar-repair-laser");
         laserEnd = Core.atlas.find("shar-repair-laser-end");
-        tractLaser = Core.atlas.find("shar-tlaser");
-        tractLaserEnd = Core.atlas.find("shar-tlaser-end");
-
-        loopSoundLoop = new SoundLoop(loopSound, loopVolume);
     }
 
     public <T1 extends Building, T2 extends MountTurretType> void addSkills(Func2<T1, T2, Runnable> skill, int delay){
@@ -215,7 +153,7 @@ public class MountTurretType {
         rowAdd(table, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed(range / tilesize, 1) + " " + StatUnit.blocks);
         rowAdd(table, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!targetAir ? Core.bundle.get("no") : Core.bundle.get("yes")));
         rowAdd(table, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!targetGround ? Core.bundle.get("no") : Core.bundle.get("yes")));
-        if(reload > 0) rowAdd(table, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reload * shots, 1));
+        if(reload > 0) rowAdd(table, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reload * shoot.shots, 1));
         if(inaccuracy > 0) rowAdd(table, "[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + inaccuracy + " " + StatUnit.degrees.localized());
         if(chargeTime > 0.001f) rowAdd(table, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
     }
@@ -314,8 +252,7 @@ public class MountTurretType {
         Draw.reset();
     }
     public void update(MountTurret mount, MultiTurret.MultiTurretBuild build) {
-        if(mount.isTargetInvalid(build)) return;
-        float[] loc = mount.mountLocations(build);
+        float[] loc = mount.mountLocations();
         boolean canShoot = true;
 
         if(build.isControlled()) { //player behavior
@@ -325,18 +262,18 @@ public class MountTurretType {
             mount.targetPos = build.targetPos;
             canShoot = build.logicShooting;
         }else { //default AI behavior
-            mount.targetPosition(build, mount.target, loc[0], loc[1]);
+            mount.targetPosition(mount.target);
             if(Float.isNaN(mount.rotation)) mount.rotation = 0f;
         }
 
         float targetRot = Angles.angle(loc[0], loc[1], mount.targetPos.x, mount.targetPos.y);
 
-        if(!mount.charging) mount.targetTurn(build, targetRot);
+        if(!mount.charging) mount.turnToTarget(targetRot);
 
         if (Angles.angleDist(mount.rotation, targetRot) < shootCone && canShoot) {
             build.wasShooting = true;
             mount.wasShooting = true;
-            mount.updateShooting(build);
+            mount.updateShooting();
         }
     }
 }

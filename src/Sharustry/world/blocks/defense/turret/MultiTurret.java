@@ -2,8 +2,7 @@ package Sharustry.world.blocks.defense.turret;
 
 import Sharustry.content.STurretMounts;
 import Sharustry.ui.SBar;
-import Sharustry.world.blocks.defense.turret.mounts.MassMountTurretType;
-import Sharustry.world.blocks.defense.turret.mounts.MountTurretType;
+import Sharustry.world.blocks.defense.turret.mounts.*;
 import arc.*;
 import arc.func.Cons;
 import arc.func.Func;
@@ -23,13 +22,11 @@ import mindustry.core.UI;
 import mindustry.ctype.UnlockableContent;
 import mindustry.entities.bullet.*;
 import mindustry.game.EventType;
-import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.LAccess;
 import mindustry.type.*;
 import mindustry.ui.*;
-import mindustry.world.Tile;
 import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
 
@@ -65,14 +62,17 @@ public class MultiTurret extends TemplatedTurret {
         super(name);
         configurable = true;
         config(IntSeq.class, (Building tile, IntSeq index) -> {
-            if(index.size != 2 || !(tile instanceof MultiTurretBuild)) return;
-            ((MultiTurretBuild)tile).mounts.get(index.get(0)).link = index.get(1);
-            ((MultiTurretBuild)tile).mounts.get(index.get(0)).linkIndex = index.get(0);
+            if(index.size != 2 || !(tile instanceof MultiTurretBuild build)) return;
+            MountTurret mount = build.mounts.get(index.get(0));
+            if(mount instanceof MassMountTurretType.MassMountTurret mass) {
+                mass.link = index.get(1);
+                mass.linkIndex = index.get(0);
+            }
         });
 
         config(MountTurret.class, (Building tile, MountTurret point) -> {
-            if(((MultiTurretBuild)tile).linkmount == point) ((MultiTurretBuild)tile).linkmount = null;
-            else ((MultiTurretBuild)tile).linkmount = point;
+            if(((MultiTurretBuild)tile).linkedMount == point) ((MultiTurretBuild)tile).linkedMount = null;
+            else ((MultiTurretBuild)tile).linkedMount = point;
         });
     }
 
@@ -280,9 +280,9 @@ public class MultiTurret extends TemplatedTurret {
     }
 
     public class MultiTurretBuild extends TemplatedTurretBuild {
-        public Seq<Integer> shotcounters = new Seq<>();
+        public Seq<Integer> shotCounters = new Seq<>();
         public Seq<MountTurret> mounts = new Seq<>();
-        public MountTurret linkmount = null;
+        public MountTurret linkedMount = null;
 
         @Override
         public void remove(){
@@ -291,28 +291,22 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         @Override
-        public Building init(Tile tile, Team team, boolean shouldAdd, int rotation) {
-            return super.init(tile, team, shouldAdd, rotation);
-        }
-
-        @Override
         public void created(){
-
             super.created();
-            for(int i = 0; i < skillDelays.size; i++) shotcounters.add(0);
-            for(int i = 0; i < basicMounts.size; i++) mounts.add(new MountTurret(basicMounts.get(i), ((MultiTurret)block), this, i,customMountLocation ? customMountLocationsX.get(i) : basicMounts.get(i).x, customMountLocation ? customMountLocationsY.get(i) : basicMounts.get(i).y));
+
+            for(int i = 0; i < skillDelays.size; i++) shotCounters.add(0);
+            for(int i = 0; i < basicMounts.size; i++) mounts.add(basicMounts.get(i).create(((MultiTurret)block), this, i, customMountLocation ? customMountLocationsX.get(i) : basicMounts.get(i).x, customMountLocation ? customMountLocationsY.get(i) : basicMounts.get(i).y));
         }
 
         public MountTurret addMount(MountTurretType mountType, float x, float y){
-            if(mountType == null) return null;
-            MountTurret mount = new MountTurret(mountType, (MultiTurret)block, this, mounts.size, x, y);
+            MountTurret mount = mountType.create((MultiTurret)block, this, mounts.size, x, y);
 
             mounts.add(mount);
             return mount;
         }
-
+        public float baseReloadSpeed() {return super.baseReloadSpeed();}
         public boolean hasMass(){
-            return mounts.find(m -> m.type instanceof MassMountTurretType) != null;
+            return mounts.contains(m -> m.type instanceof MassMountTurretType);
         }
         @Override
         public void displayConsumption(Table table1){
@@ -347,7 +341,7 @@ public class MultiTurret extends TemplatedTurret {
             table1.table(scene.getStyle(Button.ButtonStyle.class).up, t -> {
                 for(MountTurret mount : mounts) {
                     t.center();
-                    mount.display(t, this);
+                    mount.display(t);
                 }
             });
         }
@@ -386,9 +380,9 @@ public class MultiTurret extends TemplatedTurret {
             for(int i = 0; i < skillDelays.size; i++) {
                 final int j = i;
                 bars.add(new Bar(
-                        () -> Core.bundle.format("bar.shar-skillReload") + shotcounters.get(j) + " / " + skillDelays.get(j),
-                        () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotcounters.get(j) / (skillDelays.get(j) * 2.5f)))),
-                        () -> (shotcounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
+                        () -> Core.bundle.format("bar.shar-skillReload") + shotCounters.get(j) + " / " + skillDelays.get(j),
+                        () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotCounters.get(j) / (skillDelays.get(j) * 2.5f)))),
+                        () -> (shotCounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
                 bars.row();
             }
 
@@ -405,12 +399,12 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void drawSelect() {
             super.drawSelect();
-            for(MountTurret mount : mounts) mount.drawSelect(this);
+            for(MountTurret mount : mounts) mount.drawSelect();
         }
 
         @Override
         public void drawConfigure(){
-            for(MountTurret mount : mounts) mount.drawConfigure(this);
+            for(MountTurret mount : mounts) mount.drawConfigure();
         }
 
         @Override
@@ -457,7 +451,7 @@ public class MultiTurret extends TemplatedTurret {
         public boolean acceptItem(Building source, Item item){
             boolean h = false;
             for(MountTurret mount : mounts) {
-                h = mount.acceptItem(this, item);
+                h = mount.acceptItem(item);
                 if(h) break;
             }
             return ((ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo) && h) || (hasMass() && items.total() < itemCapacity);
@@ -467,7 +461,7 @@ public class MultiTurret extends TemplatedTurret {
         public boolean acceptLiquid(Building source, Liquid liquid){
             boolean h = false;
             for(MountTurret mount : mounts) {
-                h = mount.acceptLiquid(this, liquid);
+                h = mount.acceptLiquid(liquid);
                 if(h) break;
             }
             return h;
@@ -484,20 +478,20 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public BlockStatus status() {
             BlockStatus status = BlockStatus.noInput;
-            for(MountTurret mount : mounts) status = mount.status(this);
+            for(MountTurret mount : mounts) status = mount.status();
             return status;
         }
 
         @Override
         public void draw() {
             super.draw();
-            for(MountTurret mount : mounts) mount.draw(this);
+            for(MountTurret mount : mounts) mount.draw();
         }
 
         @Override
         public void control(LAccess type, double p1, double p2, double p3, double p4){
             if(type == LAccess.shoot && !unit.isPlayer()){
-                for(MountTurret mount : mounts) mount.control(this, type, p1, p2);
+                for(MountTurret mount : mounts) mount.control(type, p1, p2);
                 logicControlTime = logicControlCooldown;
                 logicShooting = !Mathf.zero(p3);
             }
@@ -512,7 +506,7 @@ public class MultiTurret extends TemplatedTurret {
                 logicShooting = !Mathf.zero(p2);
 
                 if(p1 instanceof Posc) {
-                    for(MountTurret mount : mounts) mount.control(this, type, p1);
+                    for(MountTurret mount : mounts) mount.control(type, p1);
                 }
             }
 
@@ -522,34 +516,21 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void update() {
             super.update();
-            for(MountTurret mount : mounts) mount.update(this);
+            for(MountTurret mount : mounts) mount.update();
         }
 
-        public float __heat;
         @Override
         public void updateTile() {
             //set block's ammo
             unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);
-            for(MountTurret mount : mounts) mount.updateAmmo(this);
-
             super.updateTile();
-
-            for(MountTurret mount : mounts) mount.updateTimer(this);
-
-            //get targets
-            __heat -= delta();
-            if(__heat <= 0.001){
-                for(MountTurret mount : mounts) mount.updateTarget(this);
-                __heat = 16;
-            }
-
-            for(MountTurret mount : mounts) mount.updateTile(this);
+            for(MountTurret mount : mounts) mount.updateTile();
         }
 
         public void handlePayload(Bullet bullet, DriverBulletData data){
             if(!hasMass()) return;
 
-            for(MountTurret mount : mounts) mount.handlePayload(this, bullet, data);
+            for(MountTurret mount : mounts) mount.handlePayload(bullet, data);
         }
 
         @Override
@@ -561,58 +542,54 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public Object config(){
             for(int i = 0; i < mounts.size; i++){
-                if(mounts.get(i).type instanceof MassMountTurretType) return ObjectMap.of(i, mounts.get(i).link);
+                if(mounts.get(i) instanceof MassMountTurretType.MassMountTurret mass)
+                    return ObjectMap.of(i, mass.link);
             }
             return null;
         }
 
         @Override
         public boolean onConfigureBuildTapped(Building other){
+            //TODO: also #every util func - `return mounts.every(mount -> mount.onConfigureTileTapped(other));`
             for(MountTurret mount : mounts){
-                boolean h = mount.onConfigureTileTapped(this, other);
-                if(!h) return false;
+                if(!mount.onConfigureTileTapped(other)) return false;
             }
-
             return true;
         }
 
         @Override
         public boolean shouldTurn(){
-            boolean h = !charging();
+            //TODO: make #every util func - `return !charging() && mounts.every(mount -> mount.shouldTurn());`
+            boolean shouldTurn = true;
             for(MountTurret mount : mounts) {
-                h = mount.shouldTurn();
-                if(!h) break;
+                shouldTurn = mount.shouldTurn();
+                if(!shouldTurn) break;
             }
-            return h;
+            return !charging() && shouldTurn;
         }
 
         @Override
         protected void turnToTarget(float target) {
             super.turnToTarget(target);
 
-            for(MountTurret mount : mounts) mount.turnToTargetBase(this, target);
+            for(MountTurret mount : mounts) mount.turnToTarget(target);
         }
 
         @Override
         protected void updateCooling() {
             super.updateCooling();
 
-            for(MountTurret mount : mounts) mount.updateCoolingBase(this);
+            for(MountTurret mount : mounts) mount.updateCooling();
         }
 
         @Override
         protected void shoot(BulletType type) {
             super.shoot(type);
 
-            doSkill();
-        }
-
-
-        public void doSkill(){
             for(int i = 0; i < skillDelays.size; i++) {
-                shotcounters.set(i, shotcounters.get(i) + 1);
-                if(Objects.equals(shotcounters.get(i), skillDelays.get(i))) {
-                    shotcounters.set(i, 0);
+                shotCounters.set(i, shotCounters.get(i) + 1);
+                if(Objects.equals(shotCounters.get(i), skillDelays.get(i))) {
+                    shotCounters.set(i, 0);
                     skillSeq.get(i).get(this).run();
                 }
             }
@@ -623,7 +600,7 @@ public class MultiTurret extends TemplatedTurret {
             super.write(write);
 
             for(int i = 0; i < skillDelays.size; i++)
-                write.i(shotcounters.get(i));
+                write.i(shotCounters.get(i));
             write.i(mounts.size);
             for(int i = 0; i < basicMounts.size; i++) mounts.get(i).write(write);
             for(int i = basicMounts.size; i < mounts.size; i++){
@@ -637,15 +614,14 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void read(Reads read, byte revision){
             super.read(read, revision);
-            for(int i = 0; i < skillDelays.size; i++) shotcounters.set(i, read.i());
+            for(int i = 0; i < skillDelays.size; i++) shotCounters.set(i, read.i());
             int amount = read.i();
             for(int i = 0; i < basicMounts.size; i++) mounts.get(i).read(read, revision);
             for(int i = 0; i < amount - basicMounts.size; i++) {
                 MountTurretType type = STurretMounts.mounttypes.get(read.i());
                 float x = read.f();
                 float y = read.f();
-                MountTurret mount = addMount(type, x, y);
-                mount.read(read, revision);
+                if(type != null) addMount(type, x, y).read(read, revision);
             }
         }
     }

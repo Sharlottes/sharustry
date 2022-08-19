@@ -1,6 +1,5 @@
 package Sharustry.world.blocks.defense.turret.mounts;
 
-import Sharustry.world.blocks.defense.turret.MountTurret;
 import Sharustry.world.blocks.defense.turret.MultiTurret;
 import arc.graphics.g2d.TextureRegion;
 import arc.struct.ObjectMap;
@@ -17,7 +16,10 @@ public class PowerMountTurretType extends MountTurretType {
     public PowerMountTurretType(String name, BulletType bullet) {
         super(name, bullet);
     }
-
+    @Override
+    public MountTurret create(MultiTurret block, MultiTurret.MultiTurretBuild build, int index, float x, float y) {
+        return new PowerMountTurret(this, block, build, index, x, y);
+    }
     @Override
     public ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> getStatData() {
         ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
@@ -26,19 +28,9 @@ public class PowerMountTurretType extends MountTurretType {
         return types;
     }
 
-    public class PowerMountTurret extends MountTurret {
-        public PowerMountTurret(MountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i, float x, float y) {
+    public static class PowerMountTurret extends MountTurret<PowerMountTurretType> {
+        public PowerMountTurret(PowerMountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i, float x, float y) {
             super(type, block, build, i, x, y);
-        }
-
-        @Override
-        public BulletType peekAmmo(MultiTurret.MultiTurretBuild build) {
-            return type.bullet;
-        }
-
-        @Override
-        public BulletType useAmmo(MultiTurret.MultiTurretBuild build) {
-            return type.bullet;
         }
     }
 }

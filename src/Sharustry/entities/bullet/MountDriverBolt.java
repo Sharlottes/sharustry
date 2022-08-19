@@ -28,7 +28,7 @@ public class MountDriverBolt extends MassDriverBolt {
             @Override
             public float getX() {
                 if(data.from instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.from).mounts.get(data.link).mountLocations((MultiTurret.MultiTurretBuild)data.from)[0];
+                    return ((MultiTurret.MultiTurretBuild)data.from).mounts.get(data.link).mountLocations()[0];
 
                 return 0;
             }
@@ -36,7 +36,7 @@ public class MountDriverBolt extends MassDriverBolt {
             @Override
             public float getY() {
                 if(data.from instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.from).mounts.get(data.link).mountLocations((MultiTurret.MultiTurretBuild)data.from)[1];
+                    return ((MultiTurret.MultiTurretBuild)data.from).mounts.get(data.link).mountLocations()[1];
 
                 return 0;
             }
@@ -46,7 +46,7 @@ public class MountDriverBolt extends MassDriverBolt {
             @Override
             public float getX() {
                 if(data.to instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.to).mounts.get(data.link).mountLocations((MultiTurret.MultiTurretBuild)data.to)[0];
+                    return ((MultiTurret.MultiTurretBuild)data.to).mounts.get(data.link).mountLocations()[0];
 
                 return 0;
             }
@@ -54,7 +54,7 @@ public class MountDriverBolt extends MassDriverBolt {
             @Override
             public float getY() {
                 if(data.to instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.to).mounts.get(data.link).mountLocations((MultiTurret.MultiTurretBuild)data.to)[1];
+                    return ((MultiTurret.MultiTurretBuild)data.to).mounts.get(data.link).mountLocations()[1];
 
                 return 0;
             }

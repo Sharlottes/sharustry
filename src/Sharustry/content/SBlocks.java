@@ -48,11 +48,7 @@ public class SBlocks {
             //defense
             shieldWall, explodeMine,
             //drill
-            adaptDrill, multiDrill,
-            //crafterator
-            //multi,
-            //armed core
-            armedFoundation, armedNucleus;
+            adaptDrill, multiDrill;
 
     public static void load(){
         variableProcessor = new VariableLogicBlock("variable-processor"){{

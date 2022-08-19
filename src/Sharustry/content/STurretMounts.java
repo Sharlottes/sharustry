@@ -4,6 +4,7 @@ import arc.graphics.Color;
 import arc.struct.Seq;
 import mindustry.content.*;
 import mindustry.entities.bullet.*;
+import mindustry.gen.Bullet;
 import mindustry.gen.Sounds;
 import Sharustry.world.blocks.defense.turret.mounts.*;
 import mindustry.graphics.Pal;
@@ -91,7 +92,6 @@ public class STurretMounts {
             collidesAir = false;
             length = 173f;
         }}){{
-            ammoPerShot = 5;
             x = 2.75f;
             y = 2.75f;
             shootY = 13/4f;
@@ -123,7 +123,6 @@ public class STurretMounts {
             collidesAir = false;
             length = 173f;
         }}){{
-            ammoPerShot = 5;
             x = 2.75f;
             y = 2.75f;
             shootY = 13/4f;
@@ -163,18 +162,17 @@ public class STurretMounts {
             weaveScale = 6f;
             weaveMag = 1f;
         }}){{
-            healBlock = true;
+            targetHealing = true;
             title = "HealMissileRight";
             reload = 40f;
-            shots = 3;
+            shoot.shotDelay = 8.5f;
+            shoot.shots = 3;
             inaccuracy = 5f;
             shootSound = Sounds.missile;
 
             recoilAmount = 2f;
             heatColor = Pal.turretHeat;
             powerUse = 2f;
-
-            barrels = 5;
         }};
 
         healMissileMountL = new PowerMountTurretType("healMissileML", new MissileBulletType(3.5f, 15){{
@@ -196,19 +194,17 @@ public class STurretMounts {
             weaveMag = 1f;
         }}){{
 
-            healBlock = true;
+            targetHealing = true;
             title = "HealMissileLeft";
             reload = 40f;
-            shots = 3;
+            shoot.shotDelay = 5f;
+            shoot.shots = 3;
             inaccuracy = 5f;
             shootSound = Sounds.missile;
 
             recoilAmount = 2f;
             heatColor = Pal.turretHeat;
             powerUse = 2f;
-
-            barrels = 5;
-
         }};
 
         healBeamMountL = new PowerMountTurretType("healBeamM2L", new LaserBoltBulletType(6.2f, 20){{
@@ -229,12 +225,13 @@ public class STurretMounts {
             fragBullets = 2;
             fragVelocityMin = 0.75f;
         }}){{
-            healBlock = true;
+            targetHealing = true;
             title = "HealBeamLeft";
 
             shootCone = 40f;
-            shots = 5;
-            burstSpacing = 6.5f;
+            shoot.shotDelay = 8f;
+            inaccuracy = 5f;
+            shoot.shots = 3;
             range = 15 * 8f;
             shootSound = Sounds.lasershoot;
             reload = 85f;
@@ -261,12 +258,13 @@ public class STurretMounts {
             fragBullets = 2;
             fragVelocityMin = 0.75f;
         }}){{
-            healBlock = true;
+            targetHealing = true;
             title = "HealBeamRight";
 
             shootCone = 40f;
-            shots = 5;
-            burstSpacing = 6.5f;
+            shoot.shotDelay = 8f;
+            inaccuracy = 5f;
+            shoot.shots = 3;
             range = 15 * 8f;
             shootSound = Sounds.lasershoot;
             reload = 85f;
@@ -281,15 +279,22 @@ public class STurretMounts {
             collidesTeam = true;
             backColor = Pal.heal;
             frontColor = Color.white;
-        }}){{
-            healBlock = true;
+        }
+
+            @Override
+            public void update(Bullet b) {
+                super.update(b);
+                //Log.info("but actaully it's on "+ b.x + ", " + b.y);
+            }
+        }){{
+            targetHealing = true;
             title = "HealBeam";
 
             x = -4f;
             y = -4.75f;
             shootCone = 40f;
-            shots = 3;
-            burstSpacing = 5;
+            shoot.shotDelay = 7f;
+            shoot.shots = 3;
             range = 10 * 8f;
             shootSound = Sounds.lasershoot;
             reload = 105f;
@@ -346,11 +351,10 @@ public class STurretMounts {
 
         laserMount = new PowerMountTurretType("laserM", miniAccelMissile){{
             title = "Laser";
-            barrels = 2;
+            shoot.shotDelay = 7f;
+            shoot.shots = 2;
             spread = 4f;
-            shots = 2;
             reload = 20f;
-            restitution = 0.03f;
             range = 100;
             shootCone = 15f;
             inaccuracy = 2f;
@@ -387,7 +391,6 @@ public class STurretMounts {
             collidesAir = true;
             length = 173f;
         }}){{
-            ammoPerShot = 5;
             x = 2.75f;
             y = 2.75f;
             shootY = 13/4f;
@@ -504,7 +507,6 @@ public class STurretMounts {
             title = "Mini Wave";
             shootSound = Sounds.none;
             loopSound = Sounds.spray;
-            ammoPerShot = 5;
             maxAmmo = 100;
             extinguish = true;
         }};
