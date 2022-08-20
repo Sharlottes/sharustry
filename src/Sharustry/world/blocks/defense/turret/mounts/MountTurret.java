@@ -3,10 +3,10 @@ package Sharustry.world.blocks.defense.turret.mounts;
 import Sharustry.world.blocks.defense.turret.*;
 import arc.Core;
 import arc.graphics.*;
-import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.Vec2;
 import arc.scene.ui.layout.Table;
+import arc.struct.Seq;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.Vars;
@@ -19,6 +19,7 @@ import mindustry.graphics.*;
 import mindustry.logic.LAccess;
 import mindustry.type.*;
 import mindustry.ui.*;
+import mindustry.world.blocks.defense.turrets.Turret;
 import mindustry.world.consumers.ConsumeLiquidFilter;
 import mindustry.world.meta.BlockStatus;
 
@@ -29,46 +30,42 @@ public class MountTurret<T extends MountTurretType> {
     public float shotCounter = 0f;
     public float rotation = 90f;
     public float strength = 0f;
-    public float shootWarmup, charge;
     public boolean wasShooting = false;
     public boolean charging = false;
-    public float recoil, heat, reTargetHeat;
-    public float x, y;
-    public int mountIndex;
-    public int totalShots;
     public int totalAmmo;
+    public float curRecoil, heat, reTargetHeat;
+    public float shootWarmup, charge;
+    public int totalShots;
+    public float x, y, xOffset, yOffset;
+    public int mountIndex;
     public int queuedBullets;
     public int skillCounter;
+    Seq<ItemEntry> ammo = new Seq<>();
 
     public MultiTurret block;
     public Posc target;
     public Vec2 targetPos = new Vec2();
+    public Vec2 recoilOffset = new Vec2();
+
     public T type;
     MultiTurret.MultiTurretBuild build;
-    public MountTurret(T type, MultiTurret block, MultiTurret.MultiTurretBuild build, int mountIndex, float x, float y){
+    public MountTurret(T type, MultiTurret block, MultiTurret.MultiTurretBuild build, int mountIndex, float xOffset, float yOffset){
         this.type = type;
         this.block = block;
         this.build = build;
         this.mountIndex = mountIndex;
-        this.x = x;
-        this.y = y;
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
+        this.x = build.x + xOffset;
+        this.y = build.y + yOffset;
     }
 
     public float getPowerEfficiency(){
         return Mathf.clamp(build.power.graph.getPowerBalance()/type.powerUse, 0, 1);
     }
 
-    public float[] mountLocations(){
-        Tmp.v1.trns(build.rotation - 90, x, y);
-        Tmp.v1.add(build.x, build.y);
-        Tmp.v2.trns(rotation, -(recoil+build.curRecoil));
-
-        float x = Tmp.v1.x;
-        float y = Tmp.v1.y;
-        float rX = x + Tmp.v2.x;
-        float rY = y + Tmp.v2.y;
-
-        return new float[]{x, y, rX, rY};
+    public Vec2 getMountLocation(){
+        return new Vec2(x, y);
     }
 
     public BlockStatus status() {
@@ -165,46 +162,29 @@ public class MountTurret<T extends MountTurretType> {
             targetPos.set(pos);
         }
     }
+    public float progress(){
+        return Mathf.clamp(reloadCounter / type.reload);
+    }
 
+    public float warmup(){
+        return shootWarmup;
+    }
+    public float drawrot(){
+        return rotation - 90;
+    }
     public void draw() {
-        float[] loc = mountLocations();
-
-        Drawf.shadow(type.turrets[1], loc[2] - type.elevation, loc[3] - type.elevation, rotation - 90);
-        Draw.rect(type.turrets[1], loc[2], loc[3], rotation - 90);
-        Draw.rect(type.turrets[0], loc[2], loc[3], rotation - 90);
-
-        if(type.turrets[2] != Core.atlas.find("error")){
-            Draw.color(type.heatColor, Mathf.clamp(heat));
-            Draw.blend(Blending.additive);
-            Draw.rect(type.turrets[2], loc[2], loc[3], rotation - 90);
-            Draw.blend();
-            Draw.color();
-        }
+        type.drawer.draw(this);
     }
-
-    public void drawSelect() {
-        float fade = Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * mountIndex, block.rangeTime * mountIndex + block.fadeTime) - Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * (mountIndex + 1) - block.fadeTime, block.rangeTime * (mountIndex + 1));
-        float[] loc = mountLocations();
-        Lines.stroke(3, Pal.gray);
-        Draw.alpha(fade);
-
-        Lines.dashCircle(loc[0], loc[1], type.range);
-        Lines.stroke(1, build.team.color);
-        Draw.alpha(fade);
-        Lines.dashCircle(loc[0], loc[1], type.range);
-        Draw.z(Layer.turret + 1);
-        Draw.color(build.team.color, fade);
-        Draw.rect(type.turrets[3], loc[2], loc[3], rotation - 90);
-    }
-
     public void drawConfigure() { }
 
     public void handlePayload(Bullet bullet, DriverBulletData data){ }
 
     public boolean onConfigureTileTapped(Building other){ return true; }
     public void update() {
-        if(!Vars.headless && type.loopSound != null)
-            type.loopSoundLoop.update(mountLocations()[2], mountLocations()[3], wasShooting && !build.dead());
+        if(!Vars.headless && type.loopSound != null) {
+            Vec2 vec = getMountLocation();
+            type.loopSoundLoop.update(vec.x, vec.y, wasShooting && !build.dead());
+        }
     }
     public void updateTile() {
         if(block.hasItems) build.unit.ammo((float)build.unit.type().ammoCapacity * totalAmmo /  type.maxAmmo);
@@ -222,9 +202,10 @@ public class MountTurret<T extends MountTurretType> {
 
         wasShooting = false;
 
-        recoil = Mathf.approachDelta(recoil, 0, 1 / type.recoilAmount);
+        curRecoil = Mathf.approachDelta(curRecoil, 0, 1 / type.recoilTime);
         heat = Mathf.approachDelta(heat, 0, 1 / type.cooldown);
         charge = charging() ? Mathf.approachDelta(charge, 1, 1 / type.shoot.firstShotDelay) : 0;
+        recoilOffset.trns(rotation, -Mathf.pow(curRecoil, type.recoilPow) * type.recoil);
         reTargetHeat += Time.delta;
 
         updateReload();
@@ -274,7 +255,7 @@ public class MountTurret<T extends MountTurretType> {
 
 
     protected boolean validateTarget(){
-        return !Units.invalidateTarget(target, canHeal() ? Team.derelict : build.team, build.x + x,build.y +  y) || build.isControlled() || build.logicControlled();
+        return !Units.invalidateTarget(target, canHeal() ? Team.derelict : build.team, x,y) || build.isControlled() || build.logicControlled();
     }
 
     protected boolean canHeal(){
@@ -282,12 +263,12 @@ public class MountTurret<T extends MountTurretType> {
     }
     public void findTarget(){
         if(type.targetAir && !type.targetGround){
-            target = Units.bestEnemy(build.team, build.x + x,build.y + y, type.range, e -> !e.dead() && !e.isGrounded() && type.unitFilter.get(e), type.unitSort);
+            target = Units.bestEnemy(build.team, x,y, type.range, e -> !e.dead() && !e.isGrounded() && type.unitFilter.get(e), type.unitSort);
         }else{
-            target = Units.bestTarget(build.team, build.x + x, build.y + y, type.range, e -> !e.dead() && type.unitFilter.get(e) && (e.isGrounded() || type.targetAir) && (!e.isGrounded() || type.targetGround), b -> type.targetGround && type.buildingFilter.get(b), type.unitSort);
+            target = Units.bestTarget(build.team, x, y, type.range, e -> !e.dead() && type.unitFilter.get(e) && (e.isGrounded() || type.targetAir) && (!e.isGrounded() || type.targetGround), b -> type.targetGround && type.buildingFilter.get(b), type.unitSort);
 
             if(target == null && canHeal()){
-                target = Units.findAllyTile(build.team, build.x + x, build.y + y, type.range, b -> b.damaged() && b != build);
+                target = Units.findAllyTile(build.team, x, y, type.range, b -> b.damaged() && b != build);
             }
         }
     }
@@ -298,18 +279,33 @@ public class MountTurret<T extends MountTurretType> {
     public boolean shouldTurn(){
         return type.moveWhileCharging || !charging();
     }
+    public boolean cheating() {return build.team.rules().cheat;}
 
     public BulletType useAmmo(){
+        if(cheating()) return peekAmmo();
+
+        ItemEntry entry = ammo.peek();
+        entry.amount -= type.ammoPerShot;
+        if(entry.amount <= 0) ammo.pop();
+        totalAmmo -= type.ammoPerShot;
+        totalAmmo = Math.max(totalAmmo, 0);
         return peekAmmo();
     }
 
     public BulletType peekAmmo(){
         return type.bullet;
     }
-
     public boolean hasAmmo(){
-        return peekAmmo() != null;
+        //used for "side-ammo" like gas in some turrets
+        if(!build.canConsume()) return false;
+
+        //skip first entry if it has less than the required amount of ammo
+        if(ammo.size >= 2 && ammo.peek().amount < type.ammoPerShot && ammo.get(ammo.size - 2).amount >= type.ammoPerShot){
+            ammo.swap(ammo.size - 1, ammo.size - 2);
+        }
+        return ammo.size > 0 && ammo.peek().amount >= type.ammoPerShot;
     }
+
     public boolean charging(){
         return queuedBullets > 0 && type.shoot.firstShotDelay > 0;
     }
@@ -330,8 +326,8 @@ public class MountTurret<T extends MountTurretType> {
 
     protected void shoot(BulletType bullet){
         float
-                bulletX = build.x + x + Angles.trnsx(rotation - 90, type.shootX, type.shootY),
-                bulletY = build.y + y + Angles.trnsy(rotation - 90, type.shootX, type.shootY);
+                bulletX = x + Angles.trnsx(rotation - 90, type.shootX, type.shootY),
+                bulletY = y + Angles.trnsy(rotation - 90, type.shootX, type.shootY);
 
         if(type.shoot.firstShotDelay > 0){
             type.chargeSound.at(bulletX, bulletY, Mathf.random(type.soundPitchMin, type.soundPitchMax));
@@ -363,9 +359,9 @@ public class MountTurret<T extends MountTurretType> {
         if(!build.isValid()) return;
 
         int side = Mathf.signs[(int) (shotCounter % 2)];
-        float[] loc = mountLocations();
+        Vec2 vec = getMountLocation();
 
-        type.ejectEffect.at(loc[2], loc[3], rotation * side);
+        type.ejectEffect.at(vec.x, vec.y, rotation * side);
     }
 
     protected void handleBullet(@Nullable Bullet bullet, float offsetX, float offsetY, float angleOffset){
@@ -379,12 +375,12 @@ public class MountTurret<T extends MountTurretType> {
         float
                 xSpread = Mathf.range(type.xRand),
                 ySpread = Mathf.range(type.yRand),
-                bulletX = build.x + x + Angles.trnsx(rotation - 90, type.shootX + xOffset + xSpread, type.shootY + yOffset + ySpread),
-                bulletY = build.y + y + Angles.trnsy(rotation - 90, type.shootX + xOffset + xSpread, type.shootY + yOffset + ySpread),
+                bulletX = build.x + this.xOffset + Angles.trnsx(rotation - 90, type.shootX + xOffset + xSpread, type.shootY + yOffset + ySpread),
+                bulletY = build.y + this.yOffset + Angles.trnsy(rotation - 90, type.shootX + xOffset + xSpread, type.shootY + yOffset + ySpread),
                 shootAngle = rotation + angleOffset + Mathf.range(type.inaccuracy),
                 lifeScl = bullet.scaleLife ? Mathf.clamp(Mathf.dst(bulletX, bulletY, targetPos.x, targetPos.y) / bullet.range, type.minRange / bullet.range, type.range / bullet.range) : 1f;
 
-        Log.info("build: ("  + build.x + ". "+ build.y +"), offset: ("+ x + ", "+ y + "), bullet will be on "+bulletX + ", "+bulletY);
+        //Log.info("build: ("  + build.x + ". "+ build.y +"), offset: ("+ this.xOffset + ", "+ this.yOffset + "), bullet will be on "+bulletX + ", "+bulletY);
         handleBullet(bullet.create(build, build.team, bulletX, bulletY, shootAngle, -1f, (1f - type.velocityRnd) + Mathf.random(type.velocityRnd), lifeScl, null, mover, targetPos.x, targetPos.y), xOffset, yOffset, shootAngle - rotation);
 
         (type.shootEffect == null ? bullet.shootEffect : type.shootEffect).at(bulletX, bulletY, rotation + angleOffset, bullet.hitColor);
@@ -392,8 +388,8 @@ public class MountTurret<T extends MountTurretType> {
         type.shootSound.at(bulletX, bulletY, Mathf.random(type.soundPitchMin, type.soundPitchMax));
 
         type.ammoUseEffect.at(
-                build.x + x - Angles.trnsx(rotation, type.ammoEjectBack),
-                build.y + y - Angles.trnsy(rotation, type.ammoEjectBack),
+                build.x + this.xOffset - Angles.trnsx(rotation, type.ammoEjectBack),
+                build.y + this.yOffset - Angles.trnsy(rotation, type.ammoEjectBack),
                 rotation * Mathf.sign(xOffset)
         );
 
@@ -401,7 +397,7 @@ public class MountTurret<T extends MountTurretType> {
             Effect.shake(type.shake, type.shake, build);
         }
 
-        recoil = 1f;
+        curRecoil = 1f;
         heat = 1f;
 
         if(!type.consumeAmmoOnce){
@@ -417,7 +413,7 @@ public class MountTurret<T extends MountTurretType> {
             reloadCounter += block.coolant.amount * build.edelta() * capacity * block.coolantMultiplier;
 
             if(Mathf.chance(0.06 * block.coolant.amount)){
-                type.coolEffect.at(x + Mathf.range(block.size * tilesize / 2f), y + Mathf.range(block.size * tilesize / 2f));
+                type.coolEffect.at(xOffset + Mathf.range(block.size * tilesize / 2f), yOffset + Mathf.range(block.size * tilesize / 2f));
             }
         }
     }

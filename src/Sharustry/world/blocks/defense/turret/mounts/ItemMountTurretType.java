@@ -24,6 +24,7 @@ import mindustry.ui.Bar;
 import mindustry.ui.ItemImage;
 import mindustry.ui.MultiReqImage;
 import mindustry.ui.ReqImage;
+import mindustry.world.blocks.defense.turrets.ItemTurret;
 
 import static arc.struct.ObjectMap.of;
 import static mindustry.Vars.content;
@@ -31,9 +32,9 @@ import static mindustry.Vars.content;
 public class ItemMountTurretType extends MountTurretType {
     public int ammoPerShot = 2;
     public ObjectMap<Item, BulletType> mountAmmoType;
-    public ItemMountTurretType(String name, BulletType bullet, Object... ammos) {
-        super(name, bullet, ammos);
-        mountAmmoType = OrderedMap.of(ammos);
+    public ItemMountTurretType(String name, BulletType bullet, Object... ammo) {
+        super(name, bullet, ammo);
+        mountAmmoType = OrderedMap.of(ammo);
     }
     @Override
     public MountTurret create(MultiTurret block, MultiTurret.MultiTurretBuild build, int index, float x, float y) {
@@ -56,69 +57,56 @@ public class ItemMountTurretType extends MountTurretType {
     }
 
     public static class ItemMountTurret extends MountTurret<ItemMountTurretType> {
-        Seq<ItemEntry> ammos = new Seq<>();
         public ItemMountTurret(ItemMountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i, float x, float y) {
             super(type, block, build, i, x, y);
         }
 
         @Override
         public void handleItem(Item item) {
-            if(!(
-                (type.mountAmmoType != null && type.mountAmmoType.get(item) != null && totalAmmo + type.mountAmmoType.get(item).ammoMultiplier <= type.maxAmmo)
-                || (block.ammoTypes.get(item) != null && totalAmmo + block.ammoTypes.get(item).ammoMultiplier <= block.maxAmmo)
-            )) return;
-
-            if (item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
+            if(item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
 
             BulletType bullet = type.mountAmmoType.get(item);
             if(bullet == null) return;
-            totalAmmo = (int)(totalAmmo + bullet.ammoMultiplier);
+            totalAmmo += bullet.ammoMultiplier;
 
-            ItemEntry entry = ammos.find(ammo -> ammo.item == item);
-            if(entry != null) {
-                entry.amount += (int)bullet.ammoMultiplier;
-                ammos.swap(mountIndex, ammos.size - 1);
-            } else {
-                ammos.add(new ItemEntry(item, (int)bullet.ammoMultiplier < type.ammoPerShot ? (int)bullet.ammoMultiplier + type.ammoPerShot : (int)bullet.ammoMultiplier));
+            //find ammo entry by type
+            for(int i = 0; i < ammo.size; i++){
+                ItemEntry entry = ammo.get(i);
+
+                //if found, put it to the right
+                if(entry.item == item){
+                    entry.amount += bullet.ammoMultiplier;
+                    ammo.swap(i, ammo.size - 1);
+                    return;
+                }
             }
+
+            //must not be found
+            ammo.add(new ItemEntry(item, (int)bullet.ammoMultiplier));
         }
 
         @Override
         public boolean acceptItem(Item item) {
-            return (build.hasMass() && build.items.total() < block.itemCapacity) || (type.mountAmmoType != null && type.mountAmmoType.get(item) != null && totalAmmo + type.mountAmmoType.get(item).ammoMultiplier <= type.maxAmmo)
-                    || (block.ammoTypes.get(item) != null && totalAmmo + block.ammoTypes.get(item).ammoMultiplier <= block.maxAmmo);
+            return super.acceptItem(item)
+                    || (type.mountAmmoType.get(item) != null && totalAmmo + type.mountAmmoType.get(item).ammoMultiplier <= type.maxAmmo);
         }
 
         @Override
         public int acceptStack(Item item, int amount) {
-            if(type.mountAmmoType != null && type.mountAmmoType.get(item) != null
-                    && totalAmmo + type.mountAmmoType.get(item).ammoMultiplier <= type.maxAmmo)
+            if(type.mountAmmoType.get(item) != null && totalAmmo + type.mountAmmoType.get(item).ammoMultiplier <= type.maxAmmo)
                 return Math.min((int)((type.maxAmmo - totalAmmo) / type.mountAmmoType.get(item).ammoMultiplier), amount);
             return super.acceptStack(item, amount);
         }
 
         @Override
         public BulletType peekAmmo() {
-            return ammos.peek().types(this);
-        }
-
-        @Override
-        public BulletType useAmmo() {
-            if(build.cheating()) return peekAmmo();
-
-            ItemEntry entry = ammos.peek();
-            entry.amount -= type.ammoPerShot;
-            if(entry.amount <= 0) ammos.pop();
-            totalAmmo = Math.max(totalAmmo - type.ammoPerShot, 0);
-
-            ejectEffects();
-            return entry.types(this);
+            return type.mountAmmoType.get(ammo.peek().item);
         }
 
         @Override
         public boolean hasAmmo() {
-            if (ammos.size >= 2 && ammos.peek().amount < type.ammoPerShot) ammos.pop();
-            return ammos.size > 0 && ammos.peek().amount >= type.ammoPerShot;
+            if (ammo.size >= 2 && ammo.peek().amount < type.ammoPerShot) ammo.pop();
+            return ammo.size > 0 && ammo.peek().amount >= type.ammoPerShot;
         }
         @Override
         public void display(Table table) {
@@ -134,7 +122,7 @@ public class ItemMountTurretType extends MountTurretType {
                             new Table(e -> {
                                 e.defaults().growX().height(9).width(42f).padRight(2*8).padTop(8*2f);
                                 e.add(hasAmmo()
-                                        ? new Bar("", ammos.peek().item.color, () -> totalAmmo / type.maxAmmo)
+                                        ? new Bar("", ammo.peek().item.color, () -> totalAmmo / type.maxAmmo)
                                         : new Bar("", new Color(0.1f, 0.1f, 0.1f, 1), () -> 0));
                                 e.pack();
                             }),
@@ -150,7 +138,7 @@ public class ItemMountTurretType extends MountTurretType {
                                 e.pack();
                             }),
                             hasAmmo()
-                                ? new Table(e -> e.add(new ItemImage(ammos.peek().item.fullIcon, totalAmmo)))
+                                ? new Table(e -> e.add(new ItemImage(ammo.peek().item.fullIcon, totalAmmo)))
                                 : new Table(e -> {
                                     MultiReqImage itemReq = new MultiReqImage();
                                     for(Item item : type.mountAmmoType.keys()) itemReq.add(new ReqImage(item.uiIcon, () -> hasAmmo()));
@@ -166,8 +154,8 @@ public class ItemMountTurretType extends MountTurretType {
         public void write(Writes write) {
             super.write(write);
 
-            write.b(ammos.size);
-            for(ItemEntry entry : ammos) {
+            write.b(ammo.size);
+            for(ItemEntry entry : ammo) {
                 write.s(entry.item.id);
                 write.s(entry.amount);
             }
@@ -184,7 +172,7 @@ public class ItemMountTurretType extends MountTurretType {
                 totalAmmo += a;
 
                 if (item != null && type.mountAmmoType != null && type.mountAmmoType.containsKey(item))
-                    ammos.add(new ItemEntry(item, a));
+                    ammo.add(new ItemEntry(item, a));
             }
         }
     }

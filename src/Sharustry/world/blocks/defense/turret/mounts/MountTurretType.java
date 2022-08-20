@@ -11,6 +11,7 @@ import arc.graphics.g2d.Lines;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
+import arc.math.geom.Vec2;
 import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
@@ -33,12 +34,12 @@ import mindustry.world.meta.StatUnit;
 import static mindustry.Vars.*;
 
 public class MountTurretType {
+    public int ammoPerShot = 1;
 
-    public float x = 0;
-    public float y = 0;
+    public float xOffset = 0, yOffset = 0;
     public ShootPattern shoot = new ShootPattern();
     public float shootCone = 8;
-    public float shootX = 0, shootY = 0;
+    public float shootX = 0, shootY = Float.NEGATIVE_INFINITY;
     public float xRand = 0, yRand = 0;
     public float width = 3, height = 3;
     public float elevation = 1;
@@ -49,13 +50,18 @@ public class MountTurretType {
     public float rotateSpeed = 5;
     public float inaccuracy = 0;
     public float velocityRnd = 0;
-    public float recoilAmount = 1;
+    /** Visual amount by which the turret recoils back per shot. */
+    public float recoil = 1f;
+    /** ticks taken for turret to return to starting position in ticks. uses reload time by default  */
+    public float recoilTime = -1f;
+    /** power curve applied to visual recoil */
+    public float recoilPow = 1.8f;
     public float cooldown = 0.02f;
     public float loopVolume = 1;
     public float shake = 0;
     public float minRange = 0;
     public float spread = 0;
-    public float coolantMultiplier = 1;
+    public float cooldownTime = 20f;
     public float powerUse = 0f;
     public float soundPitchMin = 0.9f, soundPitchMax = 1.1f;
     public boolean consumeAmmoOnce = false;
@@ -102,10 +108,10 @@ public class MountTurretType {
     public Seq<Integer> skillDelays = new Seq<>();
     public Seq<Func2<Building, MountTurretType, Runnable>> skillSeq = new Seq<>();
 
-    public TextureRegion laser, laserEnd;
+    public TextureRegion laser, laserEnd, region;
 
-    public TextureRegion[] turrets = new TextureRegion[]{};
     public SoundLoop loopSoundLoop;
+    public DrawMountTurret drawer = new DrawMountTurret();
 
     public MountTurretType(String name) {
         this.name = name;
@@ -120,15 +126,15 @@ public class MountTurretType {
         return new MountTurret(this, block, build, index, x, y);
     }
 
+    public void init() {
+        if(shootY == Float.NEGATIVE_INFINITY) shootY = tilesize / 2f;
+        if(elevation < 0) elevation = 1 / 2f;
+        if(recoilTime < 0f) recoilTime = reload;
+        if(cooldownTime < 0f) cooldownTime = reload;
+    }
     public void load(){
-        //[Sprite, Outline, Heat, Fade Mask]
-        turrets = new TextureRegion[]{
-                Core.atlas.find("shar-" + name + ""),
-                Core.atlas.find("shar-" + name + "-outline"),
-                Core.atlas.find("shar-" + name + "-heat"),
-                Core.atlas.find("shar-" + name + "-mask")
-        };
-
+        region = Core.atlas.find("shar-" + name);
+        drawer.load(this);
         loopSoundLoop = new SoundLoop(loopSound, loopVolume);
         laser = Core.atlas.find("shar-repair-laser");
         laserEnd = Core.atlas.find("shar-repair-laser-end");
@@ -238,21 +244,21 @@ public class MountTurretType {
 
     public void drawPlace(MultiTurret block, int mount, int x, int y, int rotation, boolean valid){
         float fade = Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * mount, block.rangeTime * mount + block.fadeTime) - Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * (mount + 1) - block.fadeTime, block.rangeTime * (mount + 1));
-        float tX = x * tilesize + block.offset + (block.customMountLocation ? block.customMountLocationsX.get(mount) : this.x);
-        float tY = y * tilesize + block.offset + (block.customMountLocation ? block.customMountLocationsY.get(mount) : this.y);
+        float tX = x * tilesize + block.offset + (block.customMountLocation ? block.customgetMountLocationX.get(mount) : this.xOffset);
+        float tY = y * tilesize + block.offset + (block.customMountLocation ? block.customgetMountLocationY.get(mount) : this.yOffset);
 
         Lines.stroke(3, Pal.gray);
         Draw.alpha(fade);
         Lines.dashCircle(tX, tY, range);
-        Lines.stroke(1, player.team().color);
+        Lines.stroke(1, targetHealing ? Pal.heal : player.team().color);
         Draw.alpha(fade);
         Lines.dashCircle(tX, tY, range);
         Draw.color(player.team().color, fade);
-        Draw.rect(turrets[3], tX, tY);
+        Draw.rect(drawer.mask, tX, tY);
         Draw.reset();
     }
     public void update(MountTurret mount, MultiTurret.MultiTurretBuild build) {
-        float[] loc = mount.mountLocations();
+        Vec2 vec = mount.getMountLocation();
         boolean canShoot = true;
 
         if(build.isControlled()) { //player behavior
@@ -266,7 +272,7 @@ public class MountTurretType {
             if(Float.isNaN(mount.rotation)) mount.rotation = 0f;
         }
 
-        float targetRot = Angles.angle(loc[0], loc[1], mount.targetPos.x, mount.targetPos.y);
+        float targetRot = Angles.angle(vec.x, vec.y, mount.targetPos.x, mount.targetPos.y);
 
         if(!mount.charging) mount.turnToTarget(targetRot);
 

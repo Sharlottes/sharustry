@@ -12,8 +12,4 @@ public class ItemEntry {
         this.item = item;
         this.amount = amount;
     }
-
-    public BulletType types(ItemMountTurretType.ItemMountTurret mount){
-        return mount.type.mountAmmoType.get(item);
-    }
 }

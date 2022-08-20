@@ -39,8 +39,8 @@ import static mindustry.Vars.*;
 public class MultiTurret extends TemplatedTurret {
     public float healHealth = 0.4f;
     public boolean customMountLocation = false;
-    public Seq<Float> customMountLocationsX = new Seq<>();
-    public Seq<Float> customMountLocationsY = new Seq<>();
+    public Seq<Float> customgetMountLocationX = new Seq<>();
+    public Seq<Float> customgetMountLocationY = new Seq<>();
     public float rangeTime = 80;
     public float fadeTime = 20;
     public String title;
@@ -109,8 +109,8 @@ public class MultiTurret extends TemplatedTurret {
 
     public void addCustomMountLocation(Float[] xy){
         customMountLocation = true;
-        for(int ix = 0; ix < amount * 2; ix += 2) customMountLocationsX.add(xy[ix]);
-        for(int iy = 1; iy < amount * 2; iy += 2) customMountLocationsY.add(xy[iy]);
+        for(int ix = 0; ix < amount * 2; ix += 2) customgetMountLocationX.add(xy[ix]);
+        for(int iy = 1; iy < amount * 2; iy += 2) customgetMountLocationY.add(xy[iy]);
     }
 
     public <T extends MultiTurretBuild> void addSkills(Func<T, Runnable> skill, int delay, String name){
@@ -295,7 +295,7 @@ public class MultiTurret extends TemplatedTurret {
             super.created();
 
             for(int i = 0; i < skillDelays.size; i++) shotCounters.add(0);
-            for(int i = 0; i < basicMounts.size; i++) mounts.add(basicMounts.get(i).create(((MultiTurret)block), this, i, customMountLocation ? customMountLocationsX.get(i) : basicMounts.get(i).x, customMountLocation ? customMountLocationsY.get(i) : basicMounts.get(i).y));
+            for(int i = 0; i < basicMounts.size; i++) mounts.add(basicMounts.get(i).create(((MultiTurret)block), this, i, customMountLocation ? customgetMountLocationX.get(i) : basicMounts.get(i).xOffset, customMountLocation ? customgetMountLocationY.get(i) : basicMounts.get(i).yOffset));
         }
 
         public MountTurret addMount(MountTurretType mountType, float x, float y){
@@ -399,7 +399,7 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void drawSelect() {
             super.drawSelect();
-            for(MountTurret mount : mounts) mount.drawSelect();
+            for(MountTurret mount : mounts) mount.type.drawer.drawSelect(mount);
         }
 
         @Override
@@ -605,8 +605,8 @@ public class MultiTurret extends TemplatedTurret {
             for(int i = 0; i < basicMounts.size; i++) mounts.get(i).write(write);
             for(int i = basicMounts.size; i < mounts.size; i++){
                 write.i(STurretMounts.mounttypes.indexOf(mounts.get(i).type));
-                write.f(mounts.get(i).x);
-                write.f(mounts.get(i).y);
+                write.f(mounts.get(i).xOffset);
+                write.f(mounts.get(i).yOffset);
                 mounts.get(i).write(write);
             }
         }

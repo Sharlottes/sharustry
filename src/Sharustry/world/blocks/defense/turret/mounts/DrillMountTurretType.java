@@ -3,10 +3,10 @@ package Sharustry.world.blocks.defense.turret.mounts;
 import Sharustry.world.blocks.defense.turret.MultiTurret;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.Lines;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Geometry;
+import arc.math.geom.Vec2;
 import arc.struct.ObjectSet;
 import arc.struct.Seq;
 import arc.util.Nullable;
@@ -16,7 +16,6 @@ import mindustry.content.Fx;
 import mindustry.gen.Building;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
-import mindustry.graphics.Pal;
 import mindustry.input.InputHandler;
 import mindustry.type.Item;
 import mindustry.world.Tile;
@@ -49,8 +48,8 @@ public class DrillMountTurretType extends MountTurretType {
             super(type, block, build, i, x, y);
             ObjectSet<Item> tempItems = new ObjectSet<>();
 
-            float[] loc = mountLocations();
-            Geometry.circle((int) loc[0] / 8, (int)loc[1] / 8, (int)(type.range / tilesize + 0.5f), (cx, cy) -> {
+            Vec2 vec = getMountLocation();
+            Geometry.circle((int) vec.x / 8, (int)vec.y / 8, (int)(type.range / tilesize + 0.5f), (cx, cy) -> {
                 Tile other = world.tile(cx, cy);
                 if(other != null && other.drop() != null){
                     Item drop = other.drop();
@@ -90,8 +89,8 @@ public class DrillMountTurretType extends MountTurretType {
         void mountReFind(int h){
             Item item = proxItems.get(h);
 
-            float[] loc = mountLocations();
-            Geometry.circle((int) loc[0] / 8, (int)loc[1] / 8, (int)(type.range / tilesize + 0.5f), (x, y) -> {
+            Vec2 vec = getMountLocation();
+            Geometry.circle((int) vec.x / 8, (int)vec.y / 8, (int)(type.range / tilesize + 0.5f), (x, y) -> {
                 Tile other = world.tile(x, y);
                 if(other != null && other.drop() != null && other.drop() == item && other.block() == Blocks.air){
                     proxOres.set(h, other);
@@ -141,8 +140,8 @@ public class DrillMountTurretType extends MountTurretType {
 
             reOreHeat -= build.delta();
             reItemHeat -= build.delta();
-            float[] loc = mountLocations();
-            Building core = state.teams.closestCore(loc[2], loc[3], build.team);
+            Vec2 vec = getMountLocation();
+            Building core = state.teams.closestCore(vec.x, vec.y, build.team);
             //target ore
             targetMine(core);
             if (core == null
@@ -185,13 +184,13 @@ public class DrillMountTurretType extends MountTurretType {
             super.draw();
             if(mineTile == null) return;
 
-            float[] loc = mountLocations();
+            Vec2 vec = getMountLocation();
             float focusLen = type.laserOffset / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);
             float swingScl = 12f, swingMag = tilesize / 8f;
             float flashScl = 0.3f;
 
-            float px = loc[2] + Angles.trnsx(rotation, focusLen);
-            float py = loc[3] + Angles.trnsy(rotation, focusLen);
+            float px = vec.x + Angles.trnsx(rotation, focusLen);
+            float py = vec.y + Angles.trnsy(rotation, focusLen);
 
             float ex = mineTile.worldx() + Mathf.sin(Time.time + 48, swingScl, swingMag);
             float ey = mineTile.worldy() + Mathf.sin(Time.time + 48, swingScl + 2f, swingMag);
@@ -207,24 +206,6 @@ public class DrillMountTurretType extends MountTurretType {
             targetItem = null;
             targetID = -1;
             mineTile = null;
-        }
-
-        @Override
-        public void drawSelect(){
-            super.drawSelect();
-            
-            float fade = Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * mountIndex, block.rangeTime * mountIndex + block.fadeTime) - Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * (mountIndex + 1) - block.fadeTime, block.rangeTime * (mountIndex + 1));
-            float[] loc = mountLocations();
-            if(mineTile != null){
-                Lines.dashCircle(loc[0], loc[1], type.range);
-                Lines.stroke(1, build.team.color);
-                Draw.alpha(fade);
-                Lines.dashCircle(loc[0], loc[1], type.range);
-
-                Lines.stroke(1f, Pal.accent);
-                Lines.poly(mineTile.worldx(), mineTile.worldy(), 4, tilesize / 2f * Mathf.sqrt2, Time.time);
-                Draw.alpha(fade);
-            }
         }
     }
 }

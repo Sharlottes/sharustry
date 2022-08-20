@@ -45,8 +45,8 @@ public class MassMountTurretType extends MountTurretType {
     @Override
     public void drawPlace(MultiTurret block, int mount, int x, int y, int rotation, boolean valid) {
         super.drawPlace(block, mount, x, y, rotation, valid);
-        float tX = x * tilesize + block.offset + (block.customMountLocation ? block.customMountLocationsX.get(mount) : this.x);
-        float tY = y * tilesize + block.offset + (block.customMountLocation ? block.customMountLocationsY.get(mount) : this.y);
+        float tX = x * tilesize + block.offset + (block.customMountLocation ? block.customgetMountLocationX.get(mount) : this.xOffset);
+        float tY = y * tilesize + block.offset + (block.customMountLocation ? block.customgetMountLocationY.get(mount) : this.yOffset);
 
         //check if a mass driver is selected while placing this driver
         if(!control.input.config.isShown()) return;
@@ -146,25 +146,25 @@ public class MassMountTurretType extends MountTurretType {
         public void drawConfigure() {
             if(build.linkedMount != this && build.linkedMount != null) return;
 
-            float[] loc = mountLocations();
+            Vec2 vec = getMountLocation();
             float sin = Mathf.absin(Time.time, 6 / 2f, 1f);
 
             Draw.color(Pal.accent);
             Lines.stroke(1f);
-            Drawf.circles(loc[0], loc[1], (build.tile.block().size  / 2f/ 2f + 1) * tilesize + sin - 2f, Pal.accent);
+            Drawf.circles(vec.x, vec.y, (build.tile.block().size  / 2f/ 2f + 1) * tilesize + sin - 2f, Pal.accent);
 
             for(Tile shooter : waitingShooters){
                 Drawf.circles(shooter.drawx(), shooter.drawy(), (build.tile.block().size / 2f / 2f + 1) * tilesize + sin - 2f, Pal.place);
-                Drawf.arrow(shooter.drawx(), shooter.drawy(), loc[0], loc[1], block.size / 2f * tilesize + sin, 4f + sin, Pal.place);
+                Drawf.arrow(shooter.drawx(), shooter.drawy(), vec.x, vec.y, block.size / 2f * tilesize + sin, 4f + sin, Pal.place);
             }
 
             if(linkValid()){
                 Building target = world.build(link);
                 Drawf.circles(target.x, target.y, (target.block().size / 2f / 2f + 1) * tilesize + sin - 2f, Pal.place);
-                Drawf.arrow(loc[0], loc[1], target.x, target.y, block.size / 2f * tilesize + sin, 4f + sin);
+                Drawf.arrow(vec.x, vec.y, target.x, target.y, block.size / 2f * tilesize + sin, 4f + sin);
             }
 
-            Drawf.dashCircle(loc[0], loc[1], type.range, Pal.accent);
+            Drawf.dashCircle(vec.x, vec.y, type.range, Pal.accent);
         }
 
         @Override
@@ -173,7 +173,7 @@ public class MassMountTurretType extends MountTurretType {
 
             Building link = world.build(this.link);
             boolean hasLink = linkValid();
-            float[] loc = mountLocations();
+            Vec2 vec = getMountLocation();
 
             if (hasLink) this.link = link.pos();
 
@@ -225,8 +225,9 @@ public class MassMountTurretType extends MountTurretType {
                     if (link instanceof MultiTurret.MultiTurretBuild other) {
                         if (!(((MultiTurret.MultiTurretBuild) link).mounts.get(mountIndex).type instanceof MassMountTurretType))
                             linkIndex = ((MultiTurret.MultiTurretBuild) link).mounts.indexOf(((MultiTurret.MultiTurretBuild) link).mounts.copy().filter(m -> m.type instanceof MassMountTurretType).peek());
-                        
-                        float targetRotation = Angles.angle(mountLocations()[0], mountLocations()[1], ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex).mountLocations()[0], ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex).mountLocations()[1]);
+
+                        Vec2 lvec = ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex).getMountLocation();
+                        float targetRotation = Angles.angle(vec.x, vec.y, lvec.x, lvec.y);
                         MassMountTurret linkedMount = (MassMountTurret) other.mounts.get(linkIndex);
                         linkedMount.waitingShooters.add(build.tile);
 
@@ -252,19 +253,20 @@ public class MassMountTurretType extends MountTurretType {
                                     totalUsed += maxTransfer;
                                     build.items.remove(content.item(h), maxTransfer);
                                 }
-
-                                float angle = Angles.angle(loc[2], loc[5], linkedMount.mountLocations()[4], linkedMount.mountLocations()[5]);
+                                
+                                Vec2 linkedVec = linkedMount.getMountLocation();
+                                float angle = Angles.angle(vec.x, vec.y, linkedVec.x, linkedVec.y);
 
                                 SBullets.mountDriverBolt.create(build, build.team,
-                                        loc[2] + Angles.trnsx(angle, translation), loc[5] + Angles.trnsy(angle, translation),
+                                        vec.x + Angles.trnsx(angle, translation), vec.y + Angles.trnsy(angle, translation),
                                         angle, -1f, bulletSpeed, bulletLifetime, data);
 
-                                shootEffect.at(loc[2] + Angles.trnsx(angle, translation), loc[5] + Angles.trnsy(angle, translation), angle);
-                                smokeEffect.at(loc[2] + Angles.trnsx(angle, translation), loc[5] + Angles.trnsy(angle, translation), angle);
-                                Effect.shake(shake, shake, new Vec2(loc[2], loc[5]));
+                                shootEffect.at(vec.x + Angles.trnsx(angle, translation), vec.y + Angles.trnsy(angle, translation), angle);
+                                smokeEffect.at(vec.x + Angles.trnsx(angle, translation), vec.y + Angles.trnsy(angle, translation), angle);
+                                Effect.shake(shake, shake, new Vec2(vec.x, vec.y));
                                 shootSound.at(build.tile, Mathf.random(0.9f, 1.1f));
 
-                                float timeToArrive = Math.min(bulletLifetime, Mathf.dst(loc[2], loc[5], linkedMount.mountLocations()[4], linkedMount.mountLocations()[5]) / bulletSpeed);
+                                float timeToArrive = Math.min(bulletLifetime, Mathf.dst(vec.x, vec.y, linkedVec.x, linkedVec.y) / bulletSpeed);
                                 Time.run(timeToArrive, () -> {
                                     MassMountTurret currentLinkedMount = (MassMountTurret) other.mounts.get(linkIndex);
                                     //remove waiting shooters, it's done firing

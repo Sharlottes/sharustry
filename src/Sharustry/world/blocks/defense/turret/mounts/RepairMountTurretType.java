@@ -7,6 +7,7 @@ import arc.graphics.g2d.Lines;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Rect;
+import arc.math.geom.Vec2;
 import arc.scene.ui.layout.Table;
 import arc.util.Time;
 import mindustry.Vars;
@@ -22,7 +23,6 @@ import static mindustry.Vars.tilesize;
 
 public class RepairMountTurretType extends MountTurretType {
     public static final Rect rect = new Rect();
-    public float repairRadius = 50f;
     public float repairSpeed = 0.3f;
     public RepairMountTurretType(String name) {
         super(name);
@@ -35,24 +35,7 @@ public class RepairMountTurretType extends MountTurretType {
     @Override
     public void buildStat(Table table) {
         super.buildStat(table);
-        rowAdd(table, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", repairRadius / Vars.tilesize));
-    }
-
-    @Override
-    public void drawPlace(MultiTurret block, int mount, int x, int y, int rotation, boolean valid){
-        float fade = Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * mount, block.rangeTime * mount + block.fadeTime) - Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * (mount + 1) - block.fadeTime, block.rangeTime * (mount + 1));
-        float tX = x * tilesize + block.offset + (block.customMountLocation ? block.customMountLocationsX.get(mount) : this.x);
-        float tY = y * tilesize + block.offset + (block.customMountLocation ? block.customMountLocationsY.get(mount) : this.y);
-
-        Lines.stroke(3, Pal.gray);
-        Draw.alpha(fade);
-        Lines.dashCircle(tX, tY, range);
-        Lines.stroke(1, Pal.heal);
-        Draw.alpha(fade);
-        Lines.dashCircle(tX, tY, range);
-        Draw.color(player.team().color, fade);
-        Draw.rect(turrets[3], tX, tY);
-        Draw.reset();
+        rowAdd(table, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", range / Vars.tilesize));
     }
 
     public class RepairMountTurret extends MountTurret<RepairMountTurretType> {
@@ -66,12 +49,12 @@ public class RepairMountTurretType extends MountTurretType {
         public void updateTile() {
             super.updateTile();
 
-            float[] loc = mountLocations();
-            repairTarget = Units.closest(build.team, loc[0], loc[1], type.repairRadius, Unit::damaged);
+            Vec2 vec = getMountLocation();
+            repairTarget = Units.closest(build.team, vec.x, vec.y, type.range, Unit::damaged);
             boolean targetIsBeingRepaired = false;
             if(repairTarget != null){
                 if(repairTarget.dead()
-                        || repairTarget.dst(loc[0], loc[1]) - repairTarget.hitSize / 2f > repairRadius
+                        || repairTarget.dst(vec.x, vec.y) - repairTarget.hitSize / 2f > range
                         || repairTarget.health() >= repairTarget.maxHealth()) repairTarget = null;
                 else {
                     repairTarget.heal(type.repairSpeed * Time.delta * strength * getPowerEfficiency());
@@ -89,7 +72,7 @@ public class RepairMountTurretType extends MountTurretType {
             super.draw();
             if(!(repairTarget != null && Angles.angleDist(build.angleTo(repairTarget), rotation) < 30f)) return;
 
-            float[] loc = mountLocations();
+            Vec2 vec = getMountLocation();
             Draw.z(Layer.flyingUnit + 1); //above all units
             float ang = build.angleTo(repairTarget);
             float len = 5f + Mathf.absin(Time.time, 1.1f, 0.5f);
@@ -98,29 +81,12 @@ public class RepairMountTurretType extends MountTurretType {
             float random = Mathf.randomSeedRange(build.id, scl / 2f);
             Draw.color(type.laserColor);
             Drawf.laser(type.laser, type.laserEnd,
-                    loc[2] + Angles.trnsx(ang, len), loc[3] + Angles.trnsy(ang, len),
+                    vec.x + Angles.trnsx(ang, len), vec.y + Angles.trnsy(ang, len),
                     repairTarget.x +
                             Mathf.sin((Time.time + 6 * 8f) * scl / 3, (swingScl + random) * scl, swingMag * scl),
                     repairTarget.y +
                             Mathf.sin((Time.time + 6 * 8f) * scl / 3, ((swingScl + random) + 2f) * scl, swingMag * scl)
                     , strength);
-        }
-
-        @Override
-        public void drawSelect() {
-            float fade = Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * mountIndex, block.rangeTime * mountIndex + block.fadeTime) - Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * (mountIndex + 1) - block.fadeTime, block.rangeTime * (mountIndex + 1));
-            float[] loc = mountLocations();
-            Lines.stroke(3, Pal.gray);
-            Draw.alpha(fade);
-
-            Lines.dashCircle(loc[0], loc[1], type.repairRadius);
-            Lines.stroke(1, Pal.heal );
-            Draw.alpha(fade);
-            Lines.dashCircle(loc[0], loc[1],  type.repairRadius );
-            Draw.z(Layer.turret + 1);
-            Draw.color(build.team.color, fade);
-            Draw.rect(type.turrets[3], loc[2], loc[3], rotation - 90);
-            Draw.reset();
         }
     }
 }

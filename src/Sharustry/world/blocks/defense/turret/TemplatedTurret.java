@@ -138,7 +138,7 @@ public class TemplatedTurret extends Turret {
 
     @Override
     public TextureRegion[] icons(){
-        if(Objects.equals(ammoType, "liquid") && topRegion.found()) return new TextureRegion[]{((DrawTurret) drawer).base, region, topRegion};
+        if(Objects.equals(ammoType, "liquid") && topRegion.found()) return new TextureRegion[]{region, topRegion};
         return super.icons();
     }
 

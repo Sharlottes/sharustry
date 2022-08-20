@@ -8,6 +8,10 @@ import mindustry.mod.Mod;
 
 public class Main extends Mod {
     public Main(){
+        Events.on(ContentInitEvent.class, e -> {
+            for(MountTurretType mount : STurretMounts.mounttypes) mount.init();
+        });
+
         Events.on(ClientLoadEvent.class, e -> {
             for(MountTurretType mount : STurretMounts.mounttypes) mount.load();
         });

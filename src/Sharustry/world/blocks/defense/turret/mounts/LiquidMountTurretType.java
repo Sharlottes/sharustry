@@ -4,6 +4,7 @@ import Sharustry.world.blocks.defense.turret.MultiTurret;
 import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
+import arc.math.geom.Vec2;
 import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
@@ -56,15 +57,15 @@ public class LiquidMountTurretType extends MountTurretType {
 
         @Override
         public void findTarget() {
-            float[] loc = this.mountLocations();
+            Vec2 vec = getMountLocation();
 
             if(type.extinguish && build.liquids.current().canExtinguish()) {
                 int tr = (int) (type.range / tilesize);
                 for(int x = -tr; x <= tr; x++) for(int y = -tr; y <= tr; y++) {
-                    Tile other = world.tileWorld(x + (int)loc[2]/8f, y + (int)loc[3]/8f);
+                    Tile other = world.tileWorld(x + (int)vec.x / 8f, y + (int)vec.y / 8f);
                     //do not extinguish fires on other team blocks
-                    if (other != null && Fires.has(x + (int)loc[2]/8, y + (int)loc[3]/8) && (other.build == null || other.team() == build.team))
-                        target = Fires.get(x + (int)loc[2]/8, y + (int)loc[3]/8);
+                    if (other != null && Fires.has(x + (int)vec.x / 8, y + (int)vec.y /8) && (other.build == null || other.team() == build.team))
+                        target = Fires.get(x + (int)vec.x / 8, y + (int)vec.y / 8);
                 }
             } else {
                 super.findTarget();

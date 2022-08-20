@@ -92,13 +92,13 @@ public class STurretMounts {
             collidesAir = false;
             length = 173f;
         }}){{
-            x = 2.75f;
-            y = 2.75f;
+            xOffset = 2.75f;
+            yOffset = 2.75f;
             shootY = 13/4f;
             range = 9 * 8;
             title = "Electric Laser Left";
 
-            recoilAmount = 2f;
+            recoil = 2f;
             reload = 80f;
             cooldown = 0.03f;
             shootEffect = Fx.lancerLaserShoot;
@@ -123,13 +123,13 @@ public class STurretMounts {
             collidesAir = false;
             length = 173f;
         }}){{
-            x = 2.75f;
-            y = 2.75f;
+            xOffset = 2.75f;
+            yOffset = 2.75f;
             shootY = 13/4f;
             range = 9 * 8;
             title = "Electric Laser Right";
 
-            recoilAmount = 2f;
+            recoil = 2f;
             reload = 80f;
             cooldown = 0.03f;
             shootEffect = Fx.lancerLaserShoot;
@@ -170,7 +170,7 @@ public class STurretMounts {
             inaccuracy = 5f;
             shootSound = Sounds.missile;
 
-            recoilAmount = 2f;
+            recoil = 2f;
             heatColor = Pal.turretHeat;
             powerUse = 2f;
         }};
@@ -202,7 +202,7 @@ public class STurretMounts {
             inaccuracy = 5f;
             shootSound = Sounds.missile;
 
-            recoilAmount = 2f;
+            recoil = 2f;
             heatColor = Pal.turretHeat;
             powerUse = 2f;
         }};
@@ -235,7 +235,7 @@ public class STurretMounts {
             range = 15 * 8f;
             shootSound = Sounds.lasershoot;
             reload = 85f;
-            recoilAmount = 2.5f;
+            recoil = 2.5f;
             heatColor = Pal.turretHeat;
             powerUse = 2.5f;
         }};
@@ -268,7 +268,7 @@ public class STurretMounts {
             range = 15 * 8f;
             shootSound = Sounds.lasershoot;
             reload = 85f;
-            recoilAmount = 2.5f;
+            recoil = 2.5f;
             heatColor = Pal.turretHeat;
             powerUse = 2.5f;
         }};
@@ -290,15 +290,15 @@ public class STurretMounts {
             targetHealing = true;
             title = "HealBeam";
 
-            x = -4f;
-            y = -4.75f;
+            xOffset = -4f;
+            yOffset = -4.75f;
             shootCone = 40f;
             shoot.shotDelay = 7f;
             shoot.shots = 3;
             range = 10 * 8f;
             shootSound = Sounds.lasershoot;
             reload = 105f;
-            recoilAmount = 1.5f;
+            recoil = 1.5f;
             heatColor = Pal.turretHeat;
             powerUse = 1.25f;
         }};
@@ -306,7 +306,7 @@ public class STurretMounts {
         healLaserMount2 = new RepairMountTurretType("healLaserM2"){{
             title = "HealLaser";
             repairSpeed = 0.75f;
-            repairRadius = 75f;
+            range = 75f;
             powerUse = 3f;
             laserColor = Color.valueOf("e8ffd7");
         }};
@@ -314,7 +314,7 @@ public class STurretMounts {
         healLaserMount = new RepairMountTurretType("healLaserM"){{
             title = "HealLaser";
             repairSpeed = 0.5f;
-            repairRadius = 55f;
+            range = 55f;
             powerUse = 1.5f;
             laserColor = Color.valueOf("e8ffd7");
         }};
@@ -322,7 +322,7 @@ public class STurretMounts {
         repairMount = new RepairMountTurretType("miniRepairM"){{
             title = "Mini repairPoint";
             repairSpeed = 0.5f;
-            repairRadius = 65f;
+            range = 65f;
             powerUse = 1f;
             laserColor = Color.valueOf("e8ffd7");
         }};
@@ -368,8 +368,8 @@ public class STurretMounts {
             collidesAir = false;
         }}){{
             title = "Arc";
-            x = -4f;
-            y = -4.75f;
+            xOffset = -4f;
+            yOffset = -4.75f;
             reload = 35f;
             shootCone = 40f;
             rotateSpeed = 8f;
@@ -377,7 +377,7 @@ public class STurretMounts {
             range = 90f;
             shootEffect = Fx.lightningShoot;
             heatColor = Color.red;
-            recoilAmount = 1f;
+            recoil = 1f;
             shootSound = Sounds.spark;
         }};
 
@@ -391,13 +391,13 @@ public class STurretMounts {
             collidesAir = true;
             length = 173f;
         }}){{
-            x = 2.75f;
-            y = 2.75f;
+            xOffset = 2.75f;
+            yOffset = 2.75f;
             shootY = 13/4f;
             range = 9 * 8;
             title = "Uno";
 
-            recoilAmount = 2f;
+            recoil = 2f;
             reload = 80f;
             cooldown = 0.03f;
             shootEffect = Fx.lancerLaserShoot;
@@ -455,10 +455,10 @@ public class STurretMounts {
             targetAir = false;
             reload = 60;
             ammoPerShot = 5;
-            x = -3.75f;
-            y = -4f;
+            xOffset = -3.75f;
+            yOffset = -4f;
             shootY = 18/4f;
-            recoilAmount = 2.5f;
+            recoil = 2.5f;
             range = 18 * 8;
             title = "Mini Hail";
             shootSound = Sounds.bang;
@@ -499,10 +499,10 @@ public class STurretMounts {
             }}
         ){{
             reload = 3;
-            x = 4.25f;
-            y = -3.5f;
+            xOffset = 4.25f;
+            yOffset = -3.5f;
             shootY = 16/4f;
-            recoilAmount = 1;
+            recoil = 1;
             range = 13 * 8;
             title = "Mini Wave";
             shootSound = Sounds.none;
