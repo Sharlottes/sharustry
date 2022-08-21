@@ -64,24 +64,22 @@ public class TractMountTurretType extends MountTurretType {
         @Override
         public void findTarget(){
             super.findTarget();
-            Vec2 vec = getMountLocation();
-            tractTarget = Units.closestEnemy(build.team, vec.x, vec.y, type.range, u -> u.checkTarget(type.targetAir, type.targetGround));
+            tractTarget = Units.closestEnemy(build.team, x, y, type.range, u -> u.checkTarget(type.targetAir, type.targetGround));
         }
 
         @Override
         public void updateTile(){
             super.updateTile();
 
-            Vec2 vec = getMountLocation();
             any = false;
 
             //look at target
             if(tractTarget != null
-                    && tractTarget.within(new Vec2(vec.x, vec.y), range + tractTarget.hitSize/2f)
+                    && tractTarget.within(new Vec2(x, y), range + tractTarget.hitSize/2f)
                     && tractTarget.team() != build.team
                     && tractTarget.checkTarget(targetAir, targetGround)
                     && getPowerEfficiency() > 0.02f){
-                if(!headless) control.sound.loop(shootSound, new Vec2(vec.x, vec.y), shootSoundVolume);
+                if(!headless) control.sound.loop(shootSound, new Vec2(x, y), shootSoundVolume);
 
                 float dest = build.angleTo(tractTarget);
                 turnToTarget(dest);
@@ -97,9 +95,9 @@ public class TractMountTurretType extends MountTurretType {
 
                     any = true;
                     tractTarget.impulseNet(
-                            Tmp.v1.set(new Vec2(vec.x, vec.y))
+                            Tmp.v1.set(new Vec2(x, y))
                                     .sub(tractTarget)
-                                    .limit((force + (1f - tractTarget.dst(new Vec2(vec.x, vec.y)) / range) * scaledForce) * build.delta() * getPowerEfficiency()));
+                                    .limit((force + (1f - tractTarget.dst(new Vec2(x, y)) / range) * scaledForce) * build.delta() * getPowerEfficiency()));
                 }
             }else {
                 strength = Mathf.lerpDelta(strength, 0, 0.1f);
@@ -111,13 +109,12 @@ public class TractMountTurretType extends MountTurretType {
             super.draw();
             if(!any) return;
 
-            Vec2 vec = getMountLocation();
             Draw.z(Layer.bullet);
             float ang = build.angleTo(lastX, lastY);
 
             Draw.mixcol(type.laserColor, Mathf.absin(4f, 0.6f));
             Drawf.laser(type.tractLaser, type.tractLaserEnd,
-                    vec.x + Angles.trnsx(ang, type.shootLength), vec.y + Angles.trnsy(ang, type.shootLength),
+                    x + Angles.trnsx(ang, type.shootLength), y + Angles.trnsy(ang, type.shootLength),
                     lastX, lastY, strength * getPowerEfficiency() * type.laserWidth);
         }
     }

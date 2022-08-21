@@ -5,14 +5,14 @@ import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.geom.Vec2;
-import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.OrderedMap;
+import mindustry.content.Fx;
 import mindustry.ctype.UnlockableContent;
 import mindustry.entities.Fires;
 import mindustry.entities.bullet.BulletType;
-import mindustry.gen.Posc;
+import mindustry.gen.Sounds;
 import mindustry.graphics.Pal;
 import mindustry.type.Liquid;
 import mindustry.ui.Bar;
@@ -25,11 +25,15 @@ import static arc.struct.ObjectMap.of;
 import static mindustry.Vars.*;
 
 public class LiquidMountTurretType extends MountTurretType {
-    public ObjectMap<Liquid, BulletType> liquidMountAmmoType;
+    public ObjectMap<Liquid, BulletType> ammoTypes;
+    public boolean extinguish = false;
 
     public LiquidMountTurretType(String name, BulletType bullet, Object... ammos) {
         super(name, bullet, ammos);
-        liquidMountAmmoType = OrderedMap.of(ammos);
+        ammoTypes = OrderedMap.of(ammos);
+        shootSound = Sounds.none;
+        smokeEffect = Fx.none;
+        shootEffect = Fx.none;
     }
     @Override
     public MountTurret create(MultiTurret block, MultiTurret.MultiTurretBuild build, int index, float x, float y) {
@@ -39,33 +43,31 @@ public class LiquidMountTurretType extends MountTurretType {
     public ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> getStatData() {
         ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
         for(Liquid liquid : content.liquids()) {
-            BulletType bullet = liquidMountAmmoType.get(liquid);
+            BulletType bullet = ammoTypes.get(liquid);
             if(bullet != null) types.put(of(bullet, liquid), liquid.uiIcon);
         }
         return types;
     }
-    public static class LiquidMountTurret extends MountTurret<LiquidMountTurretType> {
+    public class LiquidMountTurret extends MountTurret<LiquidMountTurretType> {
         public LiquidMountTurret(LiquidMountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i, float x, float y) {
             super(type, block, build, i, x, y);
         }
 
         @Override
         public boolean acceptLiquid(Liquid liquid){
-            return type.liquidMountAmmoType != null && type.liquidMountAmmoType.get(liquid) != null && (build.liquids.current() == liquid || (type.liquidMountAmmoType.containsKey(liquid)
-                    && (!type.liquidMountAmmoType.containsKey(build.liquids.current()) || build.liquids.get(build.liquids.current()) <= 1f / type.liquidMountAmmoType.get(build.liquids.current()).ammoMultiplier + 0.001f)));
+            return type.ammoTypes != null && type.ammoTypes.get(liquid) != null && (build.liquids.current() == liquid || (type.ammoTypes.containsKey(liquid)
+                    && (!type.ammoTypes.containsKey(build.liquids.current()) || build.liquids.get(build.liquids.current()) <= 1f / type.ammoTypes.get(build.liquids.current()).ammoMultiplier + 0.001f)));
         }
 
         @Override
         public void findTarget() {
-            Vec2 vec = getMountLocation();
-
             if(type.extinguish && build.liquids.current().canExtinguish()) {
                 int tr = (int) (type.range / tilesize);
                 for(int x = -tr; x <= tr; x++) for(int y = -tr; y <= tr; y++) {
-                    Tile other = world.tileWorld(x + (int)vec.x / 8f, y + (int)vec.y / 8f);
+                    Tile other = world.tileWorld(x + x / 8f, y + y / 8f);
                     //do not extinguish fires on other team blocks
-                    if (other != null && Fires.has(x + (int)vec.x / 8, y + (int)vec.y /8) && (other.build == null || other.team() == build.team))
-                        target = Fires.get(x + (int)vec.x / 8, y + (int)vec.y / 8);
+                    if (other != null && Fires.has(x + x / 8, y + y /8) && (other.build == null || other.team() == build.team))
+                        target = Fires.get(x + x / 8, y + y / 8);
                 }
             } else {
                 super.findTarget();
@@ -74,7 +76,7 @@ public class LiquidMountTurretType extends MountTurretType {
 
         @Override
         public BulletType peekAmmo() {
-            return type.liquidMountAmmoType.get(build.liquids.current());
+            return type.ammoTypes.get(build.liquids.current());
         }
 
         @Override
@@ -85,9 +87,9 @@ public class LiquidMountTurretType extends MountTurretType {
         @Override
         public boolean hasAmmo() {
             return  build.liquids != null
-                    && type.liquidMountAmmoType != null
-                    && type.liquidMountAmmoType.get(build.liquids.current()) != null
-                    && build.liquids.currentAmount() >= 1f / type.liquidMountAmmoType.get(build.liquids.current()).ammoMultiplier;
+                    && type.ammoTypes != null
+                    && type.ammoTypes.get(build.liquids.current()) != null
+                    && build.liquids.currentAmount() >= 1f / type.ammoTypes.get(build.liquids.current()).ammoMultiplier;
         }
 
         @Override
@@ -97,7 +99,7 @@ public class LiquidMountTurretType extends MountTurretType {
             table.stack(
                     new Table(o -> {
                         o.left();
-                        o.add(new Image(Core.atlas.find("shar-" + type.name + "-full"))).size(5*8f);
+                        o.image(Core.atlas.find("shar-" + type.name + "-full")).size(5*8f);
                     }),
                     new Table(h -> {
                         h.stack(
@@ -123,7 +125,7 @@ public class LiquidMountTurretType extends MountTurretType {
                                 ? new Table(e -> e.add(new ItemImage(build.liquids.current().fullIcon, totalAmmo)))
                                 : new Table(e -> {
                                     MultiReqImage liquidReq = new MultiReqImage();
-                                    for(Liquid liquid : type.liquidMountAmmoType.keys()) liquidReq.add(new ReqImage(liquid.uiIcon, () -> hasAmmo()));
+                                    for(Liquid liquid : type.ammoTypes.keys()) liquidReq.add(new ReqImage(liquid.uiIcon, () -> hasAmmo()));
                                     e.add(liquidReq).size(18f);
                                 })
                         ).padTop(2*8).padLeft(2*8);

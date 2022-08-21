@@ -56,7 +56,7 @@ public class MultiConstructTurret extends MultiTurret {
         public void display(Table table) {
             table.table(w -> {
                 w.left();
-                w.add(new Image(this.block.getDisplayIcon(this.tile))).size(32.0F);
+                w.image(this.block.getDisplayIcon(this.tile)).size(32.0F);
                 w.labelWrap(this.block.getDisplayName(this.tile)).left().width(190.0F).padLeft(5.0F);
                 w.table(t -> {
                     t.left();

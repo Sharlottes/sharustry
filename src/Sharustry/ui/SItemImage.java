@@ -13,7 +13,7 @@ public class SItemImage extends Stack{
 
         add(new Table(o -> {
             o.left();
-            o.add(new Image(region)).size(32f);
+            o.image(region).size(32f);
         }));
 
         add(new Table(t -> {
@@ -32,7 +32,7 @@ public class SItemImage extends Stack{
 
         add(new Table(o -> {
             o.left();
-            o.add(new Image(region)).size(32f);
+            o.image(region).size(32f);
         }));
 
         add(new Table(t -> {
@@ -53,7 +53,7 @@ public class SItemImage extends Stack{
 
         add(new Table(o -> {
             o.left();
-            o.add(new Image(stack.item.uiIcon)).size(32f);
+            o.image(stack.item.uiIcon).size(32f);
         }));
 
         if(stack.amount != 0){

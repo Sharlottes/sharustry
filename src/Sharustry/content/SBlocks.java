@@ -161,7 +161,7 @@ public class SBlocks {
                         }));
                         add(new Table(q -> {
                             q.right();
-                            q.add(new Image(Core.atlas.find("shar-over-freezing"))).padLeft(15 * 8f);
+                            q.image(Core.atlas.find("shar-over-freezing")).padLeft(15 * 8f);
                             q.add("[stat]" + SStatusEffects.overFreezing.localizedName +"[]");
                             q.pack();
                         }));

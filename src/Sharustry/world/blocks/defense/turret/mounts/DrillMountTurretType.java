@@ -48,8 +48,7 @@ public class DrillMountTurretType extends MountTurretType {
             super(type, block, build, i, x, y);
             ObjectSet<Item> tempItems = new ObjectSet<>();
 
-            Vec2 vec = getMountLocation();
-            Geometry.circle((int) vec.x / 8, (int)vec.y / 8, (int)(type.range / tilesize + 0.5f), (cx, cy) -> {
+            Geometry.circle((int)this.x / 8, (int)this.y / 8, (int)(type.range / tilesize + 0.5f), (cx, cy) -> {
                 Tile other = world.tile(cx, cy);
                 if(other != null && other.drop() != null){
                     Item drop = other.drop();
@@ -89,8 +88,7 @@ public class DrillMountTurretType extends MountTurretType {
         void mountReFind(int h){
             Item item = proxItems.get(h);
 
-            Vec2 vec = getMountLocation();
-            Geometry.circle((int) vec.x / 8, (int)vec.y / 8, (int)(type.range / tilesize + 0.5f), (x, y) -> {
+            Geometry.circle((int)x / 8, (int)y / 8, (int)(type.range / tilesize + 0.5f), (x, y) -> {
                 Tile other = world.tile(x, y);
                 if(other != null && other.drop() != null && other.drop() == item && other.block() == Blocks.air){
                     proxOres.set(h, other);
@@ -140,8 +138,7 @@ public class DrillMountTurretType extends MountTurretType {
 
             reOreHeat -= build.delta();
             reItemHeat -= build.delta();
-            Vec2 vec = getMountLocation();
-            Building core = state.teams.closestCore(vec.x, vec.y, build.team);
+            Building core = state.teams.closestCore(x, y, build.team);
             //target ore
             targetMine(core);
             if (core == null
@@ -184,13 +181,12 @@ public class DrillMountTurretType extends MountTurretType {
             super.draw();
             if(mineTile == null) return;
 
-            Vec2 vec = getMountLocation();
             float focusLen = type.laserOffset / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);
             float swingScl = 12f, swingMag = tilesize / 8f;
             float flashScl = 0.3f;
 
-            float px = vec.x + Angles.trnsx(rotation, focusLen);
-            float py = vec.y + Angles.trnsy(rotation, focusLen);
+            float px = x + Angles.trnsx(rotation, focusLen);
+            float py = y + Angles.trnsy(rotation, focusLen);
 
             float ex = mineTile.worldx() + Mathf.sin(Time.time + 48, swingScl, swingMag);
             float ey = mineTile.worldy() + Mathf.sin(Time.time + 48, swingScl + 2f, swingMag);

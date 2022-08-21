@@ -42,11 +42,10 @@ public class PointMountTurretType extends MountTurretType {
         public void updateTile() {
             super.updateTile();
 
-            Vec2 vec = getMountLocation();
-            pointTarget = Groups.bullet.intersect(vec.x - type.range, vec.y - type.range, type.range * 2, type.range * 2).min(b -> b.team != build.team && b.type().hittable, b -> b.dst2(new Vec2(vec.x, vec.y)));
+            pointTarget = Groups.bullet.intersect(x - type.range, y - type.range, type.range * 2, type.range * 2).min(b -> b.team != build.team && b.type().hittable, b -> b.dst2(new Vec2(x, y)));
 
             if(pointTarget != null
-                    && pointTarget.within(new Vec2(vec.x, vec.y), range)
+                    && pointTarget.within(new Vec2(x, y), range)
                     && pointTarget.team != build.team
                     && pointTarget.type() != null
                     && pointTarget.type().hittable){
@@ -61,10 +60,10 @@ public class PointMountTurretType extends MountTurretType {
 
                     Tmp.v1.trns(rotation, shootLength);
 
-                    beamEffect.at(vec.x + Tmp.v1.x, vec.y + Tmp.v1.y, rotation, colorPoint, pointTarget);
-                    shootEffect.at(vec.x + Tmp.v1.x, vec.y + Tmp.v1.y, rotation, colorPoint);
+                    beamEffect.at(x + Tmp.v1.x, y + Tmp.v1.y, rotation, colorPoint, pointTarget);
+                    shootEffect.at(x + Tmp.v1.x, y + Tmp.v1.y, rotation, colorPoint);
                     hitEffect.at(pointTarget.x, pointTarget.y, colorPoint);
-                    shootSound.at(vec.x + Tmp.v1.x, vec.y + Tmp.v1.y, Mathf.random(0.9f, 1.1f));
+                    shootSound.at(x + Tmp.v1.x, y + Tmp.v1.y, Mathf.random(0.9f, 1.1f));
 
                     reloadCounter = 0f;
                 }

@@ -49,12 +49,11 @@ public class RepairMountTurretType extends MountTurretType {
         public void updateTile() {
             super.updateTile();
 
-            Vec2 vec = getMountLocation();
-            repairTarget = Units.closest(build.team, vec.x, vec.y, type.range, Unit::damaged);
+            repairTarget = Units.closest(build.team, x, y, type.range, Unit::damaged);
             boolean targetIsBeingRepaired = false;
             if(repairTarget != null){
                 if(repairTarget.dead()
-                        || repairTarget.dst(vec.x, vec.y) - repairTarget.hitSize / 2f > range
+                        || repairTarget.dst(x, y) - repairTarget.hitSize / 2f > range
                         || repairTarget.health() >= repairTarget.maxHealth()) repairTarget = null;
                 else {
                     repairTarget.heal(type.repairSpeed * Time.delta * strength * getPowerEfficiency());
@@ -72,7 +71,6 @@ public class RepairMountTurretType extends MountTurretType {
             super.draw();
             if(!(repairTarget != null && Angles.angleDist(build.angleTo(repairTarget), rotation) < 30f)) return;
 
-            Vec2 vec = getMountLocation();
             Draw.z(Layer.flyingUnit + 1); //above all units
             float ang = build.angleTo(repairTarget);
             float len = 5f + Mathf.absin(Time.time, 1.1f, 0.5f);
@@ -81,7 +79,7 @@ public class RepairMountTurretType extends MountTurretType {
             float random = Mathf.randomSeedRange(build.id, scl / 2f);
             Draw.color(type.laserColor);
             Drawf.laser(type.laser, type.laserEnd,
-                    vec.x + Angles.trnsx(ang, len), vec.y + Angles.trnsy(ang, len),
+                    x + Angles.trnsx(ang, len), y + Angles.trnsy(ang, len),
                     repairTarget.x +
                             Mathf.sin((Time.time + 6 * 8f) * scl / 3, (swingScl + random) * scl, swingMag * scl),
                     repairTarget.y +

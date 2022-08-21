@@ -1,5 +1,6 @@
 package Sharustry.world.blocks.defense.turret;
 
+import Sharustry.ui.SItemImage;
 import arc.*;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
@@ -26,7 +27,6 @@ import mindustry.ui.*;
 import mindustry.world.Tile;
 import mindustry.world.blocks.defense.turrets.Turret;
 import mindustry.world.consumers.*;
-import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
 
 import java.util.Objects;
@@ -94,7 +94,7 @@ public class TemplatedTurret extends Turret {
                 MultiReqImage image = new MultiReqImage();
                 content.items().each(
                     i -> filter.get(i) && i.unlockedNow(),
-                    item -> image.add(new ReqImage(new ItemImage(item.uiIcon, 1),
+                    item -> image.add(new ReqImage(new SItemImage(item.uiIcon),
                         () -> tile instanceof TemplatedTurretBuild && !((TemplatedTurretBuild) tile).ammo.isEmpty() && ((ItemEntry) ((TemplatedTurretBuild) tile).ammo.peek()).item == item)
                     )
                 );
