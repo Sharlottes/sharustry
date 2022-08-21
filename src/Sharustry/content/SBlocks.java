@@ -8,6 +8,7 @@ import Sharustry.world.blocks.defense.turret.*;
 import Sharustry.world.blocks.logic.VariableLogicBlock;
 import arc.Core;
 import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.scene.ui.Image;
@@ -16,6 +17,7 @@ import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Structs;
 import arc.util.Time;
+import arc.util.Tmp;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.bullet.*;
 import mindustry.entities.effect.MultiEffect;
@@ -31,6 +33,8 @@ import mindustry.graphics.Trail;
 import mindustry.type.*;
 import mindustry.content.*;
 import mindustry.world.*;
+import mindustry.world.draw.DrawBlock;
+import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
 
 import static Sharustry.content.SBullets.jumbleBullet;
@@ -86,7 +90,7 @@ public class SBlocks {
             shootSound = Sounds.missile;
             hasPower = true;
             targetAir = true;
-            
+
         }};
         */
         sasitil = new GetlingTurret("sasitil") {{
@@ -118,7 +122,7 @@ public class SBlocks {
 
             targetAir = true;
             hasPower = true;
-            
+
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
 
@@ -206,7 +210,7 @@ public class SBlocks {
 
             targetAir = true;
             hasPower = true;
-            
+
             requirements(Category.turret, with(Items.copper, 250, Items.lead, 80, Items.titanium, 40, Items.silicon, 60));
         }};
 
@@ -566,7 +570,7 @@ public class SBlocks {
             shootSound = Sounds.artillery;
         }};
 
-        fossor = new MultiItemConstructTurret("fossor"){{
+        fossor = new MultiConstructTurret("fossor"){{
             configurable = true;
             requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 180, Items.graphite, 140, Items.silicon, 200, Items.titanium, 180, Items.thorium, 130));
 
@@ -579,7 +583,32 @@ public class SBlocks {
                     0f, -4f,
                     0f, 0f
             });
+            drawer = new DrawTurret() {
+                TextureRegion left, leftOutline, right, rightOutline;
+                float offsetX = 1.5f, offsetY = 0;
 
+                @Override
+                public void load(Block block) {
+                    super.load(block);
+
+                    left = Core.atlas.find(name + "-left");
+                    right = Core.atlas.find(name + "-right");
+                    leftOutline = Core.atlas.find(name + "-left" + "-outline");
+                    rightOutline = Core.atlas.find(name + "-right" + "-outline");
+                }
+
+                @Override
+                public void draw(Building build) {
+                    super.draw(build);
+                    for(int i : Mathf.signs) {
+                        Tmp.v5.set(build.x, build.y).trns(build.rotation, offsetX - recoil, i * offsetY);
+                        Drawf.shadow(i == -1 ? leftOutline : rightOutline, Tmp.v5.x - (size / 2f), Tmp.v5.y - (size / 2f), build.drawrot());
+                        Draw.rect(i == -1 ? leftOutline : rightOutline, Tmp.v5.x, Tmp.v5.y, build.drawrot());
+                        Tmp.v5.set(build.x, build.y).trns(build.rotation, offsetX - recoil, i * offsetY);
+                        Draw.rect(i == -1 ? left : right, Tmp.v5.x, Tmp.v5.y, build.drawrot());
+                    }
+                }
+            };
             itemCapacity = 150;
             customMountLocation = true;
             hasLiquids = true;
