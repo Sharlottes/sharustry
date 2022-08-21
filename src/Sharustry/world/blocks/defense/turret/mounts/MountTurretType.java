@@ -81,7 +81,6 @@ public class MountTurretType {
     public boolean targetAir = true, targetGround = true;
     public Boolf<Unit> unitFilter = u -> true;
     public Boolf<Building> buildingFilter = b -> !b.block.underBullets;
-    public BulletType bullet;
     public Color heatColor = Pal.turretHeat;
 
     public String name;
@@ -124,11 +123,6 @@ public class MountTurretType {
 
     public MountTurretType(String name) {
         this.name = name;
-    }
-
-    public MountTurretType(String name, BulletType bullet, Object... ammos){
-        this(name);
-        this.bullet = bullet;
     }
 
     public MountTurret<MountTurretType> create(MultiTurret block, MultiTurret.MultiTurretBuild build, int index, float x, float y) {
@@ -552,12 +546,8 @@ public class MountTurretType {
         }
 
         public BulletType peekAmmo(){
-            return type.bullet;
-        }
+            return ammo.size == 0 ? null : ammo.peek().type();}
         public boolean hasAmmo(){
-            //used for "side-ammo" like gas in some turrets
-            if(!build.canConsume()) return false;
-
             //skip first entry if it has less than the required amount of ammo
             if(ammo.size >= 2 && ammo.peek().amount < type.ammoPerShot && ammo.get(ammo.size - 2).amount >= type.ammoPerShot){
                 ammo.swap(ammo.size - 1, ammo.size - 2);

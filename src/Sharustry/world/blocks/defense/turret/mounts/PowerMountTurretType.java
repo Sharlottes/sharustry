@@ -10,11 +10,13 @@ import mindustry.gen.Icon;
 import static arc.struct.ObjectMap.of;
 
 public class PowerMountTurretType extends MountTurretType {
+    public BulletType shootType;
     public PowerMountTurretType(String name) {
         super(name);
     }
     public PowerMountTurretType(String name, BulletType bullet) {
-        super(name, bullet);
+        super(name);
+        shootType = bullet;
     }
     @Override
     public MountTurret create(MultiTurret block, MultiTurret.MultiTurretBuild build, int index, float x, float y) {
@@ -23,14 +25,28 @@ public class PowerMountTurretType extends MountTurretType {
     @Override
     public ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> getStatData() {
         ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
-        BulletType bullet = this.bullet;
-        if(bullet != null) types.put(of(bullet, null), Icon.power.getRegion());
+        if(shootType != null) types.put(of(shootType, null), Icon.power.getRegion());
         return types;
     }
 
-    public static class PowerMountTurret extends MountTurret<PowerMountTurretType> {
+    public class PowerMountTurret extends MountTurret<PowerMountTurretType> {
         public PowerMountTurret(PowerMountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i, float x, float y) {
             super(type, block, build, i, x, y);
+        }
+
+        @Override
+        public BulletType useAmmo() {
+            return shootType;
+        }
+
+        @Override
+        public boolean hasAmmo() {
+            return true;
+        }
+
+        @Override
+        public BulletType peekAmmo() {
+            return shootType;
         }
     }
 }

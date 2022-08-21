@@ -412,7 +412,7 @@ public class STurretMounts {
             maxAmmo = 30;
         }};
 
-        hailMount = new ItemMountTurretType("hailM", null,
+        hailMount = new ItemMountTurretType("hailM", 
             Items.graphite, new ArtilleryBulletType(3f, 20, "shell"){{
                 hitEffect = Fx.flakExplosion;
                 knockback = 0.8f;
@@ -466,7 +466,7 @@ public class STurretMounts {
             maxAmmo = 50;
         }};
 
-        waveMount = new LiquidMountTurretType("waveM", null,
+        waveMount = new LiquidMountTurretType("waveM", 
             Liquids.water, new LiquidBulletType(){{
                 collidesAir = false;
                 liquid = Liquids.water;

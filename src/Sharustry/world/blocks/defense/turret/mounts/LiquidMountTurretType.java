@@ -9,9 +9,11 @@ import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.OrderedMap;
 import mindustry.content.Fx;
+import mindustry.core.World;
 import mindustry.ctype.UnlockableContent;
 import mindustry.entities.Fires;
 import mindustry.entities.bullet.BulletType;
+import mindustry.gen.Fire;
 import mindustry.gen.Sounds;
 import mindustry.graphics.Pal;
 import mindustry.type.Liquid;
@@ -28,8 +30,8 @@ public class LiquidMountTurretType extends MountTurretType {
     public ObjectMap<Liquid, BulletType> ammoTypes;
     public boolean extinguish = false;
 
-    public LiquidMountTurretType(String name, BulletType bullet, Object... ammos) {
-        super(name, bullet, ammos);
+    public LiquidMountTurretType(String name, Object... ammos) {
+        super(name);
         ammoTypes = OrderedMap.of(ammos);
         shootSound = Sounds.none;
         smokeEffect = Fx.none;
@@ -54,25 +56,43 @@ public class LiquidMountTurretType extends MountTurretType {
         }
 
         @Override
-        public boolean acceptLiquid(Liquid liquid){
-            return type.ammoTypes != null && type.ammoTypes.get(liquid) != null && (build.liquids.current() == liquid || (type.ammoTypes.containsKey(liquid)
-                    && (!type.ammoTypes.containsKey(build.liquids.current()) || build.liquids.get(build.liquids.current()) <= 1f / type.ammoTypes.get(build.liquids.current()).ammoMultiplier + 0.001f)));
+        public void findTarget() {
+            if(type.extinguish && build.liquids.current().canExtinguish()){
+                int tx = World.toTile(x), ty = World.toTile(y);
+                Fire result = null;
+                float mindst = 0f;
+                int tr = (int)(range / tilesize);
+                for(int x = -tr; x <= tr; x++){
+                    for(int y = -tr; y <= tr; y++){
+                        Tile other = world.tile(x + tx, y + ty);
+                        Fire fire = Fires.get(x + tx, y + ty);
+                        float dst = fire == null ? 0 : build.dst2(fire);
+                        //do not extinguish fires on other team blocks
+                        if(other != null && fire != null && Fires.has(other.x, other.y) && dst <= range * range && (result == null || dst < mindst) && (other.build == null || other.team() == build.team)){
+                            result = fire;
+                            mindst = dst;
+                        }
+                    }
+                }
+
+                if(result != null){
+                    target = result;
+                    //don't run standard targeting
+                    return;
+                }
+            }
+
+            super.findTarget();
         }
 
         @Override
-        public void findTarget() {
-            if(type.extinguish && build.liquids.current().canExtinguish()) {
-                int tr = (int) (type.range / tilesize);
-                for(int x = -tr; x <= tr; x++) for(int y = -tr; y <= tr; y++) {
-                    Tile other = world.tileWorld(x + x / 8f, y + y / 8f);
-                    //do not extinguish fires on other team blocks
-                    if (other != null && Fires.has(x + x / 8, y + y /8) && (other.build == null || other.team() == build.team))
-                        target = Fires.get(x + x / 8, y + y / 8);
-                }
-            } else {
-                super.findTarget();
-            }
+        public BulletType useAmmo() {
+            if(cheating()) return ammoTypes.get(build.liquids.current());
+            BulletType type = ammoTypes.get(build.liquids.current());
+            build.liquids.remove(build.liquids.current(), 1f / type.ammoMultiplier);
+            return type;
         }
+
 
         @Override
         public BulletType peekAmmo() {
@@ -80,18 +100,16 @@ public class LiquidMountTurretType extends MountTurretType {
         }
 
         @Override
-        public BulletType useAmmo() {
-            return build.cheating() ? peekAmmo() : super.useAmmo();
+        public boolean hasAmmo() {
+            return type.ammoTypes.get(build.liquids.current()) != null
+                && build.liquids.currentAmount() >= 1f / type.ammoTypes.get(build.liquids.current()).ammoMultiplier;
         }
 
         @Override
-        public boolean hasAmmo() {
-            return  build.liquids != null
-                    && type.ammoTypes != null
-                    && type.ammoTypes.get(build.liquids.current()) != null
-                    && build.liquids.currentAmount() >= 1f / type.ammoTypes.get(build.liquids.current()).ammoMultiplier;
+        public boolean acceptLiquid(Liquid liquid){
+            return type.ammoTypes != null && type.ammoTypes.get(liquid) != null && (build.liquids.current() == liquid || (type.ammoTypes.containsKey(liquid)
+                    && (!type.ammoTypes.containsKey(build.liquids.current()) || build.liquids.get(build.liquids.current()) <= 1f / type.ammoTypes.get(build.liquids.current()).ammoMultiplier + 0.001f)));
         }
-
         @Override
         public void display(Table table){
             if(block.basicMounts.size > 3 && mountIndex % 4 == 0) table.row();

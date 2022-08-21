@@ -77,7 +77,12 @@ public class MultiTurret extends TemplatedTurret {
     }
 
     public void addMountTurret(MountTurretType... mounts){
-            for(MountTurretType mount : mounts) basicMounts.add(mount);
+            for(MountTurretType mount : mounts) {
+                basicMounts.add(mount);
+                if(mount instanceof ItemMountTurretType) hasItems = true;
+                else if(mount instanceof LiquidMountTurretType) hasLiquids = true;
+                else if(consumesPower) hasPower = true;
+            }
 
             this.amount = basicMounts.size;
             this.totalRangeTime = rangeTime * basicMounts.size;
@@ -422,11 +427,11 @@ public class MultiTurret extends TemplatedTurret {
         public void handleItem(Building source, Item item){
             for(MountTurretType.MountTurret mount : mounts) mount.handleItem(item);
 
-            if(ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo) {
+            BulletType type = ammoTypes.get(item);
+            if(ammoTypes.get(item) != null && totalAmmo + type.ammoMultiplier <= maxAmmo) {
                 if(Objects.equals(ammoType, "item")){
                     if(item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
 
-                    BulletType type = ammoTypes.get(item);
                     totalAmmo += type.ammoMultiplier;
 
                     //find ammo entry by type
@@ -454,7 +459,7 @@ public class MultiTurret extends TemplatedTurret {
                 h = mount.acceptItem(item);
                 if(h) break;
             }
-            return ((ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo) && h) || (hasMass() && items.total() < itemCapacity);
+            return (ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo) || h;
         }
 
         @Override

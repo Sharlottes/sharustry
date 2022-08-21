@@ -8,6 +8,7 @@ import arc.graphics.g2d.TextureRegion;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.OrderedMap;
+import arc.util.Log;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.Vars;
@@ -28,8 +29,8 @@ import static mindustry.Vars.content;
 public class ItemMountTurretType extends MountTurretType {
     public int ammoPerShot = 2;
     public ObjectMap<Item, BulletType> ammoTypes;
-    public ItemMountTurretType(String name, BulletType bullet, Object... ammo) {
-        super(name, bullet, ammo);
+    public ItemMountTurretType(String name, Object... ammo) {
+        super(name);
         ammoTypes = OrderedMap.of(ammo);
     }
     @Override
@@ -72,6 +73,7 @@ public class ItemMountTurretType extends MountTurretType {
                 //if found, put it to the right
                 if(entry.item == item){
                     entry.amount += bullet.ammoMultiplier;
+
                     ammo.swap(i, ammo.size - 1);
                     return;
                 }

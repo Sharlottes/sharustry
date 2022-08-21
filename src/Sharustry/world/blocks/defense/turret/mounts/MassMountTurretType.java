@@ -21,6 +21,7 @@ import mindustry.gen.Building;
 import mindustry.gen.Bullet;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Pal;
+import mindustry.type.Item;
 import mindustry.world.Tile;
 import mindustry.world.blocks.distribution.MassDriver;
 
@@ -164,6 +165,11 @@ public class MassMountTurretType extends MountTurretType {
             }
 
             Drawf.dashCircle(x, y, type.range, Pal.accent);
+        }
+
+        @Override
+        public boolean acceptItem(Item item) {
+            return build.items.total() < block.itemCapacity;
         }
 
         @Override
