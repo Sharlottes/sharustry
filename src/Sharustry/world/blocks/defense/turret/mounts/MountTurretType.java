@@ -310,7 +310,7 @@ public class MountTurretType {
         public Vec2 recoilOffset = new Vec2();
 
         public T type;
-        MultiTurret.MultiTurretBuild build;
+        public MultiTurret.MultiTurretBuild build;
         public MountTurret(T type, MultiTurret block, MultiTurret.MultiTurretBuild build, int mountIndex, float xOffset, float yOffset){
             this.type = type;
             this.block = block;
@@ -437,7 +437,6 @@ public class MountTurretType {
 
         public void handlePayload(Bullet bullet, DriverBulletData data){ }
 
-        public boolean onConfigureTileTapped(Building other){ return true; }
         public void update() {
             if(!Vars.headless && type.loopSound != null) {
                 type.loopSoundLoop.update(x, y, wasShooting && !build.dead());

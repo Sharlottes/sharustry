@@ -26,7 +26,7 @@ public class DrawMountTurret {
     public String basePrefix = "";
     /** Overrides the liquid to draw in the liquid region. */
     public @Nullable Liquid liquidDraw;
-    public TextureRegion region, liquid, top, heat, preview, outline, mask;
+    public TextureRegion liquid, top, heat, preview, outline, mask;
 
     public DrawMountTurret(String basePrefix){
         this.basePrefix = basePrefix;

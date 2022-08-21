@@ -9,8 +9,8 @@ import arc.func.Func;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import arc.math.geom.Vec2;
 import arc.scene.ui.Button;
-import arc.scene.ui.Image;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
@@ -32,6 +32,7 @@ import mindustry.world.meta.*;
 
 import java.util.Objects;
 
+import static arc.Core.input;
 import static arc.Core.scene;
 import static arc.struct.ObjectMap.*;
 import static mindustry.Vars.*;
@@ -51,6 +52,7 @@ public class MultiTurret extends TemplatedTurret {
 
     public TextureRegion outline, baseTurret;
 
+    //TODO: why don't just make skill's own class instead?
     public Seq<Integer> skillDelays = new Seq<>();
     public Seq<Func<MultiTurretBuild, Runnable>> skillSeq = new Seq<>();
     public Seq<String> skillNames = new Seq<>();
@@ -69,11 +71,12 @@ public class MultiTurret extends TemplatedTurret {
                 mass.linkIndex = index.get(0);
             }
         });
-
-        config(MountTurretType.MountTurret.class, (Building tile, MountTurretType.MountTurret point) -> {
-            if(((MultiTurretBuild)tile).linkedMount == point) ((MultiTurretBuild)tile).linkedMount = null;
-            else ((MultiTurretBuild)tile).linkedMount = point;
+        /*
+        config(MountTurretType.MountTurret.class, (MultiTurretBuild build, MountTurretType.MountTurret point) -> {
+            if(point.linkedMount == point) point.linkedMount = null;
+            else point.linkedMount = point;
         });
+        */
     }
 
     public void addMountTurret(MountTurretType... mounts){
@@ -81,7 +84,9 @@ public class MultiTurret extends TemplatedTurret {
                 basicMounts.add(mount);
                 if(mount instanceof ItemMountTurretType) hasItems = true;
                 else if(mount instanceof LiquidMountTurretType) hasLiquids = true;
+                else if(mount instanceof MassMountTurretType) configurable = true;
                 else if(consumesPower) hasPower = true;
+
             }
 
             this.amount = basicMounts.size;
@@ -161,7 +166,7 @@ public class MultiTurret extends TemplatedTurret {
         w.row();
         w.add(title).right().top();
         w.row();
-        w.image(baseTurret).size(60).scaling(Scaling.bounded).right().top();
+        w.image(region).size(60).scaling(Scaling.bounded).right().top();
 
         w.table(Tex.underline, h -> {
             h.left().defaults().padRight(3).left();
@@ -287,7 +292,7 @@ public class MultiTurret extends TemplatedTurret {
     public class MultiTurretBuild extends TemplatedTurretBuild {
         public Seq<Integer> shotCounters = new Seq<>();
         public Seq<MountTurretType.MountTurret> mounts = new Seq<>();
-        public MountTurretType.MountTurret linkedMount = null;
+        MassMountTurretType.MassMountTurret selectedMassMount;
 
         @Override
         public void remove(){
@@ -490,7 +495,32 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void draw() {
             super.draw();
+
             for(MountTurretType.MountTurret mount : mounts) mount.draw();
+
+            if(selectedMassMount != null) {
+                Draw.color(team.color);
+                Draw.alpha(Mathf.absin(10, 1));
+                Draw.rect(selectedMassMount.type.drawer.mask, selectedMassMount.x, selectedMassMount.y, selectedMassMount.drawrot());
+                if(world.build(selectedMassMount.link) instanceof MultiTurretBuild multi && multi.mounts.get(selectedMassMount.linkIndex) instanceof MassMountTurretType.MassMountTurret mass && mass.linkValid()) {
+                    Draw.rect(mass.type.drawer.mask, mass.x, mass.y, mass.drawrot());
+                }
+                Vec2 mouse = input.mouseWorld();
+                Building build = world.build((int)mouse.x/8, (int)mouse.y/8);
+                if(build instanceof MultiTurretBuild multi) {
+                    MassMountTurretType.MassMountTurret mass = (MassMountTurretType.MassMountTurret) multi.mounts.find(mount -> mount instanceof MassMountTurretType.MassMountTurret && Math.abs(mouse.x - mount.x) < 4 && Math.abs(mouse.y - mount.y) < 4);
+                    if(mass != null) {
+                        Draw.color(team.color);
+                        Drawf.dashLine(Pal.accent, selectedMassMount.x, selectedMassMount.y, mass.x, mass.y);
+                        Draw.alpha(Mathf.absin(10, 1));
+                        Draw.rect(mass.type.drawer.mask, mass.x, mass.y, mass.drawrot());
+                        Draw.color();
+                    }
+                    else Drawf.dashLine(Pal.accent, selectedMassMount.x, selectedMassMount.y, mouse.x, mouse.y);
+                } else {
+                    Drawf.dashLine(Pal.accent, selectedMassMount.x, selectedMassMount.y, mouse.x, mouse.y);
+                }
+            }
         }
 
         @Override
@@ -530,6 +560,7 @@ public class MultiTurret extends TemplatedTurret {
             unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);
             super.updateTile();
             for(MountTurretType.MountTurret mount : mounts) mount.updateTile();
+
         }
 
         public void handlePayload(Bullet bullet, DriverBulletData data){
@@ -554,23 +585,57 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         @Override
+        public void onConfigureClosed() {
+            super.onConfigureClosed();
+            selectedMassMount = null;
+        }
+
+        @Override
+        public void buildConfiguration(Table table) {
+            super.buildConfiguration(table);
+            ObjectMap<Button, MassMountTurretType.MassMountTurret> buttons = new ObjectMap<>();
+            for(MountTurretType.MountTurret mount : mounts) {
+                if(!(mount instanceof MassMountTurretType.MassMountTurret mass)) continue;
+                Button button = new Button();
+                button.setStyle(Styles.clearTogglei);
+                button.image(mount.type.region);
+                button.setChecked(selectedMassMount == mass);
+                button.clicked(() -> {
+                    if(selectedMassMount == buttons.get(button)) selectedMassMount = null;
+                    else selectedMassMount = buttons.get(button);
+                    for(ObjectMap.Entry<Button, MassMountTurretType.MassMountTurret> entry : buttons) {
+                        entry.key.setChecked(selectedMassMount == entry.value);
+                    }
+                });
+                table.add(button).size(10 * 8f);
+                buttons.put(button, mass);
+            };
+        }
+
+        @Override
         public boolean onConfigureBuildTapped(Building other){
-            //TODO: also #every util func - `return mounts.every(mount -> mount.onConfigureTileTapped(other));`
-            for(MountTurretType.MountTurret mount : mounts){
-                if(!mount.onConfigureTileTapped(other)) return false;
+            if(other != this && selectedMassMount != null && other.team == team && other instanceof MultiTurretBuild multi) {
+                MassMountTurretType.MassMountTurret mass = (MassMountTurretType.MassMountTurret) multi.mounts.find(mount -> mount instanceof MassMountTurretType.MassMountTurret && Math.abs(input.mouseWorldX() - mount.x) < 4 && Math.abs(input.mouseWorldY() - mount.y) < 4);
+                if(mass != null && other.dst(mass.x, mass.y) <= mass.type.range) {
+                    if (selectedMassMount.link == other.tile.pos()) {
+                        selectedMassMount.link = -1;
+                        selectedMassMount.linkIndex = -1;
+                        return false;
+                    } else {
+                        Log.info(other.tile.pos());
+                        selectedMassMount.link = other.tile.pos();
+                        selectedMassMount.linkIndex = mass.mountIndex;
+                        return false;
+                    }
+                }
             }
+
             return true;
         }
 
         @Override
         public boolean shouldTurn(){
-            //TODO: make #every util func - `return !charging() && mounts.every(mount -> mount.shouldTurn());`
-            boolean shouldTurn = true;
-            for(MountTurretType.MountTurret mount : mounts) {
-                shouldTurn = mount.shouldTurn();
-                if(!shouldTurn) break;
-            }
-            return !charging() && shouldTurn;
+            return !charging() && !mounts.contains(mount -> !mount.shouldTurn());
         }
 
         @Override
