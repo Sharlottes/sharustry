@@ -48,7 +48,7 @@ public class TractMountTurretType extends MountTurretType {
     @Override
     public void buildStat(Table table) {
         super.buildStat(table);
-        rowAdd(table, "[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", damage * 60f));
+        table.add("[lightgray]" + Stat.damage.localized() + ": [white]" + Core.bundle.format("stat.shar.damage", damage * 60f)).row();
     }
 
 

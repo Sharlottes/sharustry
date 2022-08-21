@@ -35,7 +35,7 @@ public class RepairMountTurretType extends MountTurretType {
     @Override
     public void buildStat(Table table) {
         super.buildStat(table);
-        rowAdd(table, "[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", range / Vars.tilesize));
+        table.add("[lightgray]" + Stat.range.localized() + ": [white]" + Core.bundle.format("stat.shar.range", range / Vars.tilesize)).row();
     }
 
     public class RepairMountTurret extends MountTurret<RepairMountTurretType> {

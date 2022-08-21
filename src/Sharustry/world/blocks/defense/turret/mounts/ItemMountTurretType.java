@@ -53,7 +53,7 @@ public class ItemMountTurretType extends MountTurretType {
     @Override
     public void buildStat(Table table) {
         super.buildStat(table);
-        rowAdd(table, "[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + ammoPerShot);
+        table.add("[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + ammoPerShot).row();
     }
 
     public static class ItemMountTurret extends MountTurret<ItemMountTurretType> {

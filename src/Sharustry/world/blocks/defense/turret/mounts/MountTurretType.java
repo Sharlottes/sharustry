@@ -147,21 +147,16 @@ public class MountTurretType {
         }
     }
 
-    void rowAdd(Table h, String str){
-        h.row();
-        h.add(str);
-    }
-
     public ObjectMap<ObjectMap<BulletType ,? extends UnlockableContent>, TextureRegion> getStatData() {
         return null;
     }
     public void buildStat(Table table) {
-        rowAdd(table, "[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed(range / tilesize, 1) + " " + StatUnit.blocks);
-        rowAdd(table, "[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!targetAir ? Core.bundle.get("no") : Core.bundle.get("yes")));
-        rowAdd(table, "[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!targetGround ? Core.bundle.get("no") : Core.bundle.get("yes")));
-        if(reload > 0) rowAdd(table, "[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reload * shoot.shots, 1));
-        if(inaccuracy > 0) rowAdd(table, "[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + inaccuracy + " " + StatUnit.degrees.localized());
-        if(chargeTime > 0.001f) rowAdd(table, "[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds"));
+        table.add("[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed(range / tilesize, 1) + " " + StatUnit.blocks).row();
+        table.add("[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!targetAir ? Core.bundle.get("no") : Core.bundle.get("yes"))).row();
+        table.add("[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!targetGround ? Core.bundle.get("no") : Core.bundle.get("yes"))).row();
+        if(reload > 0) table.add("[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reload * shoot.shots, 1)).row();
+        if(inaccuracy > 0) table.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + inaccuracy + " " + StatUnit.degrees.localized()).row();
+        if(chargeTime > 0.001f) table.add("[lightgray]" + Core.bundle.get("stat.shar.chargeTime") + ": [white]" + Mathf.round(chargeTime/60, 100) + " " + Core.bundle.format("stat.shar.seconds")).row();
     }
 
     public void addStatS(Table w){
@@ -198,11 +193,11 @@ public class MountTurretType {
                                 b.stack(
                                     new Table(o -> {
                                         o.right();
-                                        o.add(new Image(Icon.power.getRegion())).size(8 * 3).padRight(4);
+                                        o.image(Icon.power.getRegion()).size(8 * 3).padRight(4);
                                     }),
                                     new Table(t -> {
                                         t.right().bottom();
-                                        t.add(((int)powerUse * 60) + "").fontScale(0.9f).color(Color.yellow).padTop(8);
+                                        t.add(String.valueOf((int)powerUse * 60)).fontScale(0.9f).color(Color.yellow).padTop(8);
                                         t.pack();
                                     })
                                 ).padRight(4).right().top();
@@ -215,21 +210,21 @@ public class MountTurretType {
                             b.table(Tex.underline, e -> {
                                 e.left().defaults().padRight(3).left();
 
-                                if(bullet.damage > 0 && (bullet.collides || bullet.splashDamage <= 0)) rowAdd(e, Core.bundle.format("bullet.damage", bullet.damage));
-                                if(bullet.buildingDamageMultiplier != 1) rowAdd(e, Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1)));
-                                if(bullet.splashDamage > 0) rowAdd(e, Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1)));
-                                if(bullet.ammoMultiplier > 0 && !Mathf.equal(bullet.ammoMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1)));
-                                if(!Mathf.equal(bullet.reloadMultiplier, 1f)) rowAdd(e, Core.bundle.format("bullet.reloadCounter", bullet.reloadMultiplier));
-                                if(bullet.knockback > 0) rowAdd(e, Core.bundle.format("bullet.knockback", Strings.fixed(bullet.knockback, 1)));
-                                if(bullet.healPercent > 0) rowAdd(e, Core.bundle.format("bullet.healpercent", bullet.healPercent));
-                                if(bullet.pierce || bullet.pierceCap != -1) rowAdd(e, bullet.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", bullet.pierceCap));
-                                if(bullet.status == StatusEffects.burning || bullet.status == StatusEffects.melting || bullet.incendAmount > 0) rowAdd(e, "@bullet.incendiary");
-                                if(bullet.status == StatusEffects.freezing) rowAdd(e, "@bullet.freezing");
-                                if(bullet.status == StatusEffects.tarred) rowAdd(e, "@bullet.tarred");
-                                if(bullet.status == StatusEffects.sapped) rowAdd(e, "@bullet.sapping");
-                                if(bullet.homingPower > 0.01) rowAdd(e, "@bullet.homing");
-                                if(bullet.lightning > 0) rowAdd(e, "@bullet.shock");
-                                if(bullet.fragBullet != null) rowAdd(e, "@bullet.frag");
+                                if(bullet.damage > 0 && (bullet.collides || bullet.splashDamage <= 0)) e.add(Core.bundle.format("bullet.damage", bullet.damage)).row();
+                                if(bullet.buildingDamageMultiplier != 1) e.add(Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1))).row();
+                                if(bullet.splashDamage > 0) e.add(Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1))).row();
+                                if(bullet.ammoMultiplier > 0 && !Mathf.equal(bullet.ammoMultiplier, 1f)) e.add(Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1))).row();
+                                if(!Mathf.equal(bullet.reloadMultiplier, 1f)) e.add(Core.bundle.format("bullet.reloadCounter", bullet.reloadMultiplier)).row();
+                                if(bullet.knockback > 0) e.add(Core.bundle.format("bullet.knockback", Strings.fixed(bullet.knockback, 1))).row();
+                                if(bullet.healPercent > 0) e.add(Core.bundle.format("bullet.healpercent", bullet.healPercent)).row();
+                                if(bullet.pierce || bullet.pierceCap != -1) e.add(bullet.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", bullet.pierceCap)).row();
+                                if(bullet.status == StatusEffects.burning || bullet.status == StatusEffects.melting || bullet.incendAmount > 0) e.add("@bullet.incendiary").row();
+                                if(bullet.status == StatusEffects.freezing) e.add("@bullet.freezing").row();
+                                if(bullet.status == StatusEffects.tarred) e.add("@bullet.tarred").row();
+                                if(bullet.status == StatusEffects.sapped) e.add("@bullet.sapping").row();
+                                if(bullet.homingPower > 0.01) e.add("@bullet.homing").row();
+                                if(bullet.lightning > 0) e.add("@bullet.shock").row();
+                                if(bullet.fragBullet != null) e.add("@bullet.frag").row();
                             }).padTop(-9).left();
 
                             if(ii % 4 == 0) b.row();

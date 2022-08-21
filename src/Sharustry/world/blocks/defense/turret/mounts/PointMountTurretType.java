@@ -29,7 +29,7 @@ public class PointMountTurretType extends MountTurretType {
     @Override
     public void buildStat(Table table) {
         super.buildStat(table);
-        rowAdd(table, "[lightgray]" + Core.bundle.format("stat.shar.targetsBullet") + ": [white]" + Core.bundle.get("yes"));
+        table.add("[lightgray]" + Core.bundle.format("stat.shar.targetsBullet") + ": [white]" + Core.bundle.get("yes")).row();
     }
     public class PointMountTurret extends MountTurret<PointMountTurretType> {
         public Bullet pointTarget;
