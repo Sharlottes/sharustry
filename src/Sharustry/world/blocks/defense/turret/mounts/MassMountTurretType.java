@@ -160,10 +160,6 @@ public class MassMountTurretType extends MountTurretType {
             if (reloadCounter < reload) reloadCounter += build.delta() * getPowerEfficiency();
             //유효하지 않은 값 초기화
             if (shooter != null && !shooterValid(shooter.key, shooter.value)) {
-                MassMountTurret mount = (MassMountTurret) ((MultiTurret.MultiTurretBuild) world.build(shooter.key)).mounts.get(shooter.value);
-
-                if(mountIndex == 3) Log.info(mount.link + ": " + world.tile(mount.link));
-
                 waitingShooters.remove(shooter.key);
             }
 
@@ -186,22 +182,22 @@ public class MassMountTurretType extends MountTurretType {
 
             if (massState == MassDriver.DriverState.accepting) {
                 //if there's nothing shooting at this, bail - OR, items full
-                if (shooter == null || (block.itemCapacity - build.items.total() < minDistribute)) {
+                if (shooter == null || block.itemCapacity - build.items.total() < minDistribute) {
                     massState = MassDriver.DriverState.idle;
                     return;
                 }
 
                 rotation = Mathf.slerpDelta(rotation, build.angleTo(world.tile(shooter.key)), rotateSpeed * getPowerEfficiency());
             } else if (massState == MassDriver.DriverState.shooting) {
+                MassMountTurret linkedMount = (MassMountTurret) ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex);
                 //if there's nothing to shoot at OR someone wants to shoot at this thing, bail
-                if (!hasLink || (!waitingShooters.isEmpty() && block.itemCapacity - build.items.total() >= minDistribute)) {
+                if (!hasLink || linkedMount == null || (!waitingShooters.isEmpty() && block.itemCapacity - build.items.total() >= minDistribute) || block.itemCapacity - link.items.total() < linkedMount.type.minDistribute) {
                     massState = MassDriver.DriverState.idle;
                     return;
                 }
                 //must shoot minimum amount of items and have minimum amount of space
                 if (build.items.total() >= minDistribute && link.block.itemCapacity - link.items.total() >= minDistribute) {
-                    MassMountTurret linkedMount = (MassMountTurret) ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex);
-                    linkedMount.waitingShooters.put(build.tile.pos(), linkIndex);
+                    linkedMount.waitingShooters.put(build.tile.pos(),mountIndex);
 
                     if (reloadCounter >= reload && !charging) {
                         float targetRotation = Angles.angle(x, y, linkedMount.x, linkedMount.y);
