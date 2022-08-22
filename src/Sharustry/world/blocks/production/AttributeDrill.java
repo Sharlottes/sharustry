@@ -30,6 +30,7 @@ public class AttributeDrill extends Drill{
     public AttributeDrill(String name){
         super(name);
 
+        configurable = true;
         config(Attribute.class, (AttributeDrillBuild tile, Attribute attr) -> tile.attribute = attr);
     }
 

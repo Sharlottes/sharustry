@@ -48,8 +48,8 @@ public class MassMountTurretType extends MountTurretType {
     @Override
     public void drawPlace(MultiTurret block, int mount, int x, int y, int rotation, boolean valid) {
         super.drawPlace(block, mount, x, y, rotation, valid);
-        float tX = x * tilesize + block.offset + (block.customMountLocation ? block.customgetMountLocationX.get(mount) : this.xOffset);
-        float tY = y * tilesize + block.offset + (block.customMountLocation ? block.customgetMountLocationY.get(mount) : this.yOffset);
+        float tX = x * tilesize + block.offset + block.mountOffsets.get(mount)[0];
+        float tY = y * tilesize + block.offset + block.mountOffsets.get(mount)[1];
 
         //check if a mass driver is selected while placing this driver
         if(!control.input.config.isShown()) return;
@@ -193,15 +193,15 @@ public class MassMountTurretType extends MountTurretType {
 
                 rotation = Mathf.slerpDelta(rotation, build.angleTo(world.tile(shooter.key)), rotateSpeed * getPowerEfficiency());
             } else if (massState == MassDriver.DriverState.shooting) {
+                MassMountTurret linkedMount = (MassMountTurret) ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex);
                 //if there's nothing to shoot at OR someone wants to shoot at this thing, bail
-                if (!hasLink || (!waitingShooters.isEmpty() && block.itemCapacity - build.items.total() >= minDistribute)) {
+                if (!hasLink || linkedMount == null || (!waitingShooters.isEmpty() && block.itemCapacity - build.items.total() >= minDistribute) || block.itemCapacity - link.items.total() < linkedMount.type.minDistribute) {
                     massState = MassDriver.DriverState.idle;
                     return;
                 }
                 //must shoot minimum amount of items and have minimum amount of space
                 if (build.items.total() >= minDistribute && link.block.itemCapacity - link.items.total() >= minDistribute) {
-                    MassMountTurret linkedMount = (MassMountTurret) ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex);
-                    linkedMount.waitingShooters.put(build.tile.pos(), linkIndex);
+                    linkedMount.waitingShooters.put(build.tile.pos(),mountIndex);
 
                     if (reloadCounter >= reload && !charging) {
                         float targetRotation = Angles.angle(x, y, linkedMount.x, linkedMount.y);

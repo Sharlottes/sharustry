@@ -4,7 +4,6 @@ import Sharustry.world.blocks.defense.turret.MultiTurret;
 import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
-import arc.math.geom.Vec2;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.OrderedMap;
@@ -112,7 +111,7 @@ public class LiquidMountTurretType extends MountTurretType {
         }
         @Override
         public void display(Table table){
-            if(block.basicMounts.size > 3 && mountIndex % 4 == 0) table.row();
+            if(block.mountTypes.size > 3 && mountIndex % 4 == 0) table.row();
             else if(mountIndex % 4 == 0) table.row();
             table.stack(
                     new Table(o -> {

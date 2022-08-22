@@ -11,7 +11,6 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
-import arc.scene.ui.Image;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
@@ -22,7 +21,6 @@ import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.entities.bullet.*;
 import mindustry.entities.effect.MultiEffect;
 import mindustry.entities.pattern.ShootAlternate;
-import mindustry.entities.pattern.ShootBarrel;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Pal;
 import Sharustry.world.blocks.defense.*;
@@ -33,7 +31,6 @@ import mindustry.graphics.Trail;
 import mindustry.type.*;
 import mindustry.content.*;
 import mindustry.world.*;
-import mindustry.world.draw.DrawBlock;
 import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
 
@@ -361,21 +358,14 @@ public class SBlocks {
                 collidesAir = false;
                 length = 173f;
             }}, Items.titanium, "Conductron");
-            addMountTurret(arcMount);
-            addMountTurret(arcMount);
-            addMountTurret(laserMount);
-
-            addCustomMountLocation(new Float[]{
-                    -6.5f, -4.25f,
-                    6.5f, -4.25f,
-                    0f, 1.5f
-            });
+            addMountTurret(arcMount, -6.5f, -4.25f);
+            addMountTurret(arcMount, 6.5f, -4.25f);
+            addMountTurret(laserMount, 0f, 1.5f);
 
             hasPower = true;
             size = 3;
             maxAmmo = 30;
             ammoPerShot = 3;
-            customMountLocation = true;
             range = 180f;
             moveWhileCharging = false;
             accurateDelay = false;
@@ -395,7 +385,6 @@ public class SBlocks {
 
 
         trinity = new MultiTurret("trinity"){{
-            configurable = true;
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
             addBaseTurret(new ShrapnelBulletType(){{
@@ -405,14 +394,11 @@ public class SBlocks {
                 toColor = Pal.thoriumPink;
                 shootEffect = smokeEffect = Fx.thoriumShoot;
             }}, Items.thorium, "Trinity");
-            addMountTurret(repairMount, pointMount, massMount, tractMount);
+            addMountTurret(repairMount, -8f, 0f);
+            addMountTurret(pointMount, 0f, 6.5f);
+            addMountTurret(massMount, 0f, 0f);
+            addMountTurret(tractMount, 8f, 0f);
 
-            addCustomMountLocation(new Float[]{
-                    -8f, 0f,
-                    0f, 6.5f,
-                    0f, 0f,
-                    8f, 0f
-            });
             addSkills(entity -> () -> {
                 if(Groups.unit.find(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range) == null
                         || Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range
@@ -454,16 +440,11 @@ public class SBlocks {
             requirements(Category.turret, ItemStack.with(Items.copper, 820, Items.lead, 430, Items.graphite, 320, Items.silicon, 580, Items.titanium, 120, Items.thorium, 140, Items.plastanium, 85));
 
             addBaseTurret(SBullets.artilleryHealBig, Items.plastanium,"Asclepius");
-            addMountTurret(healBeamMountR, healBeamMountL, healMissileMountL, healMissileMountR, healLaserMount2);
-
-            addCustomMountLocation(new Float[]{
-                    -7.25f, 2f,
-                    7.25f, 2f,
-                    -10f, -4.5f,
-                    10f, -4.5f,
-                    0f, 1.5f
-            });
-
+            addMountTurret(healBeamMountR, -7.25f, 2f);
+            addMountTurret(healBeamMountL, 7.25f, 2f);
+            addMountTurret(healMissileMountL, -10f, -4.5f);
+            addMountTurret(healMissileMountR, 10f, -4.5f);
+            addMountTurret(healLaserMount2, 0f, 1.5f);
 
             addSkills(entity -> () -> {
                 final float shotAmount = 5;
@@ -511,13 +492,10 @@ public class SBlocks {
                         table.add(Core.bundle.format("stat.shar.constructamount", 3));
                     }
             );
-            customMountLocation = true;
             hasLiquids = true;
             hasItems = true;
-            hasPower = true;
             size = 4;
-            shoot = new ShootBarrel();
-            ((ShootBarrel) shoot).barrelOffset = 7;
+            shoot.shotDelay = 7f;
             shoot.shots = 6;
             maxConstruct = 18;
             reload = 2.5f * 60f;
@@ -539,21 +517,14 @@ public class SBlocks {
             requirements(Category.turret, ItemStack.with(Items.copper, 335, Items.lead, 210, Items.graphite, 180, Items.silicon, 250, Items.thorium, 90));
 
             addBaseTurret(SBullets.artilleryHeal, Items.plastanium,"Clinicus");
-            addMountTurret(healBeamMount, healBeamMount, healLaserMount);
+            addMountTurret(healBeamMount, 6.75f, -2.5f);
+            addMountTurret(healBeamMount, -6.75f, -2.5f);
+            addMountTurret(healLaserMount, 0f, 1f);
 
-            addCustomMountLocation(new Float[]{
-                    6.75f, -2.5f,
-                    -6.5f, -2.5f,
-                    0f, 1f
-            });
-
-            customMountLocation = true;
             hasLiquids = true;
             hasItems = true;
-            hasPower = true;
             size = 3;
-            shoot = new ShootBarrel();
-            ((ShootBarrel) shoot).barrelOffset = 5;
+            shoot.shotDelay = 5f;
             shoot.shots = 3;
             reload = 1.5f * 60f;
             ammoEjectBack = 5f;
@@ -571,21 +542,16 @@ public class SBlocks {
         }};
 
         fossor = new MultiConstructTurret("fossor"){{
-            configurable = true;
             requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 180, Items.graphite, 140, Items.silicon, 200, Items.titanium, 180, Items.thorium, 130));
 
             addBaseTurret(SBullets.fossers, Items.plastanium,"Fossor");
-            addMountTurret(miniDrillMount, miniDrillMount, miniMassMount, miniMassMount);
-
-            addCustomMountLocation(new Float[]{
-                    -7f, -8f,
-                    7f, -8f,
-                    0f, -4f,
-                    0f, 0f
-            });
+            addMountTurret(miniDrillMount, -7f, -8f);
+            addMountTurret(miniDrillMount, 7f, -8f);
+            addMountTurret(miniMassMount, 0f, -4f);
+            addMountTurret(miniMassMount, 0f, 0f);
             drawer = new DrawTurret() {
                 TextureRegion left, leftOutline, right, rightOutline;
-                float offsetX = 1.5f, offsetY = 0;
+                final float offsetX = 1.5f, offsetY = 0;
 
                 @Override
                 public void load(Block block) {
@@ -610,13 +576,11 @@ public class SBlocks {
                 }
             };
             itemCapacity = 150;
-            customMountLocation = true;
             hasLiquids = true;
             hasItems = true;
             hasPower = true;
             size = 4;
-            shoot = new ShootBarrel();
-            ((ShootBarrel) shoot).barrelOffset = 5;
+            shoot.shotDelay = 5f;
             shoot.shots = 5;
             reload = 2f * 60f;
             ammoEjectBack = 5f;
@@ -635,7 +599,9 @@ public class SBlocks {
             requirements(Category.turret, ItemStack.with(Items.copper, 135, Items.lead, 75, Items.metaglass, 40, Items.graphite, 80, Items.silicon, 50));
 
             addBaseTurret(jumbleBullet, Items.graphite, "Aggregate");
-            addMountTurret(unoMount, waveMount, hailMount);
+            addMountTurret(unoMount, 2.75f, 2.75f);
+            addMountTurret(waveMount, 4.25f, -3.5f);
+            addMountTurret(hailMount, -3.75f, -4f);
 
             shootCone = 35;
             size = 2;
@@ -658,10 +624,9 @@ public class SBlocks {
             updateEffect = Fx.pulverizeMedium;
             drillEffect = Fx.mineBig;
             defaultAttribute = Attribute.light;
-            configurable = true;
             maxHeatBoost = 2;
-            consumePower(1.10f);
 
+            consumePower(1.10f);
             consumeLiquid(Liquids.water, 0.08f).boost();
         }};
 

@@ -92,8 +92,6 @@ public class STurretMounts {
             collidesAir = false;
             length = 173f;
         }}){{
-            xOffset = 2.75f;
-            yOffset = 2.75f;
             shootY = 13/4f;
             range = 9 * 8;
             title = "Electric Laser Left";
@@ -123,8 +121,6 @@ public class STurretMounts {
             collidesAir = false;
             length = 173f;
         }}){{
-            xOffset = 2.75f;
-            yOffset = 2.75f;
             shootY = 13/4f;
             range = 9 * 8;
             title = "Electric Laser Right";
@@ -279,19 +275,10 @@ public class STurretMounts {
             collidesTeam = true;
             backColor = Pal.heal;
             frontColor = Color.white;
-        }
-
-            @Override
-            public void update(Bullet b) {
-                super.update(b);
-                //Log.info("but actaully it's on "+ b.x + ", " + b.y);
-            }
-        }){{
+        }}){{
             targetHealing = true;
             title = "HealBeam";
 
-            xOffset = -4f;
-            yOffset = -4.75f;
             shootCone = 40f;
             shoot.shotDelay = 7f;
             shoot.shots = 3;
@@ -368,8 +355,6 @@ public class STurretMounts {
             collidesAir = false;
         }}){{
             title = "Arc";
-            xOffset = -4f;
-            yOffset = -4.75f;
             reload = 35f;
             shootCone = 40f;
             rotateSpeed = 8f;
@@ -391,8 +376,6 @@ public class STurretMounts {
             collidesAir = true;
             length = 173f;
         }}){{
-            xOffset = 2.75f;
-            yOffset = 2.75f;
             shootY = 13/4f;
             range = 9 * 8;
             title = "Uno";
@@ -455,8 +438,6 @@ public class STurretMounts {
             targetAir = false;
             reload = 60;
             ammoPerShot = 5;
-            xOffset = -3.75f;
-            yOffset = -4f;
             shootY = 18/4f;
             recoil = 2.5f;
             range = 18 * 8;
@@ -499,8 +480,6 @@ public class STurretMounts {
             }}
         ){{
             reload = 3;
-            xOffset = 4.25f;
-            yOffset = -3.5f;
             shootY = 16/4f;
             recoil = 1;
             range = 13 * 8;

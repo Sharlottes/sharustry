@@ -1,5 +1,6 @@
 package Sharustry.world.blocks.defense.turret.mounts;
 
+import Sharustry.content.STurretMounts;
 import Sharustry.world.blocks.defense.turret.DriverBulletData;
 import Sharustry.world.blocks.defense.turret.MultiTurret;
 import arc.Core;
@@ -47,7 +48,6 @@ import static mindustry.Vars.*;
 public class MountTurretType {
     public int ammoPerShot = 1;
 
-    public float xOffset = 0, yOffset = 0;
     public ShootPattern shoot = new ShootPattern();
     public float shootCone = 8;
     public float shootX = 0, shootY = Float.NEGATIVE_INFINITY;
@@ -123,10 +123,11 @@ public class MountTurretType {
 
     public MountTurretType(String name) {
         this.name = name;
+        STurretMounts.mounttypes.add(this);
     }
 
     public MountTurret<MountTurretType> create(MultiTurret block, MultiTurret.MultiTurretBuild build, int index, float x, float y) {
-        return new MountTurret(this, block, build, index, x, y);
+        return new MountTurret<>(this, block, build, index, x, y);
     }
 
     public void init() {
@@ -244,8 +245,8 @@ public class MountTurretType {
 
     public void drawPlace(MultiTurret block, int mount, int x, int y, int rotation, boolean valid){
         float fade = Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * mount, block.rangeTime * mount + block.fadeTime) - Mathf.curve(Time.time % block.totalRangeTime, block.rangeTime * (mount + 1) - block.fadeTime, block.rangeTime * (mount + 1));
-        float tX = x * tilesize + block.offset + (block.customMountLocation ? block.customgetMountLocationX.get(mount) : this.xOffset);
-        float tY = y * tilesize + block.offset + (block.customMountLocation ? block.customgetMountLocationY.get(mount) : this.yOffset);
+        float tX = x * tilesize + block.offset + block.mountOffsets.get(mount)[0];
+        float tY = y * tilesize + block.offset + block.mountOffsets.get(mount)[1];
 
         Lines.stroke(3, Pal.gray);
         Draw.alpha(fade);
@@ -366,7 +367,7 @@ public class MountTurretType {
         }
 
         public void display(Table table){
-            if(block.basicMounts.size > 3 && mountIndex % 4 == 0) table.row();
+            if(block.mountTypes.size > 3 && mountIndex % 4 == 0) table.row();
             else if(mountIndex % 4 == 0) table.row();
             table.stack(
                     new Table(o -> {
