@@ -3,7 +3,6 @@ package Sharustry.content;
 import Sharustry.entities.bullet.AccelBulletType;
 import Sharustry.entities.bullet.FieldBulletType;
 import Sharustry.entities.pattern.ShootAside;
-import Sharustry.entities.skills.Skill;
 import Sharustry.entities.skills.TurretSkill;
 import Sharustry.graphics.SPal;
 import Sharustry.world.blocks.defense.turret.*;
@@ -65,14 +64,13 @@ public class SBlocks {
         flucturbare = new AsideTurret("flucturbare") {{
             requirements(Category.turret, ItemStack.with(Items.titanium, 750, Items.thorium, 860, Items.lead, 1000));
 
-            ammoType = "item";
-            ammo(Items.titanium, SBullets.accelerMissile);
+            itemAmmo(Items.titanium, SBullets.accelerMissile);
             spread = 5;
             shots = 2;
             size = 3;
             shootCone = 120f;
             range = 50*8f;
-            minRanged = 13*8f;
+            minRange = 13*8f;
             chargeTime = 55f;
             chargeMaxDelay = 35f;
             chargeEffects = 5;
@@ -93,8 +91,7 @@ public class SBlocks {
         }};
         */
         sasitil = new GetlingTurret("sasitil") {{
-            ammoType = "item";
-            ammo(Items.blastCompound, new MissileBulletType(3.7f, 10){{
+            itemAmmo(Items.blastCompound, new MissileBulletType(3.7f, 10){{
                 width = 8f;
                 height = 8f;
                 shrinkY = 0f;
@@ -132,10 +129,10 @@ public class SBlocks {
                          Time.run(0.1f * 60 * i, () -> {
                              final float ex = entity.x + Mathf.range(16f);
                              final float ey = entity.y + Mathf.range(16f);
-                             SFx.skill.at(ex, ey, ammoTypes.findKey(((TemplatedTurretBuild)entity).peekAmmo(), true).color);
+                             SFx.skill.at(ex, ey, ammoTypes.findKey(entity.peekAmmo(), true).color);
                              for(int ii = 0; ii < 3; ii++) Time.run(15 * ii, () -> {
                                  Sounds.missile.at(ex, ey);
-                                 SBullets.miniAccelMissile.create(entity, ex, ey, ((BaseTurretBuild) entity).rotation);
+                                 SBullets.miniAccelMissile.create(entity, ex, ey, entity.rotation);
                              });
                          });
                      }
@@ -149,7 +146,7 @@ public class SBlocks {
                  },
                  new TurretSkill<>("overfreezing", entity -> () -> {
                      Sounds.unlock.at(entity.x, entity.y, 0.75f);
-                     if(((TemplatedTurretBuild)entity).hasAmmo() && ((TemplatedTurretBuild)entity).peekAmmo() == SBullets.testLaser) new FieldBulletType(0, -1, 897, 85).create(entity, entity.x, entity.y, 0);
+                     if(entity.hasAmmo() && entity.peekAmmo() == SBullets.testLaser) new FieldBulletType(0, -1, 897, 85).create(entity, entity.x, entity.y, 0);
                      else new FieldBulletType(0, -1, 897, 85){{
                          mainColor = SPal.cryoium;
                          subColor = Items.titanium.color;
@@ -175,8 +172,7 @@ public class SBlocks {
                      }
                 }
             );
-            ammoType = "item";
-            ammo(Items.titanium, new AccelBulletType(2.5f, 25){{
+            itemAmmo(Items.titanium, new AccelBulletType(2.5f, 25){{
                 backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
                 frontColor = trailColor = SPal.cryoium;
                 shrinkY = 0f;
@@ -184,7 +180,7 @@ public class SBlocks {
                 height = 16f;
                 hitSound = Sounds.explosion;
                 trailChance = 0.2f;
-                lifetime = 47f;
+                lifetime = 2.5F * 60f;
                 sprite = "bullet";
                 pierce = true;
                 pierceBuilding = true;
@@ -220,8 +216,7 @@ public class SBlocks {
         traislar = new TemplatedTurret("traislar") {{
             requirements(Category.turret, ItemStack.with(Items.titanium, 700, Items.thorium, 800, Items.lead, 1000));
 
-            ammoType = "item";
-            ammo(Items.titanium, new BasicBulletType(4f, 75){{
+            itemAmmo(Items.titanium, new BasicBulletType(6f, 90){{
                 chargeEffect = new MultiEffect(SFx.balkanChargeCircles, SFx.balkanChargeBegin);
                 frontColor = trailColor = SPal.cryoium;
                 width = 4f;
@@ -243,7 +238,7 @@ public class SBlocks {
                     super.update(b);
                     b.damage += Time.delta * 1.5f;
                     ((BulletData)b.data).heat += Time.delta;
-                    if(((BulletData)b.data).heat > 2.5) {
+                    if(((BulletData)b.data).heat > 1.5) {
                         ((BulletData)b.data).heat = 0f;
                         SBullets.trailBullet.create(b, b.team, b.x, b.y, b.rotation(),  0f, 1);
                     }
@@ -304,8 +299,7 @@ public class SBlocks {
         latusis = new TemplatedTurret("latusis") {{
             requirements(Category.turret, ItemStack.with(Items.titanium, 750, Items.thorium, 860, Items.lead, 1000));
 
-            ammoType = "item";
-            ammo(Items.titanium, new AccelBulletType(3f, 45){{
+            itemAmmo(Items.titanium, new AccelBulletType(3f, 45){{
                 chargeEffect = new MultiEffect(SFx.balkanChargeCircles, SFx.balkanChargeBegin);
                 backColor = SPal.cryoium.cpy().mul(Items.titanium.color);
                 frontColor = trailColor = SPal.cryoium;
@@ -333,7 +327,7 @@ public class SBlocks {
             size = 3;
             shootCone = 120f;
             range = 50*8f;
-            minRanged = 13*8f;
+            minRange = 13*8f;
             recoil = 12f;
             reload = 110f;
             cooldownTime = 0.1f;
@@ -353,7 +347,7 @@ public class SBlocks {
         conductron = new MultiTurret("conductron"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
-            addBaseTurret(new LaserBulletType(140){{
+            itemAmmo(Items.titanium, new LaserBulletType(140){{
                 chargeEffect = new MultiEffect(Fx.lancerLaserCharge, Fx.lancerLaserChargeBegin);
                 colors = new Color[]{Pal.lancerLaser.cpy().a(0.4f), Pal.lancerLaser, Color.white};
                 hitEffect = Fx.hitLancer;
@@ -363,7 +357,7 @@ public class SBlocks {
                 drawSize = 400f;
                 collidesAir = false;
                 length = 173f;
-            }}, Items.titanium, "Conductron");
+            }});
             addMountTurret(arcMount, -6.5f, -4.25f);
             addMountTurret(arcMount, 6.5f, -4.25f);
             addMountTurret(laserMount, 0f, 1.5f);
@@ -393,13 +387,13 @@ public class SBlocks {
         trinity = new MultiTurret("trinity"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 200, Items.lead, 150, Items.silicon, 125, Items.graphite, 95, Items.titanium, 70));
 
-            addBaseTurret(new ShrapnelBulletType(){{
+            itemAmmo(Items.thorium, new ShrapnelBulletType(){{
                 length = 110f;
                 damage = 105f;
                 ammoMultiplier = 5f;
                 toColor = Pal.thoriumPink;
                 shootEffect = smokeEffect = Fx.thoriumShoot;
-            }}, Items.thorium, "Trinity");
+            }});
             addMountTurret(repairMount, -8f, 0f);
             addMountTurret(pointMount, 0f, 6.5f);
             addMountTurret(massMount, 0f, 0f);
@@ -426,7 +420,6 @@ public class SBlocks {
                 }
             });
 
-            hasItems = true;
             itemCapacity = 150;
             hasPower = true;
             size = 3;
@@ -445,7 +438,7 @@ public class SBlocks {
         asclepius = new MultiConstructTurret("asclepius"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 820, Items.lead, 430, Items.graphite, 320, Items.silicon, 580, Items.titanium, 120, Items.thorium, 140, Items.plastanium, 85));
 
-            addBaseTurret(SBullets.artilleryHealBig, Items.plastanium,"Asclepius");
+            itemAmmo(Items.plastanium, SBullets.artilleryHealBig);
             addMountTurret(healBeamMountR, -7.25f, 2f);
             addMountTurret(healBeamMountL, 7.25f, 2f);
             addMountTurret(healMissileMountL, -10f, -4.5f);
@@ -504,7 +497,6 @@ public class SBlocks {
             );
 
             hasLiquids = true;
-            hasItems = true;
             size = 4;
             shoot.shotDelay = 7f;
             shoot.shots = 6;
@@ -518,7 +510,7 @@ public class SBlocks {
             shake = 3.5f;
             range = 45 * 8f;
 
-            minRanged = 30 * 8f;
+            minRange = 30 * 8f;
             inaccuracy = 25f;
             health = 370 * size * size;
             shootSound = Sounds.artillery;
@@ -527,13 +519,12 @@ public class SBlocks {
         clinicus = new MultiConstructTurret("clinicus"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 335, Items.lead, 210, Items.graphite, 180, Items.silicon, 250, Items.thorium, 90));
 
-            addBaseTurret(SBullets.artilleryHeal, Items.plastanium,"Clinicus");
+            itemAmmo(Items.plastanium, SBullets.artilleryHeal);
             addMountTurret(healBeamMount, 6.75f, -2.5f);
             addMountTurret(healBeamMount, -6.75f, -2.5f);
             addMountTurret(healLaserMount, 0f, 1f);
 
             hasLiquids = true;
-            hasItems = true;
             size = 3;
             shoot.shotDelay = 5f;
             shoot.shots = 3;
@@ -546,7 +537,7 @@ public class SBlocks {
             shake = 2f;
             range = 32 * 8f;
 
-            minRanged = 25 * 8f;
+            minRange = 25 * 8f;
             inaccuracy = 17f;
             health = 170 * size * size;
             shootSound = Sounds.artillery;
@@ -555,7 +546,7 @@ public class SBlocks {
         fossor = new MultiConstructTurret("fossor"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 180, Items.graphite, 140, Items.silicon, 200, Items.titanium, 180, Items.thorium, 130));
 
-            addBaseTurret(SBullets.fossers, Items.plastanium,"Fossor");
+            itemAmmo(Items.plastanium,SBullets.fossers);
             addMountTurret(miniDrillMount, -7f, -8f);
             addMountTurret(miniDrillMount, 7f, -8f);
             addMountTurret(miniMassMount, 0f, -4f);
@@ -588,7 +579,6 @@ public class SBlocks {
             };
             itemCapacity = 150;
             hasLiquids = true;
-            hasItems = true;
             hasPower = true;
             size = 4;
             shoot.shotDelay = 5f;
@@ -609,7 +599,7 @@ public class SBlocks {
         jumble = new MultiTurret("multi-i"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 135, Items.lead, 75, Items.metaglass, 40, Items.graphite, 80, Items.silicon, 50));
 
-            addBaseTurret(jumbleBullet, Items.graphite, "Aggregate");
+            itemAmmo(Items.graphite, jumbleBullet);
             addMountTurret(unoMount, 2.75f, 2.75f);
             addMountTurret(waveMount, 4.25f, -3.5f);
             addMountTurret(hailMount, -3.75f, -4f);

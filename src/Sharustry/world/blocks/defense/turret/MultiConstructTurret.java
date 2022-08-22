@@ -22,8 +22,6 @@ public class MultiConstructTurret extends MultiTurret {
 
     public class MultiConstructTurretBuild extends MultiTurretBuild {
         public boolean selected;
-        public int totalConstruct;
-        public int h;
 
         @Override
         public void drawSelect() {
@@ -33,7 +31,7 @@ public class MultiConstructTurret extends MultiTurret {
 
         @Override
         protected void updateShooting(){
-            if(!(totalConstruct < maxConstruct)) return;
+            if(getConstructorAmount() >= maxConstruct) return;
 
             if(reloadCounter >= reload && !charging()){
                 BulletType type = peekAmmo();
@@ -44,14 +42,16 @@ public class MultiConstructTurret extends MultiTurret {
             }
         }
 
-        @Override
-        public void updateTile() {
-            for(int i = 0; i < Groups.bullet.size(); i ++) if(Groups.bullet.index(i).owner == self() && Groups.bullet.index(i).type == bullet) totalConstruct++;
-
-            super.updateTile();
-            totalConstruct = 0;
+        float getConstructorAmount() {
+            return Groups.bullet.count(bullet -> bullet.owner == self() && bullet.type == findBullet());
         }
-
+        @Nullable ConstructBulletType findBullet() {
+            return isItemTurret()
+                    ? (ConstructBulletType) ammoTypes.values().toSeq().find(bullet -> bullet instanceof ConstructBulletType)
+                    : isLiquidTurret()
+                        ? (ConstructBulletType) liqAmmoTypes.values().toSeq().find(bullet -> bullet instanceof ConstructBulletType)
+                        : isPowerTurret() && shootType instanceof ConstructBulletType construct ? construct : null;
+        }
         @Override
         public void display(Table table) {
             table.table(w -> {
@@ -60,30 +60,26 @@ public class MultiConstructTurret extends MultiTurret {
                 w.labelWrap(this.block.getDisplayName(this.tile)).left().width(190.0F).padLeft(5.0F);
                 w.table(t -> {
                     t.left();
-                    if (bullet instanceof ConstructBulletType) t.add(new Stack() {{
-                        add(new Table(e -> {
-                            e.add(new Image(((ConstructBulletType) bullet).frontRegion)).size(4*8f);
+                    ConstructBulletType construct = findBullet();
+                    if (construct != null) t.stack(
+                         new Table(e -> {
+                            e.image(construct.frontRegion).size(4*8f);
                             e.pack();
-                        }));
-                        add(new Table(e -> {
+                        }),
+                        new Table(e -> {
                             e.right().bottom();
                             Label label = new Label(() -> {
-                                String col = "[green]";
-                                h = 0;
-                                for (int i = 0; i < Groups.bullet.size(); i++)
-                                    if (Groups.bullet.index(i).owner == self() && Groups.bullet.index(i).type == bullet) {
-                                        h++;
-                                        if (h == maxConstruct) col = "[red]";
-                                        else if (h > 0) col = "[yellow]";
-                                        else if (h == 0) col = "[green]";
-                                        else col = "[lightgray]";
-                                    }
-                                return col + h + " / " + maxConstruct;
+                                float amount = getConstructorAmount();
+                                String col = amount == maxConstruct ? "[red]"
+                                    : amount > 0 ? "[yellow]"
+                                    : amount == 0 ? "[green]"
+                                    : "[lightgray]";
+                                return col + amount + " / " + maxConstruct;
                             });
                             label.setFontScale(0.8f);
                             e.add(label);
-                        }));
-                    }});
+                        })
+                    );
                 });
             }).left();
             table.row();

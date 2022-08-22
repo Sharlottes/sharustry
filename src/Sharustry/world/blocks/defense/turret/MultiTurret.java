@@ -2,12 +2,10 @@ package Sharustry.world.blocks.defense.turret;
 
 import Sharustry.content.STurretMounts;
 import Sharustry.entities.skills.TurretSkill;
-import Sharustry.ui.SBar;
+import Sharustry.ui.MultiImageLabel;
 import Sharustry.world.blocks.defense.turret.mounts.*;
 import arc.*;
-import arc.func.Cons;
 import arc.func.Func;
-import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.Vec2;
@@ -20,9 +18,7 @@ import arc.util.io.*;
 import mindustry.Vars;
 import mindustry.content.*;
 import mindustry.core.UI;
-import mindustry.ctype.UnlockableContent;
 import mindustry.entities.bullet.*;
-import mindustry.game.EventType;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.LAccess;
@@ -31,24 +27,14 @@ import mindustry.ui.*;
 import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
 
-import java.util.Objects;
-
 import static arc.Core.input;
 import static arc.Core.scene;
-import static arc.struct.ObjectMap.*;
 import static mindustry.Vars.*;
 
 public class MultiTurret extends TemplatedTurret {
     public float rangeTime = 80;
     public float fadeTime = 20;
     public float totalRangeTime;
-    public String title;
-    public Object mainAmmo;
-    public BulletType bullet;
-
-    public TextureRegion outline, baseTurret;
-
-    //TODO: why don't just make skill's own class instead?
     public Seq<TurretSkill<MultiTurretBuild>> skills = new Seq<>();
     public Seq<MountTurretType> mountTypes = new Seq<>();
     public Seq<Float[]> mountOffsets = new Seq<>();
@@ -56,9 +42,7 @@ public class MultiTurret extends TemplatedTurret {
     public MultiTurret(String name){
         super(name);
     }
-    public void addMountTurret(MountTurretType mount) {
-        addMountTurret(mount, 0f, 0f);
-    }
+
     public void addMountTurret(MountTurretType mount, float offsetX, float offsetY) {
         mountTypes.add(mount);
         mountOffsets.add(new Float[]{offsetX, offsetY});
@@ -69,38 +53,12 @@ public class MultiTurret extends TemplatedTurret {
 
         this.totalRangeTime = rangeTime * mountTypes.size;
     }
-    public void addBaseTurret(BulletType type, Object ammo, String title){
-        if(ammo instanceof Item) {
-            hasItems = true;
-            mainAmmo = ammo;
-            ammoType = "item";
-            ammo(ammo, type);
-        }
-        if(ammo instanceof Liquid) {
-            hasLiquids = true;
-            mainAmmo = ammo;
-            ammoType = "liquid";
-            ammo(ammo, type);
-        }
-        if(ammo instanceof Float) {
-            hasPower = true;
-            mainAmmo = ammo;
-            ammoType = "power";
-            powerUse = (Float)ammo;
-        }
-
-        this.bullet = type;
-        this.title = title;
-    }
 
     @Override
     public void load(){
         super.load();
 
-        teamRegion = Core.atlas.find("error");
         region = Core.atlas.find(name + "-baseTurret");
-        outline = Core.atlas.find(name + "-outline");
-        baseTurret = Core.atlas.find(name + "-baseTurret");
     }
 
     @Override
@@ -120,11 +78,8 @@ public class MultiTurret extends TemplatedTurret {
 
     void addStatS(Table w){
         w.left();
-        w.row();
-        w.add(title).right().top();
-        w.row();
+        w.add(localizedName).right().top().row();
         w.image(region).size(60).scaling(Scaling.bounded).right().top();
-
         w.table(Tex.underline, h -> {
             h.left().defaults().padRight(3).left();
 
@@ -134,30 +89,33 @@ public class MultiTurret extends TemplatedTurret {
             h.add("[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes"))).row();
             if(inaccuracy > 0) h.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (inaccuracy) + " " + StatUnit.degrees.localized()).row();
             if(shoot.firstShotDelay > 0.001f) h.add("[lightgray]" + Core.bundle.get("stat.shar.shoot.firstShotDelay") + ": [white]" + Mathf.round(shoot.firstShotDelay/60, 100) + " " + Core.bundle.format("stat.shar.seconds")).row();
-            if(Objects.equals(ammoType, "item")) h.add("[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (ammoPerShot)).row();
+            if(isItemTurret()) h.add("[lightgray]" + Core.bundle.get("stat.shar.ammo-shot") + ": [white]" + (ammoPerShot)).row();
 
             h.row();
 
-            ObjectMap<ObjectMap<BulletType ,? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
-            TextureRegion icon = Core.atlas.find("error");
-            if(mainAmmo instanceof Item) icon = ((Item)mainAmmo).uiIcon;
-            if(mainAmmo instanceof Liquid) icon = ((Liquid)mainAmmo).uiIcon;
-            if(mainAmmo instanceof Float) icon = Icon.power.getRegion();
-            types.put(of(bullet, mainAmmo), icon);
-
             h.table(b -> {
-                for(ObjectMap<BulletType, ? extends UnlockableContent> type : types.keys()){
-                    int ii = 0;
+                int ii = 0;
+                for(BulletType bullet : (Iterable<? extends BulletType>) (isItemTurret() ? ammoTypes.values() : isLiquidTurret() ? liqAmmoTypes.values() : new BulletType[]{isPowerTurret() ? shootType : null})) {
+                    if(bullet == null) continue;
 
-                    for(BulletType bullet : type.keys()){
-                        ii ++;
+                    ii ++;
+                    b.add(new MultiImageLabel() {{
 
-                        b.image(types.get(type)).size(8 * 4).padRight(4).right().top();
-                        b.add(type.get(bullet).localizedName).padRight(10).left().top();
+                        if(isItemTurret()) {
+                            @Nullable Item item = ammoTypes.findKey(bullet, false);
+                            if(item != null) add(item.uiIcon, item.localizedName);
+                        }
+                        if(isLiquidTurret()) {
+                            @Nullable Liquid liquid = liqAmmoTypes.findKey(bullet, false);
+                            if(liquid != null) add(liquid.uiIcon, liquid.localizedName);
+                        }
+                        if(isPowerTurret()) {
+                            add(Icon.power.getRegion(), "Power");
+                        }
+                    }}).size(8 * 4).padRight(4).right().top();
 
-                        b.table(Tex.underline, e -> {
-                            e.left().defaults().padRight(3).left();
-
+                    b.table(Tex.underline, e -> {
+                        e.left().defaults().padRight(3).left();
                             if(bullet.damage > 0 && (bullet.collides || bullet.splashDamage <= 0)) e.add(Core.bundle.format("bullet.damage", bullet.damage)).row();
                             if(bullet.buildingDamageMultiplier != 1) e.add(Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1))).row();
                             if(bullet.splashDamage > 0) e.add(Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1))).row();
@@ -173,10 +131,9 @@ public class MultiTurret extends TemplatedTurret {
                             if(bullet.homingPower > 0.01) e.add("@bullet.homing").row();
                             if(bullet.lightning > 0) e.add("@bullet.shock").row();
                             if(bullet.fragBullet != null) e.add("@bullet.frag").row();
-                        }).padTop(-9).left();
+                    }).padTop(-9).left();
 
-                        if(ii % 4 == 0) b.row();
-                    }
+                    if(ii % 4 == 0) b.row();
                 }
             });
             h.row();
@@ -199,19 +156,6 @@ public class MultiTurret extends TemplatedTurret {
                     e.add("[lightgray]"+ Core.bundle.get("category.purpose") + ": " + skill.description);
                 }).left();
             });
-        }
-
-        try {
-            stats.remove(Stat.shootRange);
-            stats.remove(Stat.inaccuracy);
-            stats.remove(Stat.reload);
-            if(Objects.equals(ammoType, "item") || Objects.equals(ammoType, "liquid")) stats.remove(Stat.ammo);
-            stats.remove(Stat.targetsAir);
-            stats.remove(Stat.targetsGround);
-            stats.remove(Stat.ammoUse);
-            stats.remove(Stat.booster);
-        } catch (Throwable a){
-            Log.log(Log.LogLevel.warn,"@", a);
         }
 
         stats.add(Stat.weapons, table -> {
@@ -303,6 +247,7 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public void displayBars(Table bars){
+            super.displayBars(bars);
             for(Func<Building, Bar> bar : block.listBars()){
                 try{
                     bars.add(bar.get(self())).growX();
@@ -311,44 +256,15 @@ public class MultiTurret extends TemplatedTurret {
                     break;
                 }
             }
-            bars.add(new Bar("stat.ammo", Pal.ammo, () -> Mathf.clamp((float)totalAmmo / maxAmmo, 0f, 1f))).growX();
-            bars.row();
-
-            bars.add(new Bar(
-                    () -> {
-                        float value = Mathf.clamp(reloadCounter / reload) * 100f;
-                        return Core.bundle.format("bar.shar-reloadCounter", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
-                    },
-                    () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / reload),
-                    () -> reloadCounter / reload)).growX();
-            bars.row();
-
-            if(shoot.firstShotDelay >= 0.001) bars.add(new Bar(
-                    () -> {
-                        float value = Mathf.clamp(charge) * 100f;
-                        return Core.bundle.format("bar.shar-charge", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
-                    },
-                    () -> Pal.surge.cpy().lerp(Pal.accent, charge / shoot.firstShotDelay),
-                    () -> charge)).growX();
-            bars.row();
-
             int i = 0;
             for(TurretSkill skill : skills) {
                 final int j = i;
                 bars.add(new Bar(
                         () -> Core.bundle.format("bar.shar-skillReload") + shotCounters.get(j) + " / " + skill.maxCount,
                         () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotCounters.get(j) / (skill.maxCount * 2.5f)))),
-                        () -> (shotCounters.get(j) / skill.maxCount))).growX().row();
+                        () -> (shotCounters.get(j) / (skill.maxCount * 1f)))).growX().row();
                 i++;
             }
-
-            bars.add(new SBar(
-                    () -> {
-                        float value = Mathf.clamp(reloadCounter / reload) * 100f;
-                        return Core.bundle.format("bar.shar-reloadCounter", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
-                    },
-                    () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / reload),
-                    () -> reloadCounter / reload)).growX();
             bars.row();
         }
 
@@ -378,29 +294,7 @@ public class MultiTurret extends TemplatedTurret {
         public void handleItem(Building source, Item item){
             for(MountTurretType.MountTurret mount : mounts) mount.handleItem(item);
 
-            BulletType type = ammoTypes.get(item);
-            if(ammoTypes.get(item) != null && totalAmmo + type.ammoMultiplier <= maxAmmo) {
-                if(Objects.equals(ammoType, "item")){
-                    if(item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
-
-                    totalAmmo += type.ammoMultiplier;
-
-                    //find ammo entry by type
-                    for(int i = 0; i < ammo.size; i++){
-                        TemplatedTurret.ItemEntry entry = (TemplatedTurret.ItemEntry)ammo.get(i);
-
-                        //if found, put it to the right
-                        if(entry.item == item){
-                            entry.amount += type.ammoMultiplier;
-                            ammo.swap(i, ammo.size - 1);
-                            return;
-                        }
-                    }
-
-                    //must not be found
-                    ammo.add(new TemplatedTurret.ItemEntry(item, (int)type.ammoMultiplier));
-                } else if(!hasMass()) items.add(item, 1);
-            }else if(hasMass() && items.total() < itemCapacity) items.add(item, 1);
+            super.handleItem(source, item);
         }
 
         @Override

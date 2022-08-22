@@ -41,7 +41,6 @@ public class AccelBulletType extends BasicBulletType {
                     target = Units.closestTarget(b.team, b.x, b.y, 50, e -> e.checkTarget(collidesAir, collidesGround) && !b.hasCollided(e.id), t -> collidesGround && !b.hasCollided(t.id));
                 if (target != null)
                     b.vel.setAngle(Angles.moveToward(b.rotation(), b.angleTo(target), ((BulletData) b.data).hitten ? 5 * Time.delta : Math.min(5, build.dst(target) / 8) * Time.delta));
-
             }
 
             if(b.vel().len() < 15) b.vel().scl(1 + Interp.sineIn.apply(b.fin()) / 8);

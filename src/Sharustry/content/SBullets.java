@@ -192,8 +192,8 @@ public class SBullets {
             homing = true;
         }};
 
-        trailBullet = new EnergyBulletType(0, 0.5f){{
-            lifetime = 120f;
+        trailBullet = new EnergyBulletType(0, 1.5f){{
+            lifetime = 150f;
             height = 15f;
             width = 24f;
             drag = 1;

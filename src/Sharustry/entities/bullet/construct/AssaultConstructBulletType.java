@@ -61,7 +61,7 @@ public class AssaultConstructBulletType extends ConstructBulletType {
             heatDrawer.get(b);
         }
 
-        if(b.owner instanceof MultiConstructTurret.MultiConstructTurretBuild && ((MultiConstructTurret.MultiConstructTurretBuild)b.owner).selected){
+        if(b.owner instanceof MultiConstructTurret.MultiConstructTurretBuild mutli && mutli.selected){
             Drawf.dashCircle(b.x * Vars.tilesize, b.y * Vars.tilesize, range, Pal.placing);
         }
     }

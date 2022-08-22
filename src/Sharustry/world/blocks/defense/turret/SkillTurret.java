@@ -13,8 +13,6 @@ import mindustry.graphics.Pal;
 import mindustry.ui.Bar;
 import mindustry.world.meta.Stat;
 
-import java.util.Objects;
-
 public class SkillTurret extends TemplatedTurret {
     public Seq<TurretSkill<SkillTurretBuild>> skills = new Seq<>();
 
