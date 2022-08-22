@@ -1,10 +1,9 @@
 package Sharustry.entities.bullet;
 
 import Sharustry.world.blocks.defense.turret.DriverBulletData;
-import Sharustry.world.blocks.defense.turret.MultiTurret;
 import arc.graphics.*;
 import arc.math.*;
-import arc.math.geom.Position;
+import arc.util.Tmp;
 import mindustry.content.*;
 import mindustry.entities.bullet.MassDriverBolt;
 import mindustry.gen.*;
@@ -24,58 +23,25 @@ public class MountDriverBolt extends MassDriverBolt {
         //if the target is dead, just keep flying until the bullet explodes
         if(data.to.dead()) return;
 
-        Position fromM = new Position() {
-            @Override
-            public float getX() {
-                if(data.from instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.from).mounts.get(data.linkIndex).x;
+        Tmp.v1.set(data.from.mounts.get(data.fromIndex).x, data.from.mounts.get(data.fromIndex).y);
+        Tmp.v2.set(data.to.mounts.get(data.toIndex).x, data.to.mounts.get(data.toIndex).y);
 
-                return 0;
-            }
-
-            @Override
-            public float getY() {
-                if(data.from instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.from).mounts.get(data.linkIndex).y;
-
-                return 0;
-            }
-        };
-
-        Position toM = new Position() {
-            @Override
-            public float getX() {
-                if(data.to instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.to).mounts.get(data.linkIndex).x;
-
-                return 0;
-            }
-
-            @Override
-            public float getY() {
-                if(data.to instanceof MultiTurret.MultiTurretBuild)
-                    return ((MultiTurret.MultiTurretBuild)data.to).mounts.get(data.linkIndex).y;
-
-                return 0;
-            }
-        };
-
-        float baseDst = fromM.dst(toM);
-        float dst1 = b.dst(fromM);
-        float dst2 = b.dst(toM);
+        float baseDst = Tmp.v1.dst(Tmp.v2);
+        float dst1 = b.dst(Tmp.v1);
+        float dst2 = b.dst(Tmp.v2);
 
         boolean intersect = false;
 
         //bullet has gone past the destination point: but did it intersect it?
         if(dst1 > baseDst){
-            float angleTo = b.angleTo(toM);
-            float baseAngle = toM.angleTo(fromM);
+            float angleTo = b.angleTo(Tmp.v2);
+            float baseAngle = Tmp.v2.angleTo(Tmp.v1);
 
             //if angles are nearby, then yes, it did
             if(Angles.near(angleTo, baseAngle, 2f)){
                 intersect = true;
                 //snap bullet position back; this is used for low-FPS situations
-                b.set(toM.getX() + Angles.trnsx(baseAngle, hitDst), toM.getY() + Angles.trnsy(baseAngle, hitDst));
+                b.set(Tmp.v2.x + Angles.trnsx(baseAngle, hitDst), Tmp.v2.y + Angles.trnsy(baseAngle, hitDst));
             }
         }
         //if on course, and it's in range of the target
@@ -83,9 +49,7 @@ public class MountDriverBolt extends MassDriverBolt {
             intersect = true;
         } //else, bullet has gone off course, does not get received.
 
-        if(intersect){
-            if(data.to instanceof MultiTurret.MultiTurretBuild) ((MultiTurret.MultiTurretBuild)data.to).handlePayload(b, data);
-        }
+        if(intersect) data.to.handlePayload(b, data);
     }
 
     @Override

@@ -6,8 +6,8 @@ import mindustry.gen.Building;
 import static mindustry.Vars.content;
 
 public class DriverBulletData implements Pool.Poolable {
-    public int linkIndex;
-    public Building from, to;
+    public int fromIndex, toIndex;
+    public MultiTurret.MultiTurretBuild from, to;
 
     public int[] items = new int[content.items().size];
 

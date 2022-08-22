@@ -50,7 +50,7 @@ public class SBlocks {
             //defense
             shieldWall, explodeMine,
             //drill
-            adaptDrill, multiDrill;
+            adaptDrill, multiDrill, warehouse;
 
     public static void load(){
         variableProcessor = new VariableLogicBlock("variable-processor"){{
@@ -546,10 +546,9 @@ public class SBlocks {
         fossor = new MultiConstructTurret("fossor"){{
             requirements(Category.turret, ItemStack.with(Items.copper, 300, Items.lead, 180, Items.graphite, 140, Items.silicon, 200, Items.titanium, 180, Items.thorium, 130));
 
-            itemAmmo(Items.plastanium,SBullets.fossers);
+            itemAmmo(Items.plastanium, SBullets.fossers);
             addMountTurret(miniDrillMount, -7f, -8f);
             addMountTurret(miniDrillMount, 7f, -8f);
-            addMountTurret(miniMassMount, 0f, -4f);
             addMountTurret(miniMassMount, 0f, 0f);
             drawer = new DrawTurret() {
                 TextureRegion left, leftOutline, right, rightOutline;
@@ -672,6 +671,23 @@ public class SBlocks {
                 hittable = false;
             }};
             shotsSpacing = 0.25f;
+        }};
+
+        warehouse = new MultiTurret("warehouse") {{
+            requirements(Category.turret, ItemStack.with(Items.copper, 1000, Items.lead, 300, Items.titanium, 500, Items.graphite, 280, Items.thorium, 450, Items.silicon, 750));
+
+            addMountTurret(miniMassMount, -12f, 12f);
+            addMountTurret(miniMassMount, 12f, 12f);
+            addMountTurret(miniMassMount, -12f, -12f);
+            addMountTurret(miniMassMount, 12f, -12f);
+            addMountTurret(miniMassMount, -15f, 0f);
+            addMountTurret(miniMassMount, 15f, 0f);
+            addMountTurret(miniMassMount, 0f, -15f);
+            addMountTurret(miniMassMount, 0f, 15f);
+
+            size = 6;
+            itemCapacity = 3000;
+            hasItems = true;
         }};
     }
 }
