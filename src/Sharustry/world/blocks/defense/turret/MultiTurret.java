@@ -1,6 +1,7 @@
 package Sharustry.world.blocks.defense.turret;
 
 import Sharustry.content.STurretMounts;
+import Sharustry.entities.skills.TurretSkill;
 import Sharustry.ui.SBar;
 import Sharustry.world.blocks.defense.turret.mounts.*;
 import arc.*;
@@ -40,19 +41,15 @@ import static mindustry.Vars.*;
 public class MultiTurret extends TemplatedTurret {
     public float rangeTime = 80;
     public float fadeTime = 20;
-    public String title;
     public float totalRangeTime;
+    public String title;
     public Object mainAmmo;
     public BulletType bullet;
 
     public TextureRegion outline, baseTurret;
 
     //TODO: why don't just make skill's own class instead?
-    public Seq<Integer> skillDelays = new Seq<>();
-    public Seq<Func<MultiTurretBuild, Runnable>> skillSeq = new Seq<>();
-    public Seq<String> skillNames = new Seq<>();
-    public Seq<String> skillDescriptions = new Seq<>();
-    public Seq<Cons<Table>> skillStats = new Seq<>();
+    public Seq<TurretSkill<MultiTurretBuild>> skills = new Seq<>();
     public Seq<MountTurretType> mountTypes = new Seq<>();
     public Seq<Float[]> mountOffsets = new Seq<>();
 
@@ -71,11 +68,6 @@ public class MultiTurret extends TemplatedTurret {
         if(!configurable && mount instanceof MassMountTurretType) configurable = true;
 
         this.totalRangeTime = rangeTime * mountTypes.size;
-    }
-    public void addMountTurrets(MountTurretType ...mounts) {
-        for(MountTurretType mount : mounts) {
-            addMountTurret(mount);
-        }
     }
     public void addBaseTurret(BulletType type, Object ammo, String title){
         if(ammo instanceof Item) {
@@ -99,14 +91,6 @@ public class MultiTurret extends TemplatedTurret {
 
         this.bullet = type;
         this.title = title;
-    }
-
-    public <T extends MultiTurretBuild> void addSkills(Func<T, Runnable> skill, int delay, String name){
-        if(skill != null) {
-            skillSeq.add((Func<MultiTurretBuild, Runnable>) skill);
-            skillDelays.add(delay);
-            skillNames.add(name);
-        }
     }
 
     @Override
@@ -204,18 +188,15 @@ public class MultiTurret extends TemplatedTurret {
     public void setStats(){
         super.setStats();
 
-        for(int i = 0; i < skillSeq.size; i++) {
-            final int j = i;
+        for(TurretSkill skill : skills) {
             stats.add(Stat.abilities, table -> {
-                if(skillDescriptions.size >= skillSeq.size) table.table(Tex.underline, e -> {
+                table.table(Tex.underline, e -> {
                     e.left().defaults().padRight(3).left();
-                    e.add("[white]" + skillNames.get(j) + "[]").fillX().row();
-                    e.add(Core.bundle.format("stat.shar.skillreload", ""+skillDelays.get(j))).row();
-                    if(skillStats.size >= skillSeq.size) {
-                        skillStats.get(j).get(e);
-                        e.row();
-                    }
-                    e.add("[lightgray]"+ Core.bundle.get("category.purpose") + ": " + skillDescriptions.get(j)+"");
+                    e.add(skill.name).fillX().row();
+                    e.add(Core.bundle.format("stat.shar.skillreload", ""+skill.maxCount)).row();
+                    skill.stats(e);
+                    e.row();
+                    e.add("[lightgray]"+ Core.bundle.get("category.purpose") + ": " + skill.description);
                 }).left();
             });
         }
@@ -255,7 +236,7 @@ public class MultiTurret extends TemplatedTurret {
     }
 
     public class MultiTurretBuild extends TemplatedTurretBuild {
-        public Seq<Integer> shotCounters = new Seq<>();
+        public IntSeq shotCounters = new IntSeq();
         public Seq<MountTurretType.MountTurret> mounts = new Seq<>();
         MassMountTurretType.MassMountTurret selectedMassMount;
 
@@ -269,7 +250,7 @@ public class MultiTurret extends TemplatedTurret {
         public void created(){
             super.created();
 
-            for(int i = 0; i < skillDelays.size; i++) shotCounters.add(0);
+            for(int i = 0; i < skills.size; i++) shotCounters.add(0);
             for(int i = 0; i < mountTypes.size; i++) mounts.add(mountTypes.get(i).create(((MultiTurret)block), this, i, mountOffsets.get(i)[0], mountOffsets.get(i)[1]));
         }
 
@@ -351,13 +332,14 @@ public class MultiTurret extends TemplatedTurret {
                     () -> charge)).growX();
             bars.row();
 
-            for(int i = 0; i < skillDelays.size; i++) {
+            int i = 0;
+            for(TurretSkill skill : skills) {
                 final int j = i;
                 bars.add(new Bar(
-                        () -> Core.bundle.format("bar.shar-skillReload") + shotCounters.get(j) + " / " + skillDelays.get(j),
-                        () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotCounters.get(j) / (skillDelays.get(j) * 2.5f)))),
-                        () -> (shotCounters.get(j) / (skillDelays.get(j) * 1f)))).growX();
-                bars.row();
+                        () -> Core.bundle.format("bar.shar-skillReload") + shotCounters.get(j) + " / " + skill.maxCount,
+                        () -> Pal.lancerLaser.cpy().lerp(Pal.place, Mathf.absin(Time.time, 20, (shotCounters.get(j) / (skill.maxCount * 2.5f)))),
+                        () -> (shotCounters.get(j) / skill.maxCount))).growX().row();
+                i++;
             }
 
             bars.add(new SBar(
@@ -620,11 +602,11 @@ public class MultiTurret extends TemplatedTurret {
         protected void shoot(BulletType type) {
             super.shoot(type);
 
-            for(int i = 0; i < skillDelays.size; i++) {
-                shotCounters.set(i, shotCounters.get(i) + 1);
-                if(Objects.equals(shotCounters.get(i), skillDelays.get(i))) {
+            for(int i = 0; i < skills.size; i++) {
+                shotCounters.incr(i, 1);
+                if(shotCounters.get(i) >= skills.get(i).maxCount) {
                     shotCounters.set(i, 0);
-                    skillSeq.get(i).get(this).run();
+                    skills.get(i).active(this);
                 }
             }
         }
@@ -633,7 +615,7 @@ public class MultiTurret extends TemplatedTurret {
         public void write(Writes write){
             super.write(write);
 
-            for(int i = 0; i < skillDelays.size; i++)
+            for(int i = 0; i < skills.size; i++)
                 write.i(shotCounters.get(i));
             write.i(mounts.size);
             for(int i = 0; i < mountTypes.size; i++) mounts.get(i).write(write);
@@ -648,7 +630,7 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void read(Reads read, byte revision){
             super.read(read, revision);
-            for(int i = 0; i < skillDelays.size; i++) shotCounters.set(i, read.i());
+            for(int i = 0; i < skills.size; i++) shotCounters.set(i, read.i());
             int amount = read.i();
             for(int i = 0; i < mountTypes.size; i++) mounts.get(i).read(read, revision);
             for(int i = 0; i < amount - mountTypes.size; i++) {

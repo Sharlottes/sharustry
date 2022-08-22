@@ -3,6 +3,8 @@ package Sharustry.content;
 import Sharustry.entities.bullet.AccelBulletType;
 import Sharustry.entities.bullet.FieldBulletType;
 import Sharustry.entities.pattern.ShootAside;
+import Sharustry.entities.skills.Skill;
+import Sharustry.entities.skills.TurretSkill;
 import Sharustry.graphics.SPal;
 import Sharustry.world.blocks.defense.turret.*;
 import Sharustry.world.blocks.logic.VariableLogicBlock;
@@ -124,49 +126,53 @@ public class SBlocks {
         }};
 
         balkan = new SkillTurret("balkan"){{
-            addSkills(entity -> () -> {
-                for(int i = 0; i < 5; i++){
-                    Time.run(0.1f * 60 * i, () -> {
-                        final float ex = entity.x + Mathf.range(16f);
-                        final float ey = entity.y + Mathf.range(16f);
-                        SFx.skill.at(ex, ey, ammoTypes.findKey(((TemplatedTurretBuild)entity).peekAmmo(), true).color);
-                        for(int ii = 0; ii < 3; ii++) Time.run(15 * ii, () -> {
-                            Sounds.missile.at(ex, ey);
-                            SBullets.miniAccelMissile.create(entity, ex, ey, ((BaseTurretBuild) entity).rotation);
-                        });
-                    });
-                }
-            }, 5, Core.bundle.get("stat.shar.burstshoot-name"));
-
-            addSkills(entity -> () -> {
-                Sounds.unlock.at(entity.x, entity.y, 0.75f);
-                if(((TemplatedTurretBuild)entity).hasAmmo() && ((TemplatedTurretBuild)entity).peekAmmo() == SBullets.testLaser) new FieldBulletType(0, -1, 897, 85).create(entity, entity.x, entity.y, 0);
-                else new FieldBulletType(0, -1, 897, 85){{
-                    mainColor = SPal.cryoium;
-                    subColor = Items.titanium.color;
-                    status = SStatusEffects.overFreezing;
-                }}.create(entity, entity.x, entity.y, 0);
-            }, 20, Core.bundle.get("stat.shar.overfreezing-name"));
-            skillDescriptions.add(Core.bundle.get("stat.shar.burstshoot-description"), Core.bundle.get("stat.shar.overfreezing-description"));
-            skillStats.add(
-                table -> {
-                    table.top();
-                    table.add(Core.bundle.format("stat.shar.burstamount", 24));
-                },
-                table -> {
-                    table.top();
-                    table.add(new Stack(){{
-                        add(new Table(h -> {
-                            h.left();
-                            h.add(Core.bundle.format("stat.shar.fieldstatus"));
-                        }));
-                        add(new Table(q -> {
-                            q.right();
-                            q.image(Core.atlas.find("shar-over-freezing")).padLeft(15 * 8f);
-                            q.add("[stat]" + SStatusEffects.overFreezing.localizedName +"[]");
-                            q.pack();
-                        }));
-                    }});
+             skills.addAll(
+                 new TurretSkill<>("burstshoot", entity -> () -> {
+                     for(int i = 0; i < 5; i++){
+                         Time.run(0.1f * 60 * i, () -> {
+                             final float ex = entity.x + Mathf.range(16f);
+                             final float ey = entity.y + Mathf.range(16f);
+                             SFx.skill.at(ex, ey, ammoTypes.findKey(((TemplatedTurretBuild)entity).peekAmmo(), true).color);
+                             for(int ii = 0; ii < 3; ii++) Time.run(15 * ii, () -> {
+                                 Sounds.missile.at(ex, ey);
+                                 SBullets.miniAccelMissile.create(entity, ex, ey, ((BaseTurretBuild) entity).rotation);
+                             });
+                         });
+                     }
+                 }, 5){
+                     @Override
+                     public void stats(Table table) {
+                         super.stats(table);
+                         table.top();
+                         table.add(Core.bundle.format("stat.shar.burstamount", 24));
+                     }
+                 },
+                 new TurretSkill<>("overfreezing", entity -> () -> {
+                     Sounds.unlock.at(entity.x, entity.y, 0.75f);
+                     if(((TemplatedTurretBuild)entity).hasAmmo() && ((TemplatedTurretBuild)entity).peekAmmo() == SBullets.testLaser) new FieldBulletType(0, -1, 897, 85).create(entity, entity.x, entity.y, 0);
+                     else new FieldBulletType(0, -1, 897, 85){{
+                         mainColor = SPal.cryoium;
+                         subColor = Items.titanium.color;
+                         status = SStatusEffects.overFreezing;
+                     }}.create(entity, entity.x, entity.y, 0);
+                 }, 20){
+                     @Override
+                     public void stats(Table table) {
+                         super.stats(table);
+                         table.top();
+                         table.add(new Stack(){{
+                             add(new Table(h -> {
+                                 h.left();
+                                 h.add(Core.bundle.format("stat.shar.fieldstatus"));
+                             }));
+                             add(new Table(q -> {
+                                 q.right();
+                                 q.image(Core.atlas.find("shar-over-freezing")).padLeft(15 * 8f);
+                                 q.add("[stat]" + SStatusEffects.overFreezing.localizedName +"[]");
+                                 q.pack();
+                             }));
+                         }});
+                     }
                 }
             );
             ammoType = "item";
@@ -399,7 +405,7 @@ public class SBlocks {
             addMountTurret(massMount, 0f, 0f);
             addMountTurret(tractMount, 8f, 0f);
 
-            addSkills(entity -> () -> {
+            skills.add(new TurretSkill<>("shieldreceive", entity -> () -> {
                 if(Groups.unit.find(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range) == null
                         || Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range
                         && Structs.find(u.abilities, a -> a instanceof ForceFieldAbility) != null) == Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range)) return;
@@ -411,14 +417,14 @@ public class SBlocks {
                     target.abilities(Structs.add(target.abilities, abil));
                     Time.run(60 * 60 * 60, () -> target.abilities(Structs.remove(target.abilities, abil)));
                 }));
-            }, 20, Core.bundle.get("stat.shar.shieldreceive-name"));
-            skillDescriptions.add(Core.bundle.get("stat.shar.shieldreceive-description"));
-            skillStats.add(
-                    table -> {
-                        table.top();
-                        table.add(Core.bundle.format("stat.shar.receiveRange", range));
-                    }
-            );
+            }, 20) {
+                @Override
+                public void stats(Table table) {
+                    super.stats(table);
+                    table.top();
+                    table.add(Core.bundle.format("stat.shar.receiveRange", range));
+                }
+            });
 
             hasItems = true;
             itemCapacity = 150;
@@ -446,52 +452,57 @@ public class SBlocks {
             addMountTurret(healMissileMountR, 10f, -4.5f);
             addMountTurret(healLaserMount2, 0f, 1.5f);
 
-            addSkills(entity -> () -> {
-                final float shotAmount = 5;
-                BulletType type = SBullets.force;
-                for(int i = 0; i < shotAmount; i++) {
-                    float
-                        xSpread = Mathf.range(xRand),
-                        bulletX = entity.x + Angles.trnsx(entity.rotation - 90, shootX + xSpread, shootY),
-                        bulletY = entity.y + Angles.trnsy(entity.rotation - 90, shootX + xSpread, shootY),
-                        angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
-                    Time.run(10 * i, () -> {
-                        float lifeScl = !type.scaleLife ? 1f
-                            : Mathf.clamp(Mathf.dst(bulletX, bulletY, entity.targetPos.x, entity.targetPos.y) / type.range, minRange / type.range, range / type.range);
+            skills.addAll(
+                new TurretSkill<>("fireforce", entity -> () -> {
+                    final float shotAmount = 5;
+                    BulletType type = SBullets.force;
+                    for(int i = 0; i < shotAmount; i++) {
+                        float
+                                xSpread = Mathf.range(xRand),
+                                bulletX = entity.x + Angles.trnsx(entity.rotation - 90, shootX + xSpread, shootY),
+                                bulletY = entity.y + Angles.trnsy(entity.rotation - 90, shootX + xSpread, shootY),
+                                angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
+                        Time.run(10 * i, () -> {
+                            float lifeScl = !type.scaleLife ? 1f
+                                    : Mathf.clamp(Mathf.dst(bulletX, bulletY, entity.targetPos.x, entity.targetPos.y) / type.range, minRange / type.range, range / type.range);
 
-                        entity.handleBullet(type.create(entity, entity.team, bulletX, bulletY, angle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, null, null, entity.targetPos.x, entity.targetPos.y), 0, 0, angle - entity.rotation);
-                    });
-                }
-            }, 3, Core.bundle.get("stat.shar.fireforce-name"));
-
-            addSkills(entity -> () -> {
-                final float shotAmount = 3;
-                BulletType type = SBullets.assault;
-                for(int i = 0; i < shotAmount; i++) {
-                    float
-                        xSpread = Mathf.range(xRand),
-                        bulletX = entity.x + Angles.trnsx(entity.rotation - 90, shootX + xSpread, shootY),
-                        bulletY = entity.y + Angles.trnsy(entity.rotation - 90, shootX + xSpread, shootY),
-                        angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
-                    Time.run(20 * i, () -> {
-                        float lifeScl = !type.scaleLife ? 1f
-                                : Mathf.clamp(Mathf.dst(bulletX, bulletY, entity.targetPos.x, entity.targetPos.y) / type.range, minRange / type.range, range / type.range);
-
-                        entity.handleBullet(type.create(entity, entity.team, bulletX, bulletY, angle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, null, null, entity.targetPos.x, entity.targetPos.y), 0, 0, angle - entity.rotation);
-                    });
-                }
-            }, 5, Core.bundle.get("stat.shar.fireassault-name"));
-            skillDescriptions.add(Core.bundle.get("stat.shar.fireforce-description"), Core.bundle.get("stat.shar.fireassault-description"));
-            skillStats.add(
-                    table -> {
+                            entity.handleBullet(type.create(entity, entity.team, bulletX, bulletY, angle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, null, null, entity.targetPos.x, entity.targetPos.y), 0, 0, angle - entity.rotation);
+                        });
+                    }
+                }, 3) {
+                    @Override
+                    public void stats(Table table) {
+                        super.stats(table);
                         table.top();
                         table.add(Core.bundle.format("stat.shar.constructamount", 5));
-                    },
-                    table -> {
+                    }
+                },
+                new TurretSkill<>("fireassault", entity -> () -> {
+                    final float shotAmount = 3;
+                    BulletType type = SBullets.assault;
+                    for(int i = 0; i < shotAmount; i++) {
+                        float
+                                xSpread = Mathf.range(xRand),
+                                bulletX = entity.x + Angles.trnsx(entity.rotation - 90, shootX + xSpread, shootY),
+                                bulletY = entity.y + Angles.trnsy(entity.rotation - 90, shootX + xSpread, shootY),
+                                angle = entity.rotation + Mathf.range(inaccuracy) + (i % 2 == 0 ? -i : i) * (90 / shotAmount);
+                        Time.run(20 * i, () -> {
+                            float lifeScl = !type.scaleLife ? 1f
+                                    : Mathf.clamp(Mathf.dst(bulletX, bulletY, entity.targetPos.x, entity.targetPos.y) / type.range, minRange / type.range, range / type.range);
+
+                            entity.handleBullet(type.create(entity, entity.team, bulletX, bulletY, angle, -1f, (1f - velocityRnd) + Mathf.random(velocityRnd), lifeScl, null, null, entity.targetPos.x, entity.targetPos.y), 0, 0, angle - entity.rotation);
+                        });
+                    }
+                }, 5) {
+                    @Override
+                    public void stats(Table table) {
+                        super.stats(table);
                         table.top();
                         table.add(Core.bundle.format("stat.shar.constructamount", 3));
                     }
+                }
             );
+
             hasLiquids = true;
             hasItems = true;
             size = 4;
