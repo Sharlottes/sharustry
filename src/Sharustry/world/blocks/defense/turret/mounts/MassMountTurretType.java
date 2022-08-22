@@ -21,10 +21,10 @@ import mindustry.content.Fx;
 import mindustry.entities.Effect;
 import mindustry.gen.Building;
 import mindustry.gen.Bullet;
+import mindustry.gen.Groups;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Pal;
 import mindustry.type.Item;
-import mindustry.world.Tile;
 import mindustry.world.blocks.distribution.MassDriver;
 
 import static mindustry.Vars.*;
@@ -121,23 +121,39 @@ public class MassMountTurretType extends MountTurretType {
 
         @Override
         public void drawConfigure() {
+            if(build.selectedMassMount != null && build.selectedMassMount != this) return;
             float sin = Mathf.absin(Time.time, 6 / 2f, 1f);
-
+            float circleRad = 7 + sin;
             Draw.color(Pal.accent);
             Lines.stroke(1f);
-            Drawf.circles(x, y, (block.size  / 2f/ 2f + 1) * tilesize + sin - 2f, Pal.accent);
+            Drawf.circles(x, y, circleRad, Pal.accent);
+            Groups.build.each(building -> building.team == build.team, building -> {
+                if(building instanceof MultiTurret.MultiTurretBuild multi) {
+                    multi.mounts.each(mount -> {
+                        if(mount instanceof MassMountTurret mass && mass.link == build.tile.pos() && mass.linkIndex == mountIndex && build.dst(mass.x, mass.y) <= mass.type.range && !waitingShooters.containsKey(building.tile.pos())) {
+                            Tmp.v1.set(mount.x, mount.y).sub(x, y).limit(11f).add(x, y);
+                            Drawf.dashLine(Pal.place, Tmp.v1.x, Tmp.v1.y, mount.x, mount.y);
+                            Drawf.circles(mount.x, mount.y, circleRad, Pal.place);
+                            Drawf.arrow(mount.x, mount.y, x, y, circleRad + 4f, 4f + sin, Pal.place);
+                        }
+                    });
+                }
+            });
 
             for(ObjectMap.Entry<Integer, Integer> entry : waitingShooters){
-                Tile shooter = world.tile(entry.key);
-                Drawf.circles(shooter.drawx(), shooter.drawy(), (block.size / 2f / 2f + 1) * tilesize + sin - 2f, Pal.place);
-                Drawf.arrow(shooter.drawx(), shooter.drawy(), x, y, block.size / 2f * tilesize + sin, 4f + sin, Pal.place);
+                MountTurret mount = ((MultiTurret.MultiTurretBuild) world.build(entry.key)).mounts.get(entry.value);
+                Tmp.v1.set(mount.x, mount.y).sub(x, y).limit(11f).add(x, y);
+                Drawf.dashLine(Pal.lancerLaser, Tmp.v1.x, Tmp.v1.y, mount.x, mount.y);
+                Drawf.circles(mount.x, mount.y, circleRad, Pal.lancerLaser);
+                Drawf.arrow(mount.x, mount.y, x, y, circleRad + 4f, 4f + sin, Pal.lancerLaser);
             }
 
             if(linkValid()){
-                MultiTurret.MultiTurretBuild target = (MultiTurret.MultiTurretBuild) world.build(link);
-                MountTurret mount = target.mounts.get(linkIndex);
-                Drawf.circles(mount.x, mount.y, (target.block().size / 2f / 2f + 1) * tilesize + sin - 2f, Pal.place);
-                Drawf.arrow(x, y, mount.x, mount.y, block.size / 2f * tilesize + sin, 4f + sin);
+                MountTurret mount = ((MultiTurret.MultiTurretBuild) world.build(link)).mounts.get(linkIndex);
+                Tmp.v1.set(mount.x, mount.y).sub(x, y).limit(circleRad + 4f).add(x, y);
+                Drawf.dashLine(Pal.accent, Tmp.v1.x, Tmp.v1.y, mount.x, mount.y);
+                Drawf.circles(mount.x, mount.y, circleRad, Pal.place);
+                Drawf.arrow(x, y, mount.x, mount.y, circleRad + 4f, 4f + sin);
             }
 
             Drawf.dashCircle(x, y, type.range, Pal.accent);
@@ -160,10 +176,6 @@ public class MassMountTurretType extends MountTurretType {
             if (reloadCounter < reload) reloadCounter += build.delta() * getPowerEfficiency();
             //유효하지 않은 값 초기화
             if (shooter != null && !shooterValid(shooter.key, shooter.value)) {
-                MassMountTurret mount = (MassMountTurret) ((MultiTurret.MultiTurretBuild) world.build(shooter.key)).mounts.get(shooter.value);
-
-                if(mountIndex == 3) Log.info(mount.link + ": " + world.tile(mount.link));
-
                 waitingShooters.remove(shooter.key);
             }
 
@@ -193,9 +205,10 @@ public class MassMountTurretType extends MountTurretType {
 
                 rotation = Mathf.slerpDelta(rotation, build.angleTo(world.tile(shooter.key)), rotateSpeed * getPowerEfficiency());
             } else if (massState == MassDriver.DriverState.shooting) {
+                if(!hasLink) return;
                 MassMountTurret linkedMount = (MassMountTurret) ((MultiTurret.MultiTurretBuild) link).mounts.get(linkIndex);
                 //if there's nothing to shoot at OR someone wants to shoot at this thing, bail
-                if (!hasLink || linkedMount == null || (!waitingShooters.isEmpty() && block.itemCapacity - build.items.total() >= minDistribute) || block.itemCapacity - link.items.total() < linkedMount.type.minDistribute) {
+                if (linkedMount == null || (!waitingShooters.isEmpty() && block.itemCapacity - build.items.total() >= minDistribute) || block.itemCapacity - link.items.total() < linkedMount.type.minDistribute) {
                     massState = MassDriver.DriverState.idle;
                     return;
                 }
@@ -215,8 +228,9 @@ public class MassMountTurretType extends MountTurretType {
 
                             DriverBulletData data = Pools.obtain(DriverBulletData.class, DriverBulletData::new);
                             data.from = build;
-                            data.to = link;
-                            data.linkIndex = linkIndex;
+                            data.to = (MultiTurret.MultiTurretBuild) link;
+                            data.fromIndex = mountIndex;
+                            data.toIndex = linkIndex;
 
                             int totalUsed = 0;
                             for (int h = 0; h < content.items().size; h++) {

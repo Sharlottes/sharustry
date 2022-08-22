@@ -45,7 +45,7 @@ public class STurretMounts {
             shake = 3f;
             powerUse = 3f;
             title = "Mini MassDriver";
-            reload = 100f;
+            reload = 300f;
             range = 440f;
         }};
 

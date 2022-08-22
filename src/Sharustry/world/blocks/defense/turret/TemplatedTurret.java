@@ -146,7 +146,7 @@ public class TemplatedTurret extends Turret {
         public void updateTile(){
             if(isLiquidTurret()) unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
             if(isPowerTurret()) unit.ammo(power.status * unit.type().ammoCapacity);
-            if(isItemTurret()) unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);
+            if(isItemTurret()) unit.ammo(Mathf.clamp((float)unit.type().ammoCapacity * totalAmmo / maxAmmo));
 
             super.updateTile();
         }
@@ -244,7 +244,6 @@ public class TemplatedTurret extends Turret {
                     () -> Pal.surge.cpy().lerp(Pal.accent, charge / shoot.firstShotDelay),
                     () -> charge)).growX();
             bars.row();
-
         }
 
         @Override
@@ -273,13 +272,13 @@ public class TemplatedTurret extends Turret {
 
         @Override
         public void handleItem(Building source, Item item){
+            super.handleItem(source, item);
             if(isItemTurret()){
-                if(item == Items.pyratite){
-                    Events.fire(Trigger.flameAmmo);
-                }
-
                 BulletType type = ammoTypes.get(item);
-                if(type == null) return;
+                if(type == null || totalAmmo + type.ammoMultiplier > maxAmmo) return;
+
+                if(item == Items.pyratite) Events.fire(Trigger.flameAmmo);
+
                 totalAmmo += type.ammoMultiplier;
 
                 //find ammo entry by type
@@ -297,7 +296,6 @@ public class TemplatedTurret extends Turret {
                 //must not be found
                 ammo.add(new ItemEntry(item, (int)type.ammoMultiplier));
             }
-            super.handleItem(source, item);
         }
 
         @Override

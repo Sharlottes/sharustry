@@ -9,7 +9,9 @@ import arc.func.Func;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.Vec2;
+import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.Button;
+import arc.scene.ui.Image;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
@@ -182,7 +184,7 @@ public class MultiTurret extends TemplatedTurret {
     public class MultiTurretBuild extends TemplatedTurretBuild {
         public IntSeq shotCounters = new IntSeq();
         public Seq<MountTurretType.MountTurret> mounts = new Seq<>();
-        MassMountTurretType.MassMountTurret selectedMassMount;
+        public MassMountTurretType.MassMountTurret selectedMassMount;
 
         @Override
         public void remove(){
@@ -248,14 +250,6 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void displayBars(Table bars){
             super.displayBars(bars);
-            for(Func<Building, Bar> bar : block.listBars()){
-                try{
-                    bars.add(bar.get(self())).growX();
-                    bars.row();
-                }catch(ClassCastException e){
-                    break;
-                }
-            }
             int i = 0;
             for(TurretSkill skill : skills) {
                 final int j = i;
@@ -299,12 +293,8 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public boolean acceptItem(Building source, Item item){
-            boolean h = false;
-            for(MountTurretType.MountTurret mount : mounts) {
-                h = mount.acceptItem(item);
-                if(h) break;
-            }
-            return (ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo) || h;
+            return (ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo)
+                    || mounts.contains(mount -> mount.acceptItem(item));
         }
 
         @Override
@@ -396,11 +386,8 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public void updateTile() {
-            //set block's ammo
-            unit.ammo((float)unit.type().ammoCapacity * totalAmmo / maxAmmo);
             super.updateTile();
             for(MountTurretType.MountTurret mount : mounts) mount.updateTile();
-
         }
 
         public void handlePayload(Bullet bullet, DriverBulletData data){
@@ -438,7 +425,19 @@ public class MultiTurret extends TemplatedTurret {
                 if(!(mount instanceof MassMountTurretType.MassMountTurret mass)) continue;
                 Button button = new Button();
                 button.setStyle(Styles.clearTogglei);
-                button.image(mount.type.region);
+                button.add(new Image(mount.type.region){
+                    final TextureRegionDrawable mask = new TextureRegionDrawable(mount.type.drawer.mask);
+                    @Override
+                    public void draw() {
+                        if(((MassMountTurretType.MassMountTurret) mount).linkValid()) {
+                            Draw.color(Pal.accent);
+                            mask.draw(x + imageX, y + imageY, imageWidth * scaleX * 1.05f, imageHeight * scaleY * 1.05f);
+                            Draw.rect(mount.type.drawer.mask, x, y);
+                            Draw.color();
+                        }
+                        super.draw();
+                    }
+                });
                 button.setChecked(selectedMassMount == mass);
                 button.clicked(() -> {
                     if(selectedMassMount == buttons.get(button)) selectedMassMount = null;
@@ -447,26 +446,31 @@ public class MultiTurret extends TemplatedTurret {
                         entry.key.setChecked(selectedMassMount == entry.value);
                     }
                 });
-                table.add(button).size(10 * 8f);
+                table.add(button).size(5 * 8f);
                 buttons.put(button, mass);
             };
         }
 
         @Override
         public boolean onConfigureBuildTapped(Building other){
-            if(other != this && selectedMassMount != null && other.team == team && other instanceof MultiTurretBuild multi) {
+            if(selectedMassMount != null && other.team == team && other instanceof MultiTurretBuild multi) {
+                if(other == this) {
+                    selectedMassMount.link = -1;
+                    selectedMassMount.linkIndex = -1;
+                    deselect();
+                    return false;
+                }
+
                 MassMountTurretType.MassMountTurret mass = (MassMountTurretType.MassMountTurret) multi.mounts.find(mount -> mount instanceof MassMountTurretType.MassMountTurret && Math.abs(input.mouseWorldX() - mount.x) < 4 && Math.abs(input.mouseWorldY() - mount.y) < 4);
                 if(mass != null && other.dst(mass.x, mass.y) <= mass.type.range) {
                     if (selectedMassMount.link == other.tile.pos()) {
                         selectedMassMount.link = -1;
                         selectedMassMount.linkIndex = -1;
-                        return false;
                     } else {
-                        Log.info(other.tile.pos());
                         selectedMassMount.link = other.tile.pos();
                         selectedMassMount.linkIndex = mass.mountIndex;
-                        return false;
                     }
+                    return false;
                 }
             }
 
