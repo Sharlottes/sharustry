@@ -121,9 +121,12 @@ public class DrawMountTurret {
             }
         });
 
+        /* //may not need to save as file?
         Fi pixFile = new Fi("sharustry/mounts/"+name+".png", Files.FileType.local);
         PixmapIO.writePng(pixFile, pixmap);
         Log.info("[Sharustry] generating successfully done, saved on: "+pixFile.absolutePath()+"\n----------------------------------------");
+         */
+
         return Core.atlas.addRegion(name, new TextureRegion(new Texture(pixmap)));
     }
     /** Load any relevant texture regions. */
