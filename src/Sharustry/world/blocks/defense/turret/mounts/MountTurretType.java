@@ -14,6 +14,8 @@ import arc.graphics.g2d.TextureRegion;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
+import arc.scene.style.TextureRegionDrawable;
+import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
@@ -163,7 +165,14 @@ public class MountTurretType {
     public void addStats(Table w){
         w.left().row();
         w.add(title).right().top().row();
-        w.image(Core.atlas.find("shar-"+ name + "-full")).size(60).scaling(Scaling.bounded).right().top();
+        w.add(new Image(region){
+            final TextureRegionDrawable outline = new TextureRegionDrawable(drawer.outline);
+            @Override
+            public void draw() {
+                outline.draw(x + imageX, y + imageY, imageWidth * scaleX, imageHeight * scaleY);
+                super.draw();
+            }
+        }).size(60).scaling(Scaling.bounded).right().top();
         w.table(Tex.underline, h -> {
             h.left().defaults().padRight(3).left();
             buildStat(h);
@@ -368,7 +377,14 @@ public class MountTurretType {
             table.stack(
                     new Table(o -> {
                         o.left();
-                        o.image(Core.atlas.find("shar-" + type.name + "-full")).size(5*8f);
+                        o.add(new Image(type.region){
+                            final TextureRegionDrawable outline = new TextureRegionDrawable(type.drawer.outline);
+                            @Override
+                            public void draw() {
+                                outline.draw(x + imageX, y + imageY, imageWidth * scaleX, imageHeight * scaleY);
+                                super.draw();
+                            }
+                        }).size(5*8f);
                     }),
                     new Table(h -> {
                         h.stack(

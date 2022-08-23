@@ -5,14 +5,12 @@ import Sharustry.entities.skills.TurretSkill;
 import Sharustry.ui.MultiImageLabel;
 import Sharustry.world.blocks.defense.turret.mounts.*;
 import arc.*;
-import arc.func.Func;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.Vec2;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.Button;
 import arc.scene.ui.Image;
-import arc.scene.ui.Label;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
@@ -339,7 +337,7 @@ public class MultiTurret extends TemplatedTurret {
                 if(build instanceof MultiTurretBuild multi) {
                     MassMountTurretType.MassMountTurret mass = (MassMountTurretType.MassMountTurret) multi.mounts.find(mount -> mount instanceof MassMountTurretType.MassMountTurret && Math.abs(mouse.x - mount.x) < 4 && Math.abs(mouse.y - mount.y) < 4);
                     if(mass != null) {
-                        Draw.color(team.color);
+                        Draw.color(Pal.accent);
                         Drawf.dashLine(Pal.accent, selectedMassMount.x, selectedMassMount.y, mass.x, mass.y);
                         Draw.alpha(Mathf.absin(10, 1));
                         Draw.rect(mass.type.drawer.mask, mass.x, mass.y, mass.drawrot());
@@ -428,10 +426,9 @@ public class MultiTurret extends TemplatedTurret {
                     final TextureRegionDrawable mask = new TextureRegionDrawable(mount.type.drawer.mask);
                     @Override
                     public void draw() {
-                        if(((MassMountTurretType.MassMountTurret) mount).linkValid()) {
+                        if(mass.linkValid()) {
                             Draw.color(Pal.accent);
                             mask.draw(x + imageX, y + imageY, imageWidth * scaleX * 1.05f, imageHeight * scaleY * 1.05f);
-                            Draw.rect(mount.type.drawer.mask, x, y);
                             Draw.color();
                         }
                         super.draw();

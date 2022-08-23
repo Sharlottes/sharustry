@@ -135,7 +135,6 @@ public class DrillMountTurretType extends MountTurretType {
         public void updateTile(){
             super.updateTile();
 
-
             reOreHeat -= build.delta();
             reItemHeat -= build.delta();
             Building core = state.teams.closestCore(x, y, build.team);

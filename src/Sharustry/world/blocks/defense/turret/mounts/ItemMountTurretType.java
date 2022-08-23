@@ -5,6 +5,8 @@ import arc.Core;
 import arc.Events;
 import arc.graphics.Color;
 import arc.graphics.g2d.TextureRegion;
+import arc.scene.style.TextureRegionDrawable;
+import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.OrderedMap;
@@ -100,7 +102,14 @@ public class ItemMountTurretType extends MountTurretType {
             table.stack(
                 new Table(o -> {
                     o.left();
-                    o.image(Core.atlas.find("shar-" + type.name + "-full")).size(5*8f);
+                    o.add(new Image(type.region){
+                        final TextureRegionDrawable outline = new TextureRegionDrawable(type.drawer.outline);
+                        @Override
+                        public void draw() {
+                            outline.draw(x + imageX, y + imageY, imageWidth * scaleX, imageHeight * scaleY);
+                            super.draw();
+                        }
+                    }).size(5*8f);
                 }),
                 new Table(h -> {
                     h.stack(
