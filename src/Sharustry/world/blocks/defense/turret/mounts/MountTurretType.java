@@ -117,8 +117,6 @@ public class MountTurretType {
     public Seq<Func2<Building, MountTurretType, Runnable>> skillSeq = new Seq<>();
 
     public TextureRegion laser, laserEnd, region;
-
-    public SoundLoop loopSoundLoop;
     public DrawMountTurret drawer = new DrawMountTurret();
 
     public MountTurretType(String name) {
@@ -139,7 +137,6 @@ public class MountTurretType {
     public void load(){
         region = Core.atlas.find("shar-" + name);
         drawer.load(this);
-        loopSoundLoop = new SoundLoop(loopSound, loopVolume);
         laser = Core.atlas.find("shar-repair-laser");
         laserEnd = Core.atlas.find("shar-repair-laser-end");
     }
@@ -295,7 +292,6 @@ public class MountTurretType {
         public float strength = 0f;
         public boolean wasShooting = false;
         public boolean charging = false;
-        public int totalAmmo;
         public float curRecoil, heat, reTargetHeat;
         public float shootWarmup, charge;
         public int totalShots;
@@ -303,14 +299,14 @@ public class MountTurretType {
         public int mountIndex;
         public int queuedBullets;
         public int skillCounter;
+        public int totalAmmo;
         Seq<AmmoEntry> ammo = new Seq<>();
-
-        public MultiTurret block;
         public Posc target;
         public Vec2 targetPos = new Vec2();
         public Vec2 recoilOffset = new Vec2();
-
+        @Nullable SoundLoop sound;
         public T type;
+        public MultiTurret block;
         public MultiTurret.MultiTurretBuild build;
         public MountTurret(T type, MultiTurret block, MultiTurret.MultiTurretBuild build, int mountIndex, float xOffset, float yOffset){
             this.type = type;
@@ -439,9 +435,21 @@ public class MountTurretType {
         public void handlePayload(Bullet bullet, DriverBulletData data){ }
 
         public void update() {
-            if(!Vars.headless && type.loopSound != null) {
-                type.loopSoundLoop.update(x, y, wasShooting && !build.dead());
+            //update locaiton
+            Tmp.v1.trns(build.rotation - 90, xOffset, yOffset);
+            Tmp.v1.add(build.x, build.y);
+            x = Tmp.v1.x;
+            y = Tmp.v1.y;
+
+            if(!Vars.headless && sound!= null) {
+                sound.update(x, y, wasShooting && !build.dead());
             }
+        }
+        public void created() {
+            if(loopSound != Sounds.none) sound = new SoundLoop(loopSound, loopVolume);
+        }
+        public void removed() {
+            if(sound != null) sound.stop();
         }
         public void updateTile() {
             if(!validateTarget()) target = null;
@@ -560,7 +568,7 @@ public class MountTurretType {
         }
         public void updateReload() {
             float multiplier = hasAmmo() ? peekAmmo().reloadMultiplier : 1f;
-            reloadCounter += build.delta() * multiplier;
+            reloadCounter += build.delta() * multiplier * build.baseReloadSpeed();
 
             //cap reload for visual reasons
             reloadCounter = Math.min(reloadCounter, type.reload);

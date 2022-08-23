@@ -4,6 +4,7 @@ import arc.Core;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.graphics.g2d.TextureRegion;
+import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.Rand;
 import arc.math.geom.Vec2;
@@ -19,8 +20,6 @@ import mindustry.type.Liquid;
 import mindustry.world.Block;
 
 public class DrawMountTurret {
-    protected static final Rand rand = new Rand();
-
     public Seq<DrawPart> parts = new Seq<>();
     /** Prefix to use when loading base region. */
     public String basePrefix = "";
@@ -35,22 +34,19 @@ public class DrawMountTurret {
     public DrawMountTurret(){
     }
 
-    public void getRegionsToOutline(Block block, Seq<TextureRegion> out){
-        for(var part : parts){
-            part.getOutlines(out);
-        }
-
-        if(block.region.found() && !(block.outlinedIcon > 0 && block.getGeneratedIcons()[block.outlinedIcon].equals(block.region))){
-            out.add(block.region);
-        }
+    float drawX(MountTurretType.MountTurret mount) {
+        return mount.x;
     }
-
+    float drawY(MountTurretType.MountTurret mount) {
+        return mount.y;
+    }
     public void draw(MountTurretType.MountTurret mount){
+        float mountX = drawX(mount), mountY = drawY(mount);
         Draw.color();
 
         Draw.z(Layer.turret + 5 - 0.5f);
 
-        Drawf.shadow(preview, mount.x + mount.recoilOffset.x - mount.type.elevation, mount.y + mount.recoilOffset.y - mount.type.elevation, mount.drawrot());
+        Drawf.shadow(preview, mountX + mount.recoilOffset.x - mount.type.elevation, mountY + mount.recoilOffset.y - mount.type.elevation, mount.drawrot());
 
         Draw.z(Layer.turret + 5);
 
@@ -60,14 +56,14 @@ public class DrawMountTurret {
         if(outline.found()){
             //draw outline under everything when parts are involved
             Draw.z(Layer.turret + 5 - 0.01f);
-            Draw.rect(outline, mount.x + mount.recoilOffset.x, mount.y + mount.recoilOffset.y, mount.drawrot());
+            Draw.rect(outline, mountX + mount.recoilOffset.x, mountY + mount.recoilOffset.y, mount.drawrot());
             Draw.z(Layer.turret + 5);
         }
         if(parts.size > 0){
             float progress = mount.progress();
 
             //TODO no smooth reload
-            var params = DrawPart.params.set(mount.warmup(), 1f - progress, 1f - progress, mount.heat, mount.curRecoil, mount.charge, mount.x + mount.recoilOffset.x, mount.y + mount.recoilOffset.y, mount.rotation);
+            var params = DrawPart.params.set(mount.warmup(), 1f - progress, 1f - progress, mount.heat, mount.curRecoil, mount.charge, mountX + mount.recoilOffset.x, mountY + mount.recoilOffset.y, mount.rotation);
 
             for(var part : parts){
                 part.draw(params);
@@ -76,19 +72,23 @@ public class DrawMountTurret {
     }
 
     public void drawTurret(MountTurretType.MountTurret mount){
-        Draw.rect(mount.type.region, mount.x + mount.recoilOffset.x, mount.y + mount.recoilOffset.y, mount.drawrot());
+        float mountX = drawX(mount), mountY = drawY(mount);
+
+        Draw.rect(mount.type.region, mountX + mount.recoilOffset.x, mountY + mount.recoilOffset.y, mount.drawrot());
 
         if(liquid.found()){
             Liquid toDraw = liquidDraw == null ? mount.build.liquids.current() : liquidDraw;
-            Drawf.liquid(liquid, mount.x + mount.recoilOffset.x, mount.y + mount.recoilOffset.y, mount.build.liquids.get(toDraw) / mount.block.liquidCapacity, toDraw.color.write(Tmp.c1).a(1f), mount.drawrot());
+            Drawf.liquid(liquid, mountX + mount.recoilOffset.x, mountY + mount.recoilOffset.y, mount.build.liquids.get(toDraw) / mount.block.liquidCapacity, toDraw.color.write(Tmp.c1).a(1f), mount.drawrot());
         }
 
         if(top.found()){
-            Draw.rect(top, mount.x + mount.recoilOffset.x, mount.y + mount.recoilOffset.y, mount.drawrot());
+            Draw.rect(top, mountX + mount.recoilOffset.x, mountY + mount.recoilOffset.y, mount.drawrot());
         }
     }
 
     public void drawSelect(MountTurretType.MountTurret mount) {
+        float mountX = drawX(mount), mountY = drawY(mount);
+
         float fade = 
             Mathf.curve(Time.time % mount.block.totalRangeTime, 
                 mount.block.rangeTime * mount.mountIndex, 
@@ -99,18 +99,18 @@ public class DrawMountTurret {
         Lines.stroke(3, Pal.gray);
         Draw.alpha(fade);
 
-        Lines.dashCircle(mount.x, mount.y, mount.type.range);
+        Lines.dashCircle(mountX, mountY, mount.type.range);
         Lines.stroke(1, mount.canHeal() ? Pal.heal : mount.build.team.color);
         Draw.alpha(fade);
-        Lines.dashCircle(mount.x, mount.y, mount.type.range);
+        Lines.dashCircle(mountX, mountY, mount.type.range);
         Draw.z(Layer.turret + 5 + 1);
         Draw.color(mount.build.team.color, fade);
-        Draw.rect(mask, mount.x, mount.y, mount.drawrot());
+        Draw.rect(mask, mountX, mountY, mount.drawrot());
     }
     public void drawHeat(MountTurretType.MountTurret mount) {
         if(mount.heat <= 0.00001f || !heat.found()) return;
 
-        Drawf.additive(heat, mount.type.heatColor.write(Tmp.c1).a(mount.heat), mount.xOffset + mount.recoilOffset.x, mount.yOffset + mount.recoilOffset.y, mount.drawrot(), Layer.turretHeat);
+        Drawf.additive(heat, mount.type.heatColor.write(Tmp.c1).a(mount.heat), drawX(mount) + mount.recoilOffset.x, drawY(mount) + mount.recoilOffset.y, mount.drawrot(), Layer.turretHeat);
     }
 
     /** Load any relevant texture regions. */
@@ -125,10 +125,5 @@ public class DrawMountTurret {
             part.turretShading = true;
             part.load("shar-" + type.name);
         }
-    }
-
-    /** @return the generated icons to be used for this block. */
-    public TextureRegion[] icons(Block block){
-        return top.found() ? new TextureRegion[]{preview, top} : new TextureRegion[]{preview};
     }
 }

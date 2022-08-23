@@ -22,7 +22,6 @@ import static mindustry.Vars.player;
 import static mindustry.Vars.tilesize;
 
 public class RepairMountTurretType extends MountTurretType {
-    public static final Rect rect = new Rect();
     public float repairSpeed = 0.3f;
     public RepairMountTurretType(String name) {
         super(name);
@@ -40,16 +39,34 @@ public class RepairMountTurretType extends MountTurretType {
 
     public class RepairMountTurret extends MountTurret<RepairMountTurretType> {
         Unit repairTarget;
+        boolean wasShooting;
 
         public RepairMountTurret(RepairMountTurretType type, MultiTurret block, MultiTurret.MultiTurretBuild build, int i, float x, float y) {
             super(type, block, build, i, x, y);
         }
 
         @Override
-        public void updateTile() {
-            super.updateTile();
-
+        public void findTarget() {
             repairTarget = Units.closest(build.team, x, y, type.range, Unit::damaged);
+        }
+
+        @Override
+        public void updateTile() {
+            curRecoil = Mathf.approachDelta(curRecoil, 0, 1 / type.recoilTime);
+            heat = Mathf.approachDelta(heat, 0, 1 / type.cooldown);
+            charge = charging() ? Mathf.approachDelta(charge, 1, 1 / type.shoot.firstShotDelay) : 0;
+            recoilOffset.trns(rotation, -Mathf.pow(curRecoil, type.recoilPow) * type.recoil);
+            reTargetHeat += Time.delta;
+
+            updateReload();
+            if(Float.isNaN(reloadCounter)) reloadCounter = 0;
+
+            if(reTargetHeat >= 20f){
+                reTargetHeat = 0;
+                findTarget();
+            }
+
+            wasShooting = false;
             boolean targetIsBeingRepaired = false;
             if(repairTarget != null){
                 if(repairTarget.dead()
@@ -57,8 +74,8 @@ public class RepairMountTurretType extends MountTurretType {
                         || repairTarget.health() >= repairTarget.maxHealth()) repairTarget = null;
                 else {
                     repairTarget.heal(type.repairSpeed * Time.delta * strength * getPowerEfficiency());
-                    float dest = build.angleTo(repairTarget);
-                    turnToTarget(dest);
+                    turnToTarget(repairTarget.angleTo(x, y));
+                    wasShooting = true;
                     targetIsBeingRepaired = true;
                 }
                 if(targetIsBeingRepaired) strength = Mathf.lerpDelta(strength, 1f, 0.08f * Time.delta);
@@ -69,22 +86,20 @@ public class RepairMountTurretType extends MountTurretType {
         @Override
         public void draw() {
             super.draw();
-            if(!(repairTarget != null && Angles.angleDist(build.angleTo(repairTarget), rotation) < 30f)) return;
+
+            if(!wasShooting) return;
+
+            float
+                swingScl = 12f, swingMag = tilesize / 8f,
+                scl = repairTarget.hitSize / 8f,
+                random = Mathf.randomSeedRange(build.id, scl / 2f);
 
             Draw.z(Layer.flyingUnit + 1); //above all units
-            float ang = build.angleTo(repairTarget);
-            float len = 5f + Mathf.absin(Time.time, 1.1f, 0.5f);
-            float swingScl = 12f, swingMag = tilesize / 8f;
-            float scl = repairTarget.hitSize / 8f;
-            float random = Mathf.randomSeedRange(build.id, scl / 2f);
             Draw.color(type.laserColor);
-            Drawf.laser(type.laser, type.laserEnd,
-                    x + Angles.trnsx(ang, len), y + Angles.trnsy(ang, len),
-                    repairTarget.x +
-                            Mathf.sin((Time.time + 6 * 8f) * scl / 3, (swingScl + random) * scl, swingMag * scl),
-                    repairTarget.y +
-                            Mathf.sin((Time.time + 6 * 8f) * scl / 3, ((swingScl + random) + 2f) * scl, swingMag * scl)
-                    , strength);
+            Drawf.laser(type.laser, type.laserEnd, x, y,
+                repairTarget.x + Mathf.sin((Time.time + 6 * 8f) * scl / 3, (swingScl + random) * scl, swingMag * scl),
+                repairTarget.y + Mathf.sin((Time.time + 6 * 8f) * scl / 3, ((swingScl + random) + 2f) * scl, swingMag * scl),
+                strength * getPowerEfficiency() * type.laserWidth);
         }
     }
 }

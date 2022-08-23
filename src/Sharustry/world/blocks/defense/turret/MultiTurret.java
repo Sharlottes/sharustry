@@ -198,6 +198,13 @@ public class MultiTurret extends TemplatedTurret {
 
             for(int i = 0; i < skills.size; i++) shotCounters.add(0);
             for(int i = 0; i < mountTypes.size; i++) mounts.add(mountTypes.get(i).create(((MultiTurret)block), this, i, mountOffsets.get(i)[0], mountOffsets.get(i)[1]));
+            for(MountTurretType.MountTurret mount : mounts) mount.created();
+        }
+
+        @Override
+        public void onRemoved() {
+            super.onRemoved();
+            for(MountTurretType.MountTurret mount : mounts) mount.removed();
         }
 
         public MountTurretType.MountTurret addMount(MountTurretType mountType, float x, float y){
@@ -212,33 +219,25 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void displayConsumption(Table table1){
             if(hasMass()) table1.table(table -> table.table(scene.getStyle(Button.ButtonStyle.class).up, c -> {
-                int q = 0;
-                for(int i = 0; i < Vars.content.items().size; i++) {
-                    q++;
-                    final int hh = q;
-                    final int h1 = i;
-                    Item item = Vars.content.items().get(h1);
+                int i = 0;
+                for(Item item : Vars.content.items()) {
+                    if(!items.has(item)) continue;
 
-                    c.add(new Stack(){{
-                        add(new Table(o -> {
+                    c.stack(
+                        new Table(o -> {
                             o.left();
                             o.image(item.uiIcon).size(32f);
-                        }));
-
-                        add(new Table(h -> {
+                        }),
+                        new Table(h -> {
                             h.right().top();
-                            h.add(new Label(() -> {
-                                int amount = !items.has(Vars.content.items().get(h1)) ? 0 : items.get(Vars.content.items().get(h1));
-                                return amount > 1000 ? UI.formatAmount(amount) : amount + "";
-                            })).fontScale(0.8f).color(item.color);
+                            h.label(() -> UI.formatAmount(items.get(item))).fontScale(0.8f).color(item.color);
                             h.pack();
-                        }));
-                    }}).left().padRight(8);
-                    if(hh % 6 == 0) c.row();
+                        })
+                    ).left().padRight(8);
+                    if(i % 6 == 0) c.row();
+                    i++;
                 }
-            }).center()).center();
-
-            table1.row();
+            }).center()).center().row();
             table1.table(scene.getStyle(Button.ButtonStyle.class).up, t -> {
                 for(MountTurretType.MountTurret mount : mounts) {
                     t.center();
