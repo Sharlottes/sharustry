@@ -390,7 +390,6 @@ public class SBlocks {
             itemAmmo(Items.thorium, new ShrapnelBulletType(){{
                 length = 110f;
                 damage = 105f;
-                ammoMultiplier = 5f;
                 toColor = Pal.thoriumPink;
                 shootEffect = smokeEffect = Fx.thoriumShoot;
             }});

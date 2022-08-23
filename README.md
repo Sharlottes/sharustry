@@ -8,7 +8,7 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/sharlottes/Sharustry?label=Please%20star%20me%21&style=social)](https://github.com/sharlottes/Sharustry/stargazers)
 
 ## TODO / 할 일
-- [ ] finish the fosser, the mass multi turret
+- [x] finish the fosser, the mass multi turret
 - [x] finish accel processor
 - [ ] add 8 * 8 turret
 - [ ] add units

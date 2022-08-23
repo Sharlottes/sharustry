@@ -145,7 +145,7 @@ public class MultiTurret extends TemplatedTurret {
     public void setStats(){
         super.setStats();
 
-        for(TurretSkill skill : skills) {
+        for(TurretSkill<MultiTurretBuild> skill : skills) {
             stats.add(Stat.abilities, table -> {
                 table.table(Tex.underline, e -> {
                     e.left().defaults().padRight(3).left();
@@ -248,7 +248,7 @@ public class MultiTurret extends TemplatedTurret {
         public void displayBars(Table bars){
             super.displayBars(bars);
             int i = 0;
-            for(TurretSkill skill : skills) {
+            for(TurretSkill<MultiTurretBuild> skill : skills) {
                 final int j = i;
                 bars.add(new Bar(
                         () -> Core.bundle.format("bar.shar-skillReload") + shotCounters.get(j) + " / " + skill.maxCount,
@@ -290,7 +290,7 @@ public class MultiTurret extends TemplatedTurret {
 
         @Override
         public boolean acceptItem(Building source, Item item){
-            return (ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo)
+            return (isItemTurret() && ammoTypes.get(item) != null && totalAmmo + ammoTypes.get(item).ammoMultiplier <= maxAmmo)
                     || mounts.contains(mount -> mount.acceptItem(item));
         }
 
@@ -509,8 +509,7 @@ public class MultiTurret extends TemplatedTurret {
         public void write(Writes write){
             super.write(write);
 
-            for(int i = 0; i < skills.size; i++)
-                write.i(shotCounters.get(i));
+            for(int i = 0; i < skills.size; i++) write.i(shotCounters.get(i));
             write.i(mounts.size);
             for(int i = 0; i < mountTypes.size; i++) mounts.get(i).write(write);
             for(int i = mountTypes.size; i < mounts.size; i++){

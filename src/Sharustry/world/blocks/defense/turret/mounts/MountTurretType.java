@@ -358,7 +358,8 @@ public class MountTurretType {
             return (build.isControlled() ? build.unit.isShooting() : build.logicControlled() ? build.logicShooting : target != null);
         }
         public void removeFromProximity(){ }
-        public void handleItem(Item item){ }
+        /** @return whether it exactly uses item */
+        public boolean handleItem(Item item){ return false; }
         public boolean acceptItem(Item item){
             return false;
         }

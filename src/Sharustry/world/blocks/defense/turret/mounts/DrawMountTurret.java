@@ -34,7 +34,7 @@ public class DrawMountTurret {
         Draw.color();
 
         Draw.z(Layer.turret + 5 - 0.5f);
-        Drawf.shadow(preview, mount.x + mount.recoilOffset.x - mount.type.elevation, mount.y + mount.recoilOffset.y - mount.type.elevation, mount.drawrot());
+        Drawf.shadow(mask, mount.x + mount.recoilOffset.x - mount.type.elevation, mount.y + mount.recoilOffset.y - mount.type.elevation, mount.drawrot());
 
         Draw.z(Layer.turret + 5);
         drawTurret(mount);

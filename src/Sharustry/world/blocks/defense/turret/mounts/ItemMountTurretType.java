@@ -60,11 +60,11 @@ public class ItemMountTurretType extends MountTurretType {
         }
 
         @Override
-        public void handleItem(Item item) {
+        public boolean handleItem(Item item) {
             if(item == Items.pyratite) Events.fire(EventType.Trigger.flameAmmo);
 
             BulletType bullet = type.ammoTypes.get(item);
-            if(bullet == null) return;
+            if(bullet == null) return false;
             totalAmmo += bullet.ammoMultiplier;
 
             //find ammo entry by type
@@ -76,12 +76,12 @@ public class ItemMountTurretType extends MountTurretType {
                     entry.amount += bullet.ammoMultiplier;
 
                     ammo.swap(i, ammo.size - 1);
-                    return;
                 }
             }
 
             //must not be found
             ammo.add(new ItemEntry(item, (int)bullet.ammoMultiplier));
+            return true;
         }
 
         @Override
@@ -159,8 +159,7 @@ public class ItemMountTurretType extends MountTurretType {
         @Override
         public void read(Reads read, byte revision) {
             super.read(read, revision);
-
-            int size = read.ub();
+            int size = read.b();
             for (int i = 0; i < size; i++) {
                 Item item = Vars.content.item(revision < 2 ? read.ub() : read.s());
                 short a = read.s();

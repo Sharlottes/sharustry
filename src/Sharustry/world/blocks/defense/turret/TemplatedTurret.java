@@ -87,6 +87,8 @@ public class TemplatedTurret extends Turret {
 
     @Override
     public void init(){
+        assert ammoTypes == null && liqAmmoTypes == null && shootType == null;
+
         if(isItemTurret()) consume(new ConsumeItemFilter(i -> ammoTypes.containsKey(i)) {
             @Override
             public void build(Building build, Table table) {
@@ -146,8 +148,16 @@ public class TemplatedTurret extends Turret {
         public void updateTile(){
             if(isLiquidTurret()) unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
             if(isPowerTurret()) unit.ammo(power.status * unit.type().ammoCapacity);
-            if(isItemTurret()) unit.ammo(Mathf.clamp((float)unit.type().ammoCapacity * totalAmmo / maxAmmo));
-
+            if(isItemTurret()) {
+                unit.ammo(Mathf.clamp((float)unit.type().ammoCapacity * totalAmmo / maxAmmo));
+                if(!items.empty()) {
+                    ammoTypes.each((item, bullet) -> {
+                        if(!items.has(item) || totalAmmo + bullet.ammoMultiplier > maxAmmo) return;
+                        items.remove(item, 1);
+                        handleAmmo(this, item);
+                    });
+                }
+            }
             super.updateTile();
         }
 
@@ -269,33 +279,34 @@ public class TemplatedTurret extends Turret {
             if(isItemTurret()) return 0;
             return super.removeStack(item, amount);
         }
+        public void handleAmmo(Building source, Item item) {
+            if(!isItemTurret()) return;
+            BulletType type = ammoTypes.get(item);
+            if(type == null || totalAmmo + type.ammoMultiplier > maxAmmo) return;
 
+            if(item == Items.pyratite) Events.fire(Trigger.flameAmmo);
+
+            totalAmmo += type.ammoMultiplier;
+
+            //find ammo entry by type
+            for(int i = 0; i < ammo.size; i++){
+                ItemEntry entry = (ItemEntry) ammo.get(i);
+
+                //if found, put it to the right
+                if(entry.item == item){
+                    entry.amount += type.ammoMultiplier;
+                    ammo.swap(i, ammo.size - 1);
+                    return;
+                }
+            }
+
+            //must not be found
+            ammo.add(new ItemEntry(item, (int)type.ammoMultiplier));
+        }
         @Override
         public void handleItem(Building source, Item item){
             super.handleItem(source, item);
-            if(isItemTurret()){
-                BulletType type = ammoTypes.get(item);
-                if(type == null || totalAmmo + type.ammoMultiplier > maxAmmo) return;
-
-                if(item == Items.pyratite) Events.fire(Trigger.flameAmmo);
-
-                totalAmmo += type.ammoMultiplier;
-
-                //find ammo entry by type
-                for(int i = 0; i < ammo.size; i++){
-                    ItemEntry entry = (ItemEntry) ammo.get(i);
-
-                    //if found, put it to the right
-                    if(entry.item == item){
-                        entry.amount += type.ammoMultiplier;
-                        ammo.swap(i, ammo.size - 1);
-                        return;
-                    }
-                }
-
-                //must not be found
-                ammo.add(new ItemEntry(item, (int)type.ammoMultiplier));
-            }
+            handleAmmo(source, item);
         }
 
         @Override
