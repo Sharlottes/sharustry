@@ -40,6 +40,8 @@ import static Sharustry.content.SFx.missileDead;
 import static Sharustry.content.STurretMounts.*;
 import static mindustry.type.ItemStack.*;
 
+//TODO: mount turret 에 따라 hasItem/Liquid/Power 추가 설정하기
+//TODO: 모든 블록 테스트해서 밸런스와 작동여부 확인하기
 public class SBlocks {
     public static Block
             //logic
@@ -399,13 +401,13 @@ public class SBlocks {
             addMountTurret(tractMount, 8f, 0f);
 
             skills.add(new TurretSkill<>("shieldreceive", entity -> () -> {
-                if(Groups.unit.find(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range) == null
+                if(!Groups.unit.contains(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range)
                         || Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range
-                        && Structs.find(u.abilities, a -> a instanceof ForceFieldAbility) != null) == Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range)) return;
+                        && Structs.contains(u.abilities, a -> a instanceof ForceFieldAbility)) == Groups.unit.count(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range)) return;
                 SFx.shieldSpread.at(entity.x, entity.y, 0, range);
 
                 Time.run(30, () -> Groups.unit.each(u -> Mathf.dst(entity.x, entity.y, u.x, u.y) <= range, target -> {
-                    if(Structs.find(target.abilities, a -> a instanceof ForceFieldAbility) != null) return;
+                    if(Structs.contains(target.abilities, a -> a instanceof ForceFieldAbility)) return;
                     ForceFieldAbility abil = new ForceFieldAbility(Math.min(25 * 8, target.hitSize * 2.5f), Math.min(5000, target.type.health * 0.5f) / (2.5f * 60), Math.min(5000, target.type.health * 0.5f), Math.min(20 * 60f, target.hitSize * 60));
                     target.abilities(Structs.add(target.abilities, abil));
                     Time.run(60 * 60 * 60, () -> target.abilities(Structs.remove(target.abilities, abil)));
@@ -644,19 +646,21 @@ public class SBlocks {
         }};
 
         shieldWall = new ShieldWall("shield-wall"){{
-            requirements(Category.defense, with(Items.titanium, 6));
+            requirements(Category.defense, with(Items.titanium, 6, Items.surgeAlloy, 3));
             health = 150 * 4;
+            maxShield = 150;
             armor = 3;
         }};
 
         explodeMine = new ExplodeMine("explode-mine"){{
-            requirements(Category.defense, with(Items.lead, 30, Items.silicon, 25, Items.blastCompound, 5));
-            size = 2;
+            requirements(Category.effect, with(Items.lead, 30, Items.silicon, 25, Items.blastCompound, 5));
+            size = 1;
             health = 50;
             cooldownTime = 50;
-            shots = 10;
+            shots = 3;
             inaccuracy = 15;
-            bullet = new BulletType(4f, 60f){{
+            shotsSpacing = 45f;
+            bullet = new BulletType(4f, 20f){{
                 ammoMultiplier = 6f;
                 hitSize = 7f;
                 lifetime = 18f;

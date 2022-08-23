@@ -28,11 +28,11 @@ public class SFx {
     }),
     mineExplode = new Effect(360, e -> {
         float cooldown = (float)e.data;
-        float range = 30 * 8;
+        float range = 4 * 8;
         e.scaled(cooldown, e1 -> {
-                Draw.color(Pal.health, e1.fout(0.125f));
-        Lines.arc(e.x, e.y, range/3, 70 * (e1.fin(Interp.pow2)), 0, 60);
-    });
+            Draw.color(Pal.health, e1.fout(0.125f));
+            Lines.arc(e.x, e.y, range/3, 70 * (e1.fin(Interp.pow2)), 0, 60);
+        });
 
         if(e.time >= cooldown){
             e.scaled(40 + cooldown, e1 ->{
