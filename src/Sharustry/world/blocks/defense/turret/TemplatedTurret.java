@@ -240,7 +240,7 @@ public class TemplatedTurret extends Turret {
             bars.add(new Bar(
                     () -> {
                         float value = Mathf.clamp(reloadCounter / reload) * 100f;
-                        return Core.bundle.format("bar.shar-reloadCounter", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
+                        return Core.bundle.format("bar.shar-reload", Strings.fixed(value, (Math.abs((int)value - value) <= 0.001f ? 0 : Math.abs((int)(value * 10) - value * 10) <= 0.001f ? 1 : 2)));
                     },
                     () -> Pal.accent.cpy().lerp(Color.orange, reloadCounter / reload),
                     () -> reloadCounter / reload)).growX();
