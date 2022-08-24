@@ -10,6 +10,7 @@ import arc.scene.ui.Image;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.OrderedMap;
+import arc.struct.Seq;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.Vars;
@@ -39,11 +40,11 @@ public class ItemMountTurretType extends MountTurretType {
         return new ItemMountTurret(this, block, build, index, x, y);
     }
     @Override
-    public ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> getStatData() {
-        ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
+    public ObjectMap<Item, BulletType> getStatData() {
+        ObjectMap<Item, BulletType> types = new ObjectMap<>();
         for(Item item : content.items()){
             BulletType bullet = ammoTypes.get(item);
-            if(bullet != null) types.put(of(bullet, item), item.uiIcon);
+            if(bullet != null) types.put(item, bullet);
         }
         return types;
     }

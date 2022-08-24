@@ -10,7 +10,6 @@ import mindustry.gen.Icon;
 import static arc.struct.ObjectMap.of;
 
 public class PowerMountTurretType extends MountTurretType {
-    public BulletType shootType;
     public PowerMountTurretType(String name) {
         super(name);
     }
@@ -21,12 +20,6 @@ public class PowerMountTurretType extends MountTurretType {
     @Override
     public MountTurret create(MultiTurret block, MultiTurret.MultiTurretBuild build, int index, float x, float y) {
         return new PowerMountTurret(this, block, build, index, x, y);
-    }
-    @Override
-    public ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> getStatData() {
-        ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
-        if(shootType != null) types.put(of(shootType, null), Icon.power.getRegion());
-        return types;
     }
 
     public class PowerMountTurret extends MountTurret<PowerMountTurretType> {

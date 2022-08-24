@@ -41,11 +41,11 @@ public class LiquidMountTurretType extends MountTurretType {
         return new LiquidMountTurret(this, block, build, index, x, y);
     }
     @Override
-    public ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> getStatData() {
-        ObjectMap<ObjectMap<BulletType, ? extends UnlockableContent>, TextureRegion> types = new ObjectMap<>();
+    public ObjectMap<Liquid, BulletType> getStatData() {
+        ObjectMap<Liquid, BulletType> types = new ObjectMap<>();
         for(Liquid liquid : content.liquids()) {
             BulletType bullet = ammoTypes.get(liquid);
-            if(bullet != null) types.put(of(bullet, liquid), liquid.uiIcon);
+            if(bullet != null) types.put(liquid, bullet);
         }
         return types;
     }

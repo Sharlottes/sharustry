@@ -1,14 +1,14 @@
 package Sharustry.ui;
 
 import arc.graphics.g2d.TextureRegion;
-import arc.scene.ui.Image;
-import arc.scene.ui.Label;
+import arc.scene.Group;
+import arc.scene.ui.*;
 import arc.scene.ui.layout.Stack;
+import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Time;
-import mindustry.ui.ReqImage;
 
-public class MultiImageLabel extends Stack {
+public class MultiImageLabel extends Table {
     final Seq<Image> displays = new Seq<>();
     final Seq<Label> labels = new Seq<>();
     float time;
@@ -24,6 +24,7 @@ public class MultiImageLabel extends Stack {
         super.add(label);
     }
 
+    @Override
     public void act(float delta) {
         super.act(delta);
         time += Time.delta / 60.0F;

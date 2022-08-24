@@ -76,14 +76,16 @@ public class MultiTurret extends TemplatedTurret {
         };
     }
 
-    void addStatS(Table w){
+    void addStats(Table w){
         w.left();
-        w.add(localizedName).right().top().row();
-        w.image(region).size(60).scaling(Scaling.bounded).right().top();
+        w.table(profile -> {
+            profile.add(localizedName).row();
+            profile.image(region).size(60).scaling(Scaling.bounded);
+        }).top();
         w.table(Tex.underline, h -> {
-            h.left().defaults().padRight(3).left();
+            h.defaults().growX().left();
 
-            h.add("[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((range) / tilesize, 1) + " " + StatUnit.blocks).row();
+            h.add("[lightgray]" + Stat.shootRange.localized() + ": [white]" + Strings.fixed((range) / tilesize, 1) + " " + StatUnit.blocks.localized()).row();
             h.add("[lightgray]" + Stat.reload.localized() + ": [white]" + Strings.autoFixed(60 / reload * shoot.shots, 1)).row();
             h.add("[lightgray]" + Stat.targetsAir.localized() + ": [white]" + (!(targetAir) ? Core.bundle.get("no") : Core.bundle.get("yes"))).row();
             h.add("[lightgray]" + Stat.targetsGround.localized() + ": [white]" + (!(targetGround) ? Core.bundle.get("no") : Core.bundle.get("yes"))).row();
@@ -100,7 +102,6 @@ public class MultiTurret extends TemplatedTurret {
 
                     ii ++;
                     b.add(new MultiImageLabel() {{
-
                         if(isItemTurret()) {
                             @Nullable Item item = ammoTypes.findKey(bullet, false);
                             if(item != null) add(item.uiIcon, item.localizedName);
@@ -112,33 +113,32 @@ public class MultiTurret extends TemplatedTurret {
                         if(isPowerTurret()) {
                             add(Icon.power.getRegion(), "Power");
                         }
-                    }}).size(8 * 4).padRight(4).right().top();
+                    }}).top();
 
                     b.table(Tex.underline, e -> {
-                        e.left().defaults().padRight(3).left();
-                            if(bullet.damage > 0 && (bullet.collides || bullet.splashDamage <= 0)) e.add(Core.bundle.format("bullet.damage", bullet.damage)).row();
-                            if(bullet.buildingDamageMultiplier != 1) e.add(Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1))).row();
-                            if(bullet.splashDamage > 0) e.add(Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1))).row();
-                            if(bullet.ammoMultiplier > 0 && !(bullet instanceof LiquidBulletType) && !Mathf.equal(bullet.ammoMultiplier, 1f)) e.add(Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1))).row();
-                            if(!Mathf.equal(bullet.reloadMultiplier, 1f)) e.add(Core.bundle.format("bullet.reloadCounter", bullet.reloadMultiplier)).row();
-                            if(bullet.knockback > 0) e.add(Core.bundle.format("bullet.knockback", Strings.fixed(bullet.knockback, 1))).row();
-                            if(bullet.healPercent > 0) e.add(Core.bundle.format("bullet.healpercent", bullet.healPercent)).row();
-                            if(bullet.pierce || bullet.pierceCap != -1) e.add(bullet.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", bullet.pierceCap)).row();
-                            if(bullet.status == StatusEffects.burning || bullet.status == StatusEffects.melting || bullet.incendAmount > 0) e.add("@bullet.incendiary").row();
-                            if(bullet.status == StatusEffects.freezing) e.add("@bullet.freezing").row();
-                            if(bullet.status == StatusEffects.tarred) e.add("@bullet.tarred").row();
-                            if(bullet.status == StatusEffects.sapped) e.add("@bullet.sapping").row();
-                            if(bullet.homingPower > 0.01) e.add("@bullet.homing").row();
-                            if(bullet.lightning > 0) e.add("@bullet.shock").row();
-                            if(bullet.fragBullet != null) e.add("@bullet.frag").row();
-                    }).padTop(-9).left();
+                        e.left().defaults().padRight(3).left().top();
+
+                        if(bullet.damage > 0 && (bullet.collides || bullet.splashDamage <= 0)) e.add(Core.bundle.format("bullet.damage", bullet.damage)).row();
+                        if(bullet.buildingDamageMultiplier != 1) e.add(Core.bundle.format("bullet.buildingdamage", Strings.fixed((int)(bullet.buildingDamageMultiplier * 100),1))).row();
+                        if(bullet.splashDamage > 0) e.add(Core.bundle.format("bullet.splashdamage", bullet.splashDamage, Strings.fixed(bullet.splashDamageRadius / tilesize, 1))).row();
+                        if(bullet.ammoMultiplier > 0 && !(bullet instanceof LiquidBulletType) && !Mathf.equal(bullet.ammoMultiplier, 1f)) e.add(Core.bundle.format("bullet.multiplier", Strings.fixed(bullet.ammoMultiplier, 1))).row();
+                        if(!Mathf.equal(bullet.reloadMultiplier, 1f)) e.add(Core.bundle.format("bullet.reload", bullet.reloadMultiplier)).row();
+                        if(bullet.knockback > 0) e.add(Core.bundle.format("bullet.knockback", Strings.fixed(bullet.knockback, 1))).row();
+                        if(bullet.healPercent > 0) e.add(Core.bundle.format("bullet.healpercent", bullet.healPercent)).row();
+                        if(bullet.pierce || bullet.pierceCap != -1) e.add(bullet.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", bullet.pierceCap)).row();
+                        if(bullet.status == StatusEffects.burning || bullet.status == StatusEffects.melting || bullet.incendAmount > 0) e.add("@bullet.incendiary").row();
+                        if(bullet.status == StatusEffects.freezing) e.add("@bullet.freezing").row();
+                        if(bullet.status == StatusEffects.tarred) e.add("@bullet.tarred").row();
+                        if(bullet.status == StatusEffects.sapped) e.add("@bullet.sapping").row();
+                        if(bullet.homingPower > 0.01) e.add("@bullet.homing").row();
+                        if(bullet.lightning > 0) e.add("@bullet.shock").row();
+                        if(bullet.fragBullet != null) e.add("@bullet.frag").row();
+                }).marginTop(5f).top();
 
                     if(ii % 4 == 0) b.row();
                 }
             });
-            h.row();
-        }).padTop(-15).left();
-        w.row();
+        });
     }
     //TODO: add setStats on mounts
     @Override
@@ -159,21 +159,18 @@ public class MultiTurret extends TemplatedTurret {
         }
 
         stats.add(Stat.weapons, table -> {
-            table.left();
-            table.add("[lightgray]" + Core.bundle.get("stat.shar.base-t")).fillX().padLeft(24).row();
+            table.left().defaults().growX().left().row();
 
             //Base Turret
-            table.table(null, w -> {
-                addStatS(w);
-                table.row().left();
-            }).left().row();
-            table.add("[lightgray]" + Core.bundle.get("stat.shar.mini-t")).fillX().padLeft(24);
+            table.add("[lightgray]" + Core.bundle.get("stat.shar.base-t")).row();
+            table.table(this::addStats).left().row();
 
             //Mounts
-            table.table(null, w -> {
+            table.add("[lightgray]" + Core.bundle.get("stat.shar.mini-t")).row();
+            table.table(w -> {
                 for(MountTurretType mount : mountTypes){
                     mount.addStats(w);
-                    table.row();
+                    w.row();
                 }
             });
         });
