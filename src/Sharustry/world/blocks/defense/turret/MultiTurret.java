@@ -506,7 +506,7 @@ public class MultiTurret extends TemplatedTurret {
         public void write(Writes write){
             super.write(write);
 
-            for(int i = 0; i < skills.size; i++) write.i(shotCounters.get(i));
+            for(int i = 0; i < shotCounters.size; i++) write.i(shotCounters.get(i));
             write.i(mounts.size);
             for(int i = 0; i < mountTypes.size; i++) mounts.get(i).write(write);
             for(int i = mountTypes.size; i < mounts.size; i++){
@@ -520,7 +520,7 @@ public class MultiTurret extends TemplatedTurret {
         @Override
         public void read(Reads read, byte revision){
             super.read(read, revision);
-            for(int i = 0; i < skills.size; i++) shotCounters.set(i, read.i());
+            for(int i = 0; i < shotCounters.size; i++) shotCounters.set(i, read.i());
             int amount = read.i();
             for(int i = 0; i < mountTypes.size; i++) mounts.get(i).read(read, revision);
             for(int i = 0; i < amount - mountTypes.size; i++) {
