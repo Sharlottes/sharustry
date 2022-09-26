@@ -29,14 +29,12 @@ jobs:
       - name: Grant execute permissions
         run: |
           chmod +x gradlew
-          chmod +x alpha-bleed
-          chmod +x alpha-bleeding-linux.exe
 
       - name: Build with Gradle
-        run: ./gradlew alphableed buildDex
+        run: ./gradlew deploy
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v2.2.1
         with:
           name: sharustry built by action
-          path: build/libs/raw-*.jar
+          path: build/libs/[!raw-]*.jar
