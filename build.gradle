@@ -5,7 +5,7 @@ plugins {
 ext{
     sdkRoot = System.getenv("ANDROID_HOME")
     sdkVersion = '30'
-    artifactFilename = "sharustry.jar"
+    artifactFilename = "Sharustry.jar"
 }
 
 group "sharlotte"
@@ -67,7 +67,7 @@ task buildDex dependsOn "build", "dexify"
 task buildMove(dependsOn: build) {
     doLast {
         copy {
-            from "build/libs/raw-sharustry.jar"
+            from "build/libs/raw-Sharustry.jar"
             into System.getenv("destination")
         }
     }

@@ -2,10 +2,12 @@
   "name": "shar",
   "displayName": "Sharustry",
   "author": "Sharlottes",
-  "main": "sharustry.Sharustry",
   "description": "my first Java Mod. multi craft-generator, multi turret, multi drill and few thing more! \nnot completely finished/released yet. but i'm sure it's still enough for you to be interested in this mod, this contents, this ideas! \n\nThanks for helping: sk7725: owner of betaMindy \nmeep: owner of Progressed Materials \nmal&ssim: donated great sprites",
+  "subtitle": "multi turrets",
   "version": "0.3v",
-  "minGameVersion": 138,
-  "java": true,
-  "repo": "sharlottes/sharustry"
+  "main": "sharustry.Sharustry",
+  "minGameVersion": "138",
+  "dependencies": [],
+  "hidden": false,
+  "java": true
 }
