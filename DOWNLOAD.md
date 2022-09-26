@@ -115,7 +115,7 @@ To get a jar file that works for every platform, do the following:
   ![image](https://user-images.githubusercontent.com/60801210/107171450-2d762e80-6a06-11eb-8d66-0027bd8338ff.png)
   ![image](https://user-images.githubusercontent.com/60801210/107171782-f18f9900-6a06-11eb-8b1c-a7f3feeea31d.png)
     * "main" is the most important thing. Set the value of "main" to "position of the class inheriting Mod" (it doesn't matter if you keep the rest of the format and change it however you want). In my case, I entered `sharustry.core.Main`
-    * "main" 이 가장 중요합니다. (나머진 형식만 지키고 마음대로 바꿔도 상관없음) "main"의 값을 "Mod 를 상속하는 클래스의 위치"로 설정하세요. 저의 경우에는 `Sharustry.core.Main`를 입력합니다.
+    * "main" 이 가장 중요합니다. (나머진 형식만 지키고 마음대로 바꿔도 상관없음) "main"의 값을 "Mod 를 상속하는 클래스의 위치"로 설정하세요. 저의 경우에는 `Sharustry.Main`를 입력합니다.
 
     * If there is no part using the annotation, there is no need to set it.
     * 만약 어노테이션을 사용하는 부분이 없다면, 설정할 필요가 없음.
