@@ -15,11 +15,11 @@ There isn't actually difference between downloading through Releases and downloa
 Releases를 통해 다운로드하는 방법과 Mod Browser를 다운로드하는 방법은 사실 별 차이가 없습니다. 그냥 여기까지 온 당신에게 감사하다구요.
 
 
-Go to the releases, the latest release will have a `Sharustry.jar` attached to it that you can download. If it does not have it, follow the steps below(recommended) or bother me with a new issue so I can attach the compiled mod.   
-After you have the `Sharustry.jar`, paste it into your mod folder(locate your mod folder in the "open mod folder" of Mindustry).
+Go to the releases, the latest release will have a `sharustry.jar` attached to it that you can download. If it does not have it, follow the steps below(recommended) or bother me with a new issue so I can attach the compiled mod.   
+After you have the `sharustry.jar`, paste it into your mod folder(locate your mod folder in the "open mod folder" of Mindustry).
 
-Releases를 클릭하고, 최신 버전에 달린 `Sharustry.jar`를 다운로드하세요. 원하는 버전에 `Sharustry.jar`가 첨부되어 있지 않다면, 아래의 과정을 따르거나 새로운 Issue로 `.jar`를 달아달라고 저를 괴롭히세요.   
-`Sharustry.jar`를 다운로드 한 후, 모드 디렉토리(민더스트리에서 모드 파일 열기로 확인 가능)에 옮기세요.
+Releases를 클릭하고, 최신 버전에 달린 `sharustry.jar`를 다운로드하세요. 원하는 버전에 `sharustry.jar`가 첨부되어 있지 않다면, 아래의 과정을 따르거나 새로운 Issue로 `.jar`를 달아달라고 저를 괴롭히세요.   
+`sharustry.jar`를 다운로드 한 후, 모드 디렉토리(민더스트리에서 모드 파일 열기로 확인 가능)에 옮기세요.
 
 ## Compiling / 컴파일하기
 translate/copied from https://github.com/Anuken/ExampleJavaMod/edit/master/README.md. you don't need this for playing this mod. notice if you will make java mod.
@@ -115,7 +115,7 @@ To get a jar file that works for every platform, do the following:
   ![image](https://user-images.githubusercontent.com/60801210/107171450-2d762e80-6a06-11eb-8d66-0027bd8338ff.png)
   ![image](https://user-images.githubusercontent.com/60801210/107171782-f18f9900-6a06-11eb-8b1c-a7f3feeea31d.png)
     * "main" is the most important thing. Set the value of "main" to "position of the class inheriting Mod" (it doesn't matter if you keep the rest of the format and change it however you want). In my case, I entered `sharustry.core.Main`
-    * "main" 이 가장 중요합니다. (나머진 형식만 지키고 마음대로 바꿔도 상관없음) "main"의 값을 "Mod 를 상속하는 클래스의 위치"로 설정하세요. 저의 경우에는 `Sharustry.Main`를 입력합니다.
+    * "main" 이 가장 중요합니다. (나머진 형식만 지키고 마음대로 바꿔도 상관없음) "main"의 값을 "Mod 를 상속하는 클래스의 위치"로 설정하세요. 저의 경우에는 `sharustry.Main`를 입력합니다.
 
     * If there is no part using the annotation, there is no need to set it.
     * 만약 어노테이션을 사용하는 부분이 없다면, 설정할 필요가 없음.

@@ -1,4 +1,4 @@
-# Sharustry   
+# sharustry   
 ![template](https://user-images.githubusercontent.com/60801210/110486164-bd0b1c00-812f-11eb-99d8-b3ccdf304bb6.png)
 [![GitHub all releases](https://img.shields.io/github/downloads/sharlottes/sharustry/total?color=ffd700&label=Sharustry&style=flat-square)](https://github.com/Sharlottes/sharustry/)
 
