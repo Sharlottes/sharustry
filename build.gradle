@@ -29,6 +29,8 @@ dependencies {
 
 jar.archiveFileName.set("raw-$artifactFilename")
 
+def isWindows = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")
+
 task dexify(type: Jar){
     archiveFileName.set(artifactFilename)
 
@@ -49,7 +51,7 @@ task dexify(type: Jar){
 
             command += ["--output", dexedArtifact, jarArtifact]
 
-            if(System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")){
+            if(isWindows){
                 commandLine("cmd", "/c", *command)
             }else{
                 commandLine(*command)
@@ -61,3 +63,23 @@ task dexify(type: Jar){
 }
 
 task buildDex dependsOn "build", "dexify"
+
+task buildMove(dependsOn: build) {
+    doLast {
+        copy {
+            from "build/libs/raw-Sharustry.jar"
+            into System.getenv("destination")
+        }
+    }
+}
+
+tasks.withType(JavaCompile){
+    targetCompatibility = 8
+    sourceCompatibility = JavaVersion.VERSION_17
+    options.encoding = "UTF-8"
+    options.compilerArgs += ["-Xlint:deprecation"]
+    if(JavaVersion.current() != JavaVersion.VERSION_1_8){
+        options.compilerArgs.addAll(['--release', '8'])
+    }
+    compileJava.options.fork = true
+}
