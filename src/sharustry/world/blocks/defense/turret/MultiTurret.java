@@ -27,6 +27,8 @@ import mindustry.ui.*;
 import mindustry.world.draw.DrawTurret;
 import mindustry.world.meta.*;
 
+import java.util.List;
+
 import static arc.Core.input;
 import static arc.Core.scene;
 import static mindustry.Vars.*;
@@ -97,7 +99,9 @@ public class MultiTurret extends TemplatedTurret {
 
             h.table(b -> {
                 int ii = 0;
-                for(BulletType bullet : (Iterable<? extends BulletType>) (isItemTurret() ? ammoTypes.values() : isLiquidTurret() ? liqAmmoTypes.values() : new BulletType[]{isPowerTurret() ? shootType : null})) {
+                Iterable<BulletType> bulletTypes = isItemTurret() ? ammoTypes.values() : isLiquidTurret() ? liqAmmoTypes.values() : isPowerTurret() ? Seq.with(shootType) : null;
+                if(bulletTypes == null) return;
+                for(BulletType bullet : bulletTypes) {
                     if(bullet == null) continue;
 
                     ii ++;
