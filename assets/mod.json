@@ -6,7 +6,7 @@
   "subtitle": "multi turrets",
   "version": "0.3v",
   "main": "sharustry.Sharustry",
-  "minGameVersion": "138",
+  "minGameVersion": "146",
   "dependencies": [],
   "hidden": false,
   "java": true
